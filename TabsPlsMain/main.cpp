@@ -17,9 +17,12 @@ namespace
 
   constexpr unsigned int _BYTE = 8;
 
+  gchar text_plain_string_id[] = "text/plain";
+  gchar text_uri_list_string_id[] = "text/uri-list";
+
   const GtkTargetEntry target_list[] = {
-    {"text/plain", 0, TARGET_STRING},
-    {"text/uri-list", 0, TARGET_FILE}
+    {text_plain_string_id, 0, TARGET_STRING},
+    {text_uri_list_string_id, 0, TARGET_FILE}
   };
 
   constexpr guint n_targets = 2;
