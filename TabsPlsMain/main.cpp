@@ -31,17 +31,13 @@
  * accept. The string type is arbitrary, and negotiated between DnD widgets by
  * the developer. An enum or GQuark can serve as the integer target id. */
 enum {
-        TARGET_INT32,
-        TARGET_STRING,
-        TARGET_ROOTWIN
+        TARGET_STRING
 };
 
 /* datatype (string), restrictions on DnD (GtkTargetFlags), datatype (int) */
 static GtkTargetEntry target_list[] = {
-        { "INTEGER",    0, TARGET_INT32 },
         { "STRING",     0, TARGET_STRING },
-        { "text/plain", 0, TARGET_STRING },
-        { "application/x-rootwindow-drop", 0, TARGET_ROOTWIN }
+        { "text/plain", 0, TARGET_STRING }
 };
 
 static guint n_targets = G_N_ELEMENTS (target_list);
@@ -85,12 +81,6 @@ drag_data_received_handl
                 g_print (" Receiving ");
                 switch (target_type)
                 {
-                        case TARGET_INT32:
-                                _idata = (glong*)gtk_selection_data_get_data(selection_data);
-                                g_print ("integer: %ld", *_idata);
-                                dnd_success = TRUE;
-                                break;
-
                         case TARGET_STRING:
                                 _sdata = (gchar*)gtk_selection_data_get_data(selection_data);
                                 g_print ("string: %s", _sdata);
@@ -222,18 +212,6 @@ drag_data_get_handl
                  * Pixbufs, (UTF-8) text, and URIs have their own convenience
                  * setter functions */
 
-        case TARGET_INT32:
-                g_print ("integer: %ld", integer_data);
-                gtk_selection_data_set
-                (
-                        selection_data,         /* Allocated GdkSelectionData object */
-                        gtk_selection_data_get_target(selection_data), /* target type */
-                        _DWORD,                 /* number of bits per 'unit' */
-                        (guchar*) &integer_data,/* pointer to data to be sent */
-                        sizeof (integer_data)   /* length of data in units */
-                );
-                break;
-
         case TARGET_STRING:
                 g_print ("string: %s", string_data);
                 gtk_selection_data_set
@@ -244,10 +222,6 @@ drag_data_get_handl
                         (guchar*) string_data,
                         strlen (string_data)
                 );
-                break;
-
-        case TARGET_ROOTWIN:
-                g_print ("Dropped on the root window!\n");
                 break;
 
         default:
