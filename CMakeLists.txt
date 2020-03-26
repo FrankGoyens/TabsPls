@@ -6,9 +6,17 @@ find_package(PkgConfig REQUIRED)
 PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
 
 set(TabsPls_Headers SmartGtk.hpp
+	GtkGui/FileListView.hpp
+    
+    model/FileSystem.hpp
 )
 
-add_library(TabsPls STATIC ${TabsPls_Headers})
+set(TabsPls_Sources GtkGui/FileListView.cpp
+
+    model/FileSystem.cpp
+)
+
+add_library(TabsPls ${TabsPls_Headers} ${TabsPls_Sources})
 
 set_target_properties(TabsPls PROPERTIES LINKER_LANGUAGE CXX)
 

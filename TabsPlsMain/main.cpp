@@ -17,8 +17,13 @@
  */
 
 #include <gtk/gtk.h>
-#include <string.h>
+#include <cstring>
 
+#include <string>
+#include <optional>
+
+#include <GtkGui/FileListView.hpp>
+#include <model/FileSystem.hpp>
 
 /******************************************************************************/
 #define _BYTE   8
@@ -261,94 +266,84 @@ int
 main (int argc, char **argv)
 {
         GtkWidget       *window;
-        GtkWidget       *hbox;
-        GtkWidget       *coin_source;
-        GtkWidget       *well_dest;
-        GtkWidget       *directions_label;
         guint           win_xsize       = 450;
-        guint           win_ysize       = 50;
-        guint           spacing         = 5;
-
+        guint           win_ysize       = 200;
 
         /* Always start GTK+ first! */
         gtk_init (&argc, &argv);
 
+        std::optional<std::string> directoryFromArgument;
+
+        if(argc > 1 && FileSystem::IsDirectory(argv[1]))
+                directoryFromArgument = argv[1];
 
         /* Create the widgets */
         window  = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-        hbox    = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, spacing);
 
-        coin_source     = gtk_button_new_with_label ("[coins]");
-        well_dest       = gtk_label_new ("[a well]");
-
-        directions_label = gtk_label_new ("drag a coin and drop it in the well");
-
-
+	auto listviewWithStore = FileListView::BuildFileListView();
         /* Pack the widgets */
-        gtk_container_add (GTK_CONTAINER (window), hbox);
-
-        gtk_container_add (GTK_CONTAINER (hbox), coin_source);
-        gtk_container_add (GTK_CONTAINER (hbox), directions_label);
-        gtk_container_add (GTK_CONTAINER (hbox), well_dest);
-
+        gtk_container_add (GTK_CONTAINER (window), &listviewWithStore.listWidget);
 
         /* Make the window big enough for some DnD action */
         gtk_window_set_default_size (GTK_WINDOW(window), win_xsize, win_ysize);
 
+        const auto files = directoryFromArgument ? FileSystem::GetFilesInDirectory(*directoryFromArgument) : FileSystem::GetFilesInCurrentDirectory();
 
-        /* Make the "well label" a DnD destination. */
-        gtk_drag_dest_set
-        (
-                well_dest,              /* widget that will accept a drop */
-                GTK_DEST_DEFAULT_ALL, /* default actions for dest on DnD */
-                target_list,            /* lists of target to support */
-                n_targets,              /* size of list */
-                GDK_ACTION_COPY         /* what to do with data after dropped */
-        );
+        FileListView::FillListStoreWithFiles(listviewWithStore.store, files);
 
-        /* Make the "coin button" a DnD source. */
-        /* Why doesn't GtkLabel work here? 
-         * See Caveat Window above
-         */
-        gtk_drag_source_set
-        (
-                coin_source,            /* widget will be drag-able */
-                GDK_BUTTON1_MASK,       /* modifier that will start a drag */
-                target_list,            /* lists of target to support */
-                n_targets,              /* size of list */
-                GDK_ACTION_COPY         /* what to do with data after dropped */
-        );
-
-
-        /* Connect the signals */
-        g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
-
-        /* All possible destination signals */
-        g_signal_connect (well_dest, "drag-data-received",
-                G_CALLBACK(drag_data_received_handl), NULL);
-
-        g_signal_connect (well_dest, "drag-leave",
-                G_CALLBACK (drag_leave_handl), NULL);
-
-        g_signal_connect (well_dest, "drag-motion",
-                G_CALLBACK (drag_motion_handl), NULL);
-
-        g_signal_connect (well_dest, "drag-drop",
-                G_CALLBACK (drag_drop_handl), NULL);
-
-        /* All possible source signals */
-        g_signal_connect (coin_source, "drag-data-get",
-                G_CALLBACK (drag_data_get_handl), NULL);
-
-        g_signal_connect (coin_source, "drag-data-delete",
-                G_CALLBACK (drag_data_delete_handl), NULL);
-
-        g_signal_connect (coin_source, "drag-begin",
-                G_CALLBACK (drag_begin_handl), NULL);
-
-        g_signal_connect (coin_source, "drag-end",
-                G_CALLBACK (drag_end_handl), NULL);
-
+//        /* Make the "well label" a DnD destination. */
+//        gtk_drag_dest_set
+//        (
+//                well_dest,              /* widget that will accept a drop */
+//                GTK_DEST_DEFAULT_ALL, /* default actions for dest on DnD */
+//                target_list,            /* lists of target to support */
+//                n_targets,              /* size of list */
+//                GDK_ACTION_COPY         /* what to do with data after dropped */
+//        );
+//
+//        /* Make the "coin button" a DnD source. */
+//        /* Why doesn't GtkLabel work here? 
+//         * See Caveat Window above
+//         */
+//        gtk_drag_source_set
+//        (
+//                coin_source,            /* widget will be drag-able */
+//                GDK_BUTTON1_MASK,       /* modifier that will start a drag */
+//                target_list,            /* lists of target to support */
+//                n_targets,              /* size of list */
+//                GDK_ACTION_COPY         /* what to do with data after dropped */
+//        );
+//
+//
+       /* Connect the signals */
+       g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+//
+//        /* All possible destination signals */
+//        g_signal_connect (well_dest, "drag-data-received",
+//                G_CALLBACK(drag_data_received_handl), NULL);
+//
+//        g_signal_connect (well_dest, "drag-leave",
+//                G_CALLBACK (drag_leave_handl), NULL);
+//
+//        g_signal_connect (well_dest, "drag-motion",
+//                G_CALLBACK (drag_motion_handl), NULL);
+//
+//        g_signal_connect (well_dest, "drag-drop",
+//                G_CALLBACK (drag_drop_handl), NULL);
+//
+//        /* All possible source signals */
+//        g_signal_connect (coin_source, "drag-data-get",
+//                G_CALLBACK (drag_data_get_handl), NULL);
+//
+//        g_signal_connect (coin_source, "drag-data-delete",
+//                G_CALLBACK (drag_data_delete_handl), NULL);
+//
+//        g_signal_connect (coin_source, "drag-begin",
+//                G_CALLBACK (drag_begin_handl), NULL);
+//
+//        g_signal_connect (coin_source, "drag-end",
+//                G_CALLBACK (drag_end_handl), NULL);
+//
 
         /* Show the widgets */
         gtk_widget_show_all (window);
