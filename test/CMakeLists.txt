@@ -8,4 +8,8 @@ set(TabsPlsTest_Sources gtest_main.cc
 
 add_executable(TabsPlsTest ${TabsPlsTest_Sources})
 
-target_link_libraries(TabsPlsTest GTest TabsPls)
+target_link_libraries(TabsPlsTest gtest TabsPls)
+
+if(UNIX)
+	target_link_libraries(TabsPlsTest pthread)
+endif()
