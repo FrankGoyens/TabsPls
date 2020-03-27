@@ -37,7 +37,8 @@ enum {
 /* datatype (string), restrictions on DnD (GtkTargetFlags), datatype (int) */
 static GtkTargetEntry target_list[] = {
         { "STRING",     0, TARGET_STRING },
-        { "text/plain", 0, TARGET_STRING }
+        { "text/plain", 0, TARGET_STRING },
+        { "text/uri-list", 0, TARGET_STRING } //This one is required for the file explorer on W10
 };
 
 static guint n_targets = G_N_ELEMENTS (target_list);
