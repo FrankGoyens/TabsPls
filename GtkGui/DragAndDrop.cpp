@@ -119,38 +119,11 @@ drag_drop_handl
 (GtkWidget *widget, GdkDragContext *context, gint x, gint y, guint time,
         gpointer user_data)
 {
-        gboolean        is_valid_drop_site;
-        GdkAtom         target_type;
-
         const gchar *name = gtk_widget_get_name (widget);
         g_print ("%s: drag_drop_handl\n", name);
 
-        /* Check to see if (x,y) is a valid drop site within widget */
-        is_valid_drop_site = TRUE;
-
-        /* If the source offers a target */
-        if (gdk_drag_context_list_targets (context))
-        {
-                /* Choose the best target type */
-                target_type = GDK_POINTER_TO_ATOM
-                        (g_list_nth_data (gdk_drag_context_list_targets(context), TARGET_STRING));
-
-                /* Request the data from the source. */
-                gtk_drag_get_data
-                (
-                        widget,         /* will receive 'drag-data-received' signal */
-                        context,        /* represents the current state of the DnD */
-                        target_type,    /* the target type we want */
-                        time            /* time stamp */
-                );
-        }
-        /* No target offered by source => error */
-        else
-        {
-                is_valid_drop_site = FALSE;
-        }
-
-        return  is_valid_drop_site;
+    //We could do more advanced stuff here, but we only deal with file uri's and simple widgets right now
+    return true; 
 }
 
 
