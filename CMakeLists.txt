@@ -7,11 +7,13 @@ PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
 
 set(TabsPls_Headers SmartGtk.hpp
 	GtkGui/FileListView.hpp
+	GtkGui/DragAndDrop.hpp
     
     model/FileSystem.hpp
 )
 
 set(TabsPls_Sources GtkGui/FileListView.cpp
+    GtkGui/DragAndDrop.cpp
 
     model/FileSystem.cpp
 )
