@@ -59,6 +59,9 @@ namespace FileListView
 			N_COLUMNS, G_TYPE_STRING);
 
 		auto* tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (store.get()));
+		auto* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
+		gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
+
 		auto* renderer = gtk_cell_renderer_text_new();
 
 		auto* column = gtk_tree_view_column_new_with_attributes(
