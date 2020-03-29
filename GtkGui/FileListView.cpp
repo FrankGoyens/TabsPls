@@ -5,6 +5,8 @@ extern "C"
 #include <gtk/gtk.h>
 }
 
+#include <sstream>
+
 #include <SmartGtk.hpp>
 #include <GtkGui/DragAndDrop.hpp>
 
@@ -17,6 +19,21 @@ namespace
 	};
 }
 
+static void gtk_selection_foreach(GtkTreeModel* model,
+                                GtkTreePath*,
+                                GtkTreeIter* it,
+                                gpointer data)
+	{
+		auto& filenames = *static_cast<std::stringstream*>(data);
+
+		gchar* filename;
+		gtk_tree_model_get(model, it, FILENAME_COLUMN, &filename, -1);
+		std::string filenameString(filename);
+		g_free(filename);
+
+		filenames << filenameString << std::endl;
+	}
+
 namespace
 {
 	class DragSourceGetDataImpl : public DragAndDrop::GetDragData_Userdata
@@ -27,21 +44,13 @@ namespace
 		std::string GetData() const override
 		{ 
 			auto* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(&m_listview));
+			gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
 
-			GtkTreeIter it;
-			GtkTreeModel* model;
-			
-			if (gtk_tree_selection_get_selected (selection, &model, &it))
-        	{
-				gchar* filename;
-				gtk_tree_model_get(model, &it, FILENAME_COLUMN, &filename, -1);
-				std::string filenameString(filename);
-				g_free(filename);
+			std::stringstream filenames;
 
-				return filenameString;
-			}
+			gtk_tree_selection_selected_foreach(selection, gtk_selection_foreach, static_cast<void*>(&filenames));
 
-			return "";
+			return filenames.str();
 		}
 
 	private:
