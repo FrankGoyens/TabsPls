@@ -61,12 +61,7 @@ int main (int argc, char **argv)
         /* Connect the signals */
         g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
 
-        struct DragSourceGetDataImpl : DragAndDrop::GetDragData_Userdata
-        {
-                std::string GetData() const override { return "This is data defined in main!";}
-        };
-
-        DragAndDrop::MakeDragSource(listviewWithStore.listWidget, DragSourceGetDataImpl());
+        const auto dragSourceDataClosure = FileListView::ConnectDragSourceToListview(listviewWithStore);
         DragAndDrop::MakeDropTarget(*well_dest);
 
         /* Show the widgets */
