@@ -10,10 +10,18 @@ typedef struct _GtkListStore GtkListStore;
 
 namespace FileListView
 {
+	/*! \brief This is used to exchange data internally, this should be kept in scope as long as the list widget is in scope*/
+	struct InternalUserdata
+	{
+		virtual ~InternalUserdata() = default;
+	};
+
 	struct ListWidgetWithStore
 	{
 		GtkWidget& listWidget;
 		GtkListStore& store;
+
+		std::unique_ptr<InternalUserdata> _internalUserdata;
 	};
 
 	struct DragSourceListWidgetDataClosure
