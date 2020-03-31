@@ -80,14 +80,33 @@ namespace
 	};
 }
 
-gboolean list_button_release(GtkWidget *widget,
-               GdkEvent  *event,
-               gpointer   user_data)
+gboolean list_button_release(GtkWidget *treeview,
+               GdkEventButton  *event,
+               gpointer   userdata)
 {
-	const auto& deferredSelectionData = *static_cast<ListButtonPress_Userdata*>(user_data);
+	auto& castUserdata = *static_cast<ListButtonPress_Userdata*>(userdata);
+	
+	if(!castUserdata.newItemWasAlreadySelected)
+		return FALSE;
 
-	//g_print("sup\n");
-	return true;
+	castUserdata.newItemWasAlreadySelected = false;
+
+	GtkTreeSelection *selection;
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+
+	GtkTreePath *path;
+
+	if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
+											(gint) event->x, 
+											(gint) event->y,
+											&path, NULL, NULL, NULL))
+	{
+		gtk_tree_selection_unselect_all(selection);
+		gtk_tree_selection_select_path(selection, path);
+		gtk_tree_path_free(path);
+	}
+	
+	return FALSE;
 }
 
 gboolean list_button_press(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
@@ -113,8 +132,8 @@ gboolean list_button_press(GtkWidget *treeview, GdkEventButton *event, gpointer 
 			/*If the path was already selected, then prevent changing the selection
 			to enable the user to drag the current selection if wanted*/
 			castUserdata.newItemWasAlreadySelected = gtk_tree_selection_path_is_selected(selection, path);
+			gtk_tree_path_free(path);
 		}
-	
 	}
 
 	return FALSE; /* we did not handle this */
@@ -130,10 +149,9 @@ namespace FileListView
 			N_COLUMNS, G_TYPE_STRING);
 
 		auto* tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (store.get()));
-		g_signal_connect(tree, "button-release-event", G_CALLBACK(list_button_release), NULL);
-
 		auto internalUserData = std::make_unique<ListButtonPress_Userdata>();
 
+		g_signal_connect(tree, "button-release-event", G_CALLBACK(list_button_release), static_cast<void*>(internalUserData.get()));
 		g_signal_connect(tree, "button-press-event", G_CALLBACK(list_button_press), static_cast<void*>(internalUserData.get()));
 
 		auto* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
