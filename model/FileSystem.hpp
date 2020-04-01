@@ -5,8 +5,15 @@
 
 namespace FileSystem
 {
-    bool IsDirectory(const std::string& dir);
+    class Directory;
 
-    std::vector<std::string> GetFilesInCurrentDirectory();
-    std::vector<std::string> GetFilesInDirectory(const std::string& dir);
+    using RawPath = std::string;
+    using RawPathVector = std::vector<RawPath>;
+
+    bool IsDirectory(const RawPath& path);
+
+    RawPathVector GetFilesInCurrentDirectory();
+    
+    RawPathVector GetFilesInDirectory(const Directory& dir);
+    RawPathVector _getFilesInDirectory(const RawPath& dir);
 }

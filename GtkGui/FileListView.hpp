@@ -3,7 +3,9 @@
 #include <vector>
 #include <string>
 #include <memory>
+
 #include <GtkGui/DragAndDrop.hpp>
+#include <model/FileSystem.hpp>
 
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkListStore GtkListStore;
@@ -30,7 +32,7 @@ namespace FileListView
 	};
 
 	ListWidgetWithStore BuildFileListView();
-	void FillListStoreWithFiles(GtkListStore& store, const std::vector<std::string>& fileNames);
+	void FillListStoreWithFiles(GtkListStore& store, const FileSystem::RawPathVector& fileNames);
 
 	DragSourceListWidgetDataClosure ConnectDragSourceToListview(ListWidgetWithStore& listWidgetWithStore);
 }

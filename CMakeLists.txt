@@ -3,13 +3,17 @@ cmake_minimum_required(VERSION 3.11)
 project(TabsPls)
 
 set(TabsPls_Headers SmartGtk.hpp
+    FileSystemDirectory.hpp
+
 	GtkGui/FileListView.hpp
 	GtkGui/DragAndDrop.hpp
     
     model/FileSystem.hpp
+
 )
 
-set(TabsPls_Sources GtkGui/FileListView.cpp
+set(TabsPls_Sources FileSystemDirectory.cpp
+    GtkGui/FileListView.cpp
     GtkGui/DragAndDrop.cpp
 
     model/FileSystem.cpp

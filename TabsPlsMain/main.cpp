@@ -25,6 +25,7 @@
 #include <GtkGui/FileListView.hpp>
 #include <GtkGui/DragAndDrop.hpp>
 #include <model/FileSystem.hpp>
+#include <FileSystemDirectory.hpp>
 
 /******************************************************************************/
 int main (int argc, char **argv)
@@ -35,10 +36,14 @@ int main (int argc, char **argv)
         /* Always start GTK+ first! */
         gtk_init (&argc, &argv);
 
-        std::optional<std::string> directoryFromArgument;
+        std::optional<FileSystem::RawPath> directoryStringFromArgument;
 
-        if(argc > 1 && FileSystem::IsDirectory(argv[1]))
-                directoryFromArgument = argv[1];
+        if (argc > 1)
+            directoryStringFromArgument = FileSystem::RawPath(argv[1]);
+
+        std::optional<FileSystem::Directory> directoryFromArgument;
+        if(directoryStringFromArgument) 
+            directoryFromArgument = FileSystem::Directory::FromPath(*directoryStringFromArgument);
 
         /* Create the widgets */
         auto* window  = gtk_window_new (GTK_WINDOW_TOPLEVEL);

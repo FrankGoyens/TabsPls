@@ -175,7 +175,7 @@ namespace FileListView
 		return result;
 	}
 
-	void FillListStoreWithFiles(GtkListStore& store, const std::vector<std::string>& fileNames)
+	void FillListStoreWithFiles(GtkListStore& store, const FileSystem::RawPathVector& fileNames)
 	{
 		GtkTreeIter it;
 

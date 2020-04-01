@@ -2,21 +2,29 @@
 
 #include <filesystem>
 
+#include <FileSystemDirectory.hpp>
+
 namespace FileSystem
 {
-    bool IsDirectory(const std::string& dir)
+
+    bool IsDirectory(const RawPath& dir)
     {
         return std::filesystem::is_directory(dir);
     }
 
-    std::vector<std::string> GetFilesInCurrentDirectory()
+    RawPathVector GetFilesInCurrentDirectory()
     {
-        return GetFilesInDirectory(std::filesystem::current_path().string());
+        return _getFilesInDirectory(std::filesystem::current_path().string());
     }
 
-    std::vector<std::string> GetFilesInDirectory(const std::string& dir)
+    RawPathVector GetFilesInDirectory(const Directory& dir)
     {
-        std::vector<std::string> files;
+        return _getFilesInDirectory(dir.path());
+    }
+
+    RawPathVector _getFilesInDirectory(const RawPath& dir)
+    {
+        RawPathVector files;
         for(auto& it: std::filesystem::directory_iterator(dir))
             files.push_back(it.path().string());
 
