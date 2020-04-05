@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.11)
 
 project(TabsPls)
 
-find_package(PkgConfig REQUIRED)
-PKG_CHECK_MODULES(GTK3 REQUIRED gtk+-3.0)
+find_package(PkgConfig)
+PKG_CHECK_MODULES(GTK3 gtk+-3.0)
 
 set(TabsPls_Headers SmartGtk.hpp
 	GtkGui/FileListView.hpp
