@@ -181,7 +181,7 @@ drag_data_get_handl
                         gtk_selection_data_get_target(selection_data),
                         _BYTE,
                         (guchar*) string_data.c_str(),
-                        string_data.size()
+                        static_cast<gint>(string_data.size())
                 );
                 break;
 
