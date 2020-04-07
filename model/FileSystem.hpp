@@ -12,6 +12,8 @@ namespace FileSystem
 
     bool IsDirectory(const RawPath& path);
 
+    RawPath GetWorkingDirectory();
+
     RawPathVector GetFilesInCurrentDirectory();
     
     RawPathVector GetFilesInDirectory(const Directory& dir);

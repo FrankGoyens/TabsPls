@@ -10,6 +10,7 @@ namespace FileSystem
 	class Directory
 	{
 	public:
+		static Directory FromCurrentWorkingDirectory();
 		static std::optional<Directory> FromPath(const FileSystem::RawPath& path);
 
 		auto& path() const { return m_path; }

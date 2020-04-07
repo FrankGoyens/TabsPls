@@ -50,10 +50,25 @@ int main (int argc, char **argv)
         auto* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
         auto* well_dest = gtk_label_new("[drop here]");
 
-	auto listviewWithStore = FileListView::BuildFileListView();
+        auto* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+
+        auto currentDirectory = directoryFromArgument ? *directoryFromArgument : FileSystem::Directory::FromCurrentWorkingDirectory();
+
+        auto* directoryEntryBuffer = gtk_entry_buffer_new(
+            currentDirectory.path().c_str(), 
+            static_cast<gint>(currentDirectory.path().size()));
+
+        auto* directoryEntry = gtk_entry_new_with_buffer(directoryEntryBuffer);
+
+        auto listviewWithStore = FileListView::BuildFileListView();
+        
         /* Pack the widgets */
         gtk_container_add (GTK_CONTAINER (window), hbox);
-        gtk_container_add (GTK_CONTAINER (hbox), &listviewWithStore.listWidget);
+
+        gtk_container_add (GTK_CONTAINER (vbox), directoryEntry);
+        gtk_container_add (GTK_CONTAINER (vbox), &listviewWithStore.listWidget);
+
+        gtk_container_add (GTK_CONTAINER (hbox), vbox);
         gtk_container_add (GTK_CONTAINER (hbox), well_dest);
 
         /* Make the window big enough for some DnD action */

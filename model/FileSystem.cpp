@@ -12,9 +12,14 @@ namespace FileSystem
         return std::filesystem::is_directory(dir);
     }
 
+    RawPath GetWorkingDirectory()
+    {
+        return std::filesystem::current_path().string();
+    }
+
     RawPathVector GetFilesInCurrentDirectory()
     {
-        return _getFilesInDirectory(std::filesystem::current_path().string());
+        return _getFilesInDirectory(GetWorkingDirectory());
     }
 
     RawPathVector GetFilesInDirectory(const Directory& dir)
