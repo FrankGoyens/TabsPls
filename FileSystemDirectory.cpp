@@ -14,4 +14,16 @@ namespace FileSystem
 
         return Directory(path);
     }
+
+    Directory& Directory::operator=(Directory other)
+    {
+        swap(*this, other);
+        return *this;
+    }
+	
+    void swap(Directory& first, Directory& second)
+	{
+        using std::swap;
+        swap(first.m_path, second.m_path);
+	}
 }

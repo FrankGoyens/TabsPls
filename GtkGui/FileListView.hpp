@@ -5,6 +5,7 @@
 #include <memory>
 
 #include <GtkGui/DragAndDrop.hpp>
+#include <GtkGui/DirectoryNavigationField.hpp>
 #include <model/FileSystem.hpp>
 
 typedef struct _GtkWidget GtkWidget;
@@ -35,4 +36,6 @@ namespace FileListView
 	void FillListStoreWithFiles(GtkListStore& store, const FileSystem::RawPathVector& fileNames);
 
 	DragSourceListWidgetDataClosure ConnectDragSourceToListview(ListWidgetWithStore& listWidgetWithStore);
+
+	std::unique_ptr<DirectoryNavigationField::DirectoryChangedAction> CreateDirectoryChangedCallback(ListWidgetWithStore& widgetWithStore);
 }

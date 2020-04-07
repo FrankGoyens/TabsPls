@@ -56,14 +56,18 @@ int main (int argc, char **argv)
 
         auto currentDirectory = directoryFromArgument ? *directoryFromArgument : FileSystem::Directory::FromCurrentWorkingDirectory();
 
-        auto* directoryEntry = DirectoryNavigationField::BuildDirectoryNavigationField(currentDirectory);
-
         auto listviewWithStore = FileListView::BuildFileListView();
-        
+        const auto files = directoryFromArgument ? FileSystem::GetFilesInDirectory(*directoryFromArgument) : FileSystem::GetFilesInCurrentDirectory();
+        FileListView::FillListStoreWithFiles(listviewWithStore.store, files);
+
+        std::shared_ptr<DirectoryNavigationField::DirectoryChangedAction> directoryChangedAction = FileListView::CreateDirectoryChangedCallback(listviewWithStore);
+
+        auto directoryEntry = DirectoryNavigationField::BuildDirectoryNavigationField(currentDirectory, directoryChangedAction);
+
         /* Pack the widgets */
         gtk_container_add (GTK_CONTAINER (window), hbox);
 
-        gtk_container_add (GTK_CONTAINER (vbox), directoryEntry);
+        gtk_container_add (GTK_CONTAINER (vbox), &directoryEntry.widget);
         gtk_container_add (GTK_CONTAINER (vbox), &listviewWithStore.listWidget);
 
         gtk_container_add (GTK_CONTAINER (hbox), vbox);
@@ -71,10 +75,6 @@ int main (int argc, char **argv)
 
         /* Make the window big enough for some DnD action */
         gtk_window_set_default_size (GTK_WINDOW(window), win_xsize, win_ysize);
-
-        const auto files = directoryFromArgument ? FileSystem::GetFilesInDirectory(*directoryFromArgument) : FileSystem::GetFilesInCurrentDirectory();
-
-        FileListView::FillListStoreWithFiles(listviewWithStore.store, files);
 
         /* Connect the signals */
         g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);

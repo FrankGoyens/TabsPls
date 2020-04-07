@@ -9,6 +9,7 @@ extern "C"
 
 #include <SmartGtk.hpp>
 #include <GtkGui/DragAndDrop.hpp>
+#include <FileSystemDirectory.hpp>
 
 namespace
 {
@@ -197,5 +198,26 @@ namespace FileListView
         DragAndDrop::MakeDragSource(listWidgetWithStore.listWidget, *closure.impl);
 
 		return closure;
+	}
+	
+	namespace
+	{
+		struct DirectoryChangedActionImpl : DirectoryNavigationField::DirectoryChangedAction
+		{
+			DirectoryChangedActionImpl(GtkListStore& store_) : store(store_) {}
+
+			void Do(const FileSystem::Directory& dir) override
+			{
+				gtk_list_store_clear(&store);
+				FillListStoreWithFiles(store, FileSystem::GetFilesInDirectory(dir));
+			}
+
+			GtkListStore& store;
+		};
+	}
+
+	std::unique_ptr<DirectoryNavigationField::DirectoryChangedAction> CreateDirectoryChangedCallback(ListWidgetWithStore& widgetWithStore)
+	{
+		return std::make_unique<DirectoryChangedActionImpl>(widgetWithStore.store);
 	}
 }
