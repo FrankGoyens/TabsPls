@@ -24,6 +24,8 @@
 
 #include <GtkGui/FileListView.hpp>
 #include <GtkGui/DragAndDrop.hpp>
+#include <GtkGui/DirectoryNavigationField.hpp>
+
 #include <model/FileSystem.hpp>
 #include <FileSystemDirectory.hpp>
 
@@ -54,11 +56,7 @@ int main (int argc, char **argv)
 
         auto currentDirectory = directoryFromArgument ? *directoryFromArgument : FileSystem::Directory::FromCurrentWorkingDirectory();
 
-        auto* directoryEntryBuffer = gtk_entry_buffer_new(
-            currentDirectory.path().c_str(), 
-            static_cast<gint>(currentDirectory.path().size()));
-
-        auto* directoryEntry = gtk_entry_new_with_buffer(directoryEntryBuffer);
+        auto* directoryEntry = DirectoryNavigationField::BuildDirectoryNavigationField(currentDirectory);
 
         auto listviewWithStore = FileListView::BuildFileListView();
         

@@ -7,14 +7,15 @@ set(TabsPls_Headers SmartGtk.hpp
 
 	GtkGui/FileListView.hpp
 	GtkGui/DragAndDrop.hpp
+	GtkGui/DirectoryNavigationField.hpp
     
     model/FileSystem.hpp
-
 )
 
 set(TabsPls_Sources FileSystemDirectory.cpp
     GtkGui/FileListView.cpp
     GtkGui/DragAndDrop.cpp
+	GtkGui/DirectoryNavigationField.cpp
 
     model/FileSystem.cpp
 )
