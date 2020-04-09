@@ -31,7 +31,7 @@ namespace
 	};
 }
 
-gboolean view_selection_func (GtkTreeSelection *selection,
+static gboolean view_selection_func (GtkTreeSelection *selection,
 					GtkTreeModel     *model,
 					GtkTreePath      *path,
 					gboolean          path_currently_selected,
@@ -42,6 +42,16 @@ gboolean view_selection_func (GtkTreeSelection *selection,
 	return !dataFromPressEvent.newItemWasAlreadySelected;
 }
 
+static std::string GetFilenameFromRow(GtkTreeModel* model, GtkTreeIter* it)
+{
+	gchar* filename;
+	gtk_tree_model_get(model, it, FILENAME_COLUMN, &filename, -1);
+	const std::string filenameString(filename);
+	g_free(filename);
+
+	return filenameString;
+}
+
 static void gtk_selection_foreach(GtkTreeModel* model,
                                 GtkTreePath*,
                                 GtkTreeIter* it,
@@ -49,10 +59,7 @@ static void gtk_selection_foreach(GtkTreeModel* model,
 {
 	auto& filenames = *static_cast<std::stringstream*>(data);
 
-	gchar* filename;
-	gtk_tree_model_get(model, it, FILENAME_COLUMN, &filename, -1);
-	std::string filenameString(filename);
-	g_free(filename);
+	const auto filenameString = GetFilenameFromRow(model, it);
 
 	filenames << filenameString << std::endl;
 }
@@ -81,7 +88,7 @@ namespace
 	};
 }
 
-gboolean list_button_release(GtkWidget *treeview,
+static gboolean list_button_release(GtkWidget *treeview,
                GdkEventButton  *event,
                gpointer   userdata)
 {
@@ -110,7 +117,7 @@ gboolean list_button_release(GtkWidget *treeview,
 	return FALSE;
 }
 
-gboolean list_button_press(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
+static gboolean list_button_press(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
 {
 	auto& castUserdata = *static_cast<ListButtonPress_Userdata*>(userdata);
 	castUserdata.newItemWasAlreadySelected = false;
@@ -140,6 +147,19 @@ gboolean list_button_press(GtkWidget *treeview, GdkEventButton *event, gpointer 
 	return FALSE; /* we did not handle this */
 }
 
+void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewColumn* column,	gpointer user_data)
+{
+	auto* model = gtk_tree_view_get_model(tree_view);
+	
+	GtkTreeIter it;
+	if (gtk_tree_model_get_iter(model, &it, path))
+		if (const auto dir = FileSystem::Directory::FromPath(GetFilenameFromRow(model, &it)))
+		{
+			gtk_list_store_clear(GTK_LIST_STORE(model));
+			FileListView::FillListStoreWithFiles(*GTK_LIST_STORE(model), FileSystem::GetFilesInDirectory(*dir));
+		}
+}
+
 namespace FileListView
 {
 
@@ -154,6 +174,7 @@ namespace FileListView
 
 		g_signal_connect(tree, "button-release-event", G_CALLBACK(list_button_release), static_cast<void*>(internalUserData.get()));
 		g_signal_connect(tree, "button-press-event", G_CALLBACK(list_button_press), static_cast<void*>(internalUserData.get()));
+		g_signal_connect(tree, "row-activated", G_CALLBACK(ActivateRow), NULL);
 
 		auto* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
 		gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
