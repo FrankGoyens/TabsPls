@@ -60,10 +60,13 @@ int main (int argc, char **argv)
         const auto files = directoryFromArgument ? FileSystem::GetFilesInDirectory(*directoryFromArgument) : FileSystem::GetFilesInCurrentDirectory();
         FileListView::FillListStoreWithFiles(listviewWithStore.store, files);
 
-        std::shared_ptr<DirectoryNavigationField::DirectoryChangedAction> directoryChangedAction = FileListView::CreateDirectoryChangedCallback(listviewWithStore);
-
         auto directoryEntry = DirectoryNavigationField::BuildDirectoryNavigationField(currentDirectory);
-        directoryEntry.RegisterDirectoryChanged(directoryChangedAction);
+            
+        std::shared_ptr<DirectoryNavigationField::DirectoryChangedAction> directoryChangedActionFromNavField = FileListView::CreateDirectoryChangedCallback(listviewWithStore);
+        std::shared_ptr<FileListView::DirectoryChangedAction> directoryChangedActionFromListView = DirectoryNavigationField::CreateDirectoryChangedCallback(directoryEntry);
+
+        directoryEntry.RegisterDirectoryChanged(directoryChangedActionFromNavField);
+        listviewWithStore.RegisterDirectoryChanged(directoryChangedActionFromListView);
 
         /* Pack the widgets */
         gtk_container_add (GTK_CONTAINER (window), hbox);

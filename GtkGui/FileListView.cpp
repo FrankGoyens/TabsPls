@@ -27,7 +27,15 @@ namespace
 	{
 		ListButtonPress_Userdata() : newItemWasAlreadySelected(false){}
 
+		void DoActions(const FileSystem::Directory& dir)
+		{
+			for (const auto& action : directoryChangedActions)
+				if (const auto validChangedCallback = action.lock())
+					validChangedCallback->Do(dir);
+		}
+
 		bool newItemWasAlreadySelected;
+		std::vector<std::weak_ptr<FileListView::DirectoryChangedAction>> directoryChangedActions;
 	};
 }
 
@@ -149,6 +157,7 @@ static gboolean list_button_press(GtkWidget *treeview, GdkEventButton *event, gp
 
 void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewColumn* column,	gpointer user_data)
 {
+	auto& typedUserdata = *static_cast<ListButtonPress_Userdata*>(user_data);
 	auto* model = gtk_tree_view_get_model(tree_view);
 	
 	GtkTreeIter it;
@@ -157,6 +166,8 @@ void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewColumn* c
 		{
 			gtk_list_store_clear(GTK_LIST_STORE(model));
 			FileListView::FillListStoreWithFiles(*GTK_LIST_STORE(model), FileSystem::GetFilesInDirectory(*dir));
+
+			typedUserdata.DoActions(*dir);
 		}
 }
 
@@ -174,7 +185,7 @@ namespace FileListView
 
 		g_signal_connect(tree, "button-release-event", G_CALLBACK(list_button_release), static_cast<void*>(internalUserData.get()));
 		g_signal_connect(tree, "button-press-event", G_CALLBACK(list_button_press), static_cast<void*>(internalUserData.get()));
-		g_signal_connect(tree, "row-activated", G_CALLBACK(ActivateRow), NULL);
+		g_signal_connect(tree, "row-activated", G_CALLBACK(ActivateRow), static_cast<void*>(internalUserData.get()));
 
 		auto* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
 		gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
@@ -240,5 +251,12 @@ namespace FileListView
 	std::unique_ptr<DirectoryNavigationField::DirectoryChangedAction> CreateDirectoryChangedCallback(ListWidgetWithStore& widgetWithStore)
 	{
 		return std::make_unique<DirectoryChangedActionImpl>(widgetWithStore.store);
+	}
+	
+	void ListWidgetWithStore::RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>& action)
+	{
+		auto& typedUserdata = *static_cast<ListButtonPress_Userdata*>(_internalUserdata.get());
+
+		typedUserdata.directoryChangedActions.push_back(action);
 	}
 }

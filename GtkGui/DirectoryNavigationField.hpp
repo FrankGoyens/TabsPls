@@ -1,12 +1,18 @@
 #pragma once
 
 #include <memory>
+#include <GtkGui/FileListView.hpp>
 
 typedef struct _GtkWidget GtkWidget;
 
 namespace FileSystem
 {
 	class Directory;
+}
+
+namespace FileListView
+{
+	struct DirectoryChangedAction;
 }
 
 namespace DirectoryNavigationField
@@ -33,4 +39,6 @@ namespace DirectoryNavigationField
 	};
 
 	DirectoryNavigationFieldWidget BuildDirectoryNavigationField(const FileSystem::Directory& dir);
+
+	std::unique_ptr<FileListView::DirectoryChangedAction> CreateDirectoryChangedCallback(DirectoryNavigationFieldWidget& widgetWithStore);
 }

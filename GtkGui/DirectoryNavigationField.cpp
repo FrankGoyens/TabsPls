@@ -22,6 +22,23 @@ namespace
 		FileSystem::Directory lastValidDirectory;
 		std::vector<std::weak_ptr<DirectoryNavigationField::DirectoryChangedAction>> directoryChangedActions;
 	};
+
+	struct DirectoryChangedActionImpl : FileListView::DirectoryChangedAction
+	{
+		DirectoryChangedActionImpl(GtkEntry& entry_, NavigationDirectoryFieldUserdata& entryUserdata_) :
+			entry(entry_),
+			entryUserdata(entryUserdata_)
+		{}
+
+		void Do(const FileSystem::Directory& dir)
+		{
+			entryUserdata.lastValidDirectory = dir;
+			gtk_entry_set_text(&entry, dir.path().c_str());
+		}
+
+		GtkEntry& entry;
+		NavigationDirectoryFieldUserdata& entryUserdata;
+	};
 }
 
 static void ActivateDirectoryEntry(GtkEntry* entry, gpointer userdata)
@@ -57,6 +74,13 @@ namespace DirectoryNavigationField
 		DirectoryNavigationFieldWidget result = { *directoryEntry,  std::move(userdata) };
 
 		return result;
+	}
+
+	std::unique_ptr<FileListView::DirectoryChangedAction> CreateDirectoryChangedCallback(DirectoryNavigationFieldWidget& widgetWithStore)
+	{
+		auto& typedUserData = *static_cast<NavigationDirectoryFieldUserdata*>(widgetWithStore._internalUserdata.get());
+
+		return std::make_unique<DirectoryChangedActionImpl>(*GTK_ENTRY(&widgetWithStore.widget), typedUserData);
 	}
 	
 	void DirectoryNavigationFieldWidget::RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>& action)

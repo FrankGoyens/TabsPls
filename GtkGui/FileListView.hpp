@@ -11,6 +11,11 @@
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkListStore GtkListStore;
 
+namespace DirectoryNavigationField
+{
+	struct DirectoryChangedAction;
+}
+
 namespace FileListView
 {
 	/*! \brief This is used to exchange data internally, this should be kept in scope as long as the list widget is in scope*/
@@ -19,10 +24,18 @@ namespace FileListView
 		virtual ~InternalUserdata() = default;
 	};
 
+	struct DirectoryChangedAction
+	{
+		virtual ~DirectoryChangedAction() = default;
+		virtual void Do(const FileSystem::Directory& dir) = 0;
+	};
+
 	struct ListWidgetWithStore
 	{
 		GtkWidget& listWidget;
 		GtkListStore& store;
+
+		void RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>&);
 
 		std::unique_ptr<InternalUserdata> _internalUserdata;
 	};
