@@ -8,13 +8,19 @@ namespace
 {
 	struct NavigationDirectoryFieldUserdata : DirectoryNavigationField::InternalUserdata
 	{
-		NavigationDirectoryFieldUserdata(FileSystem::Directory lastValidDirectory_, std::weak_ptr<DirectoryNavigationField::DirectoryChangedAction> directoryChangedAction_) :
-			lastValidDirectory(std::move(lastValidDirectory_)),
-			directoryChangedAction(std::move(directoryChangedAction_))
+		NavigationDirectoryFieldUserdata(FileSystem::Directory lastValidDirectory_) :
+			lastValidDirectory(std::move(lastValidDirectory_))
 		{}
 
+		void DoActions(const FileSystem::Directory& dir)
+		{
+			for (const auto& action : directoryChangedActions)
+				if(const auto validChangedCallback = action.lock())
+					validChangedCallback->Do(dir);
+		}
+
 		FileSystem::Directory lastValidDirectory;
-		std::weak_ptr<DirectoryNavigationField::DirectoryChangedAction> directoryChangedAction;
+		std::vector<std::weak_ptr<DirectoryNavigationField::DirectoryChangedAction>> directoryChangedActions;
 	};
 }
 
@@ -28,8 +34,7 @@ static void ActivateDirectoryEntry(GtkEntry* entry, gpointer userdata)
 		
 		gtk_entry_set_text(entry, newDirectory->path().c_str());
 
-		if (const auto validChangedCallback = typedUserdata.directoryChangedAction.lock())
-			validChangedCallback->Do(*newDirectory);
+		typedUserdata.DoActions(*newDirectory);
 	}
 	else
 		gtk_entry_set_text(entry, typedUserdata.lastValidDirectory.path().c_str());
@@ -37,7 +42,7 @@ static void ActivateDirectoryEntry(GtkEntry* entry, gpointer userdata)
 
 namespace DirectoryNavigationField
 {
-	DirectoryNavigationFieldWidget BuildDirectoryNavigationField(const FileSystem::Directory& dir, const std::weak_ptr<DirectoryChangedAction>& directoryChangedAction)
+	DirectoryNavigationFieldWidget BuildDirectoryNavigationField(const FileSystem::Directory& dir)
 	{
 		auto* const directoryEntryBuffer = gtk_entry_buffer_new(
 			dir.path().c_str(),
@@ -45,12 +50,18 @@ namespace DirectoryNavigationField
 
 		auto* const directoryEntry = gtk_entry_new_with_buffer(directoryEntryBuffer);
 
-		auto userdata = std::make_unique<NavigationDirectoryFieldUserdata>(dir, directoryChangedAction);
+		auto userdata = std::make_unique<NavigationDirectoryFieldUserdata>(dir);
 
 		g_signal_connect(directoryEntry, "activate", G_CALLBACK(ActivateDirectoryEntry), static_cast<void*>(userdata.get()));
 
 		DirectoryNavigationFieldWidget result = { *directoryEntry,  std::move(userdata) };
 
 		return result;
+	}
+	
+	void DirectoryNavigationFieldWidget::RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>& action)
+	{
+		auto& typedUserData = *static_cast<NavigationDirectoryFieldUserdata*>(_internalUserdata.get());
+		typedUserData.directoryChangedActions.push_back(action);
 	}
 }

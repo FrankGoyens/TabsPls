@@ -27,8 +27,10 @@ namespace DirectoryNavigationField
 	{
 		GtkWidget& widget;
 
+		void RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>&);
+
 		std::unique_ptr<InternalUserdata> _internalUserdata;
 	};
 
-	DirectoryNavigationFieldWidget BuildDirectoryNavigationField(const FileSystem::Directory& dir, const std::weak_ptr<DirectoryChangedAction>& directoryChangedAction);
+	DirectoryNavigationFieldWidget BuildDirectoryNavigationField(const FileSystem::Directory& dir);
 }

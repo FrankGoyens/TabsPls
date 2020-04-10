@@ -62,7 +62,8 @@ int main (int argc, char **argv)
 
         std::shared_ptr<DirectoryNavigationField::DirectoryChangedAction> directoryChangedAction = FileListView::CreateDirectoryChangedCallback(listviewWithStore);
 
-        auto directoryEntry = DirectoryNavigationField::BuildDirectoryNavigationField(currentDirectory, directoryChangedAction);
+        auto directoryEntry = DirectoryNavigationField::BuildDirectoryNavigationField(currentDirectory);
+        directoryEntry.RegisterDirectoryChanged(directoryChangedAction);
 
         /* Pack the widgets */
         gtk_container_add (GTK_CONTAINER (window), hbox);
