@@ -23,9 +23,9 @@ namespace
 
 namespace
 {
-	struct ListButtonPress_Userdata : FileListView::InternalUserdata
+	struct ListWidgetWithStoreUserdata : FileListView::InternalUserdata
 	{
-		ListButtonPress_Userdata() : newItemWasAlreadySelected(false){}
+		ListWidgetWithStoreUserdata() : newItemWasAlreadySelected(false){}
 
 		void DoActions(const FileSystem::Directory& dir)
 		{
@@ -45,7 +45,7 @@ static gboolean view_selection_func (GtkTreeSelection *selection,
 					gboolean          path_currently_selected,
 					gpointer          userdata)
 {
-	auto& dataFromPressEvent = *static_cast<ListButtonPress_Userdata*>(userdata);
+	auto& dataFromPressEvent = *static_cast<ListWidgetWithStoreUserdata*>(userdata);
 
 	return !dataFromPressEvent.newItemWasAlreadySelected;
 }
@@ -100,7 +100,7 @@ static gboolean list_button_release(GtkWidget *treeview,
                GdkEventButton  *event,
                gpointer   userdata)
 {
-	auto& castUserdata = *static_cast<ListButtonPress_Userdata*>(userdata);
+	auto& castUserdata = *static_cast<ListWidgetWithStoreUserdata*>(userdata);
 	
 	if(!castUserdata.newItemWasAlreadySelected)
 		return FALSE;
@@ -127,7 +127,7 @@ static gboolean list_button_release(GtkWidget *treeview,
 
 static gboolean list_button_press(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
 {
-	auto& castUserdata = *static_cast<ListButtonPress_Userdata*>(userdata);
+	auto& castUserdata = *static_cast<ListWidgetWithStoreUserdata*>(userdata);
 	castUserdata.newItemWasAlreadySelected = false;
 
 	/* single click with the right mouse button? */
@@ -157,7 +157,7 @@ static gboolean list_button_press(GtkWidget *treeview, GdkEventButton *event, gp
 
 void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewColumn* column,	gpointer user_data)
 {
-	auto& typedUserdata = *static_cast<ListButtonPress_Userdata*>(user_data);
+	auto& typedUserdata = *static_cast<ListWidgetWithStoreUserdata*>(user_data);
 	auto* model = gtk_tree_view_get_model(tree_view);
 	
 	GtkTreeIter it;
@@ -181,7 +181,7 @@ namespace FileListView
 			N_COLUMNS, G_TYPE_STRING);
 
 		auto* tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (store.get()));
-		auto internalUserData = std::make_unique<ListButtonPress_Userdata>();
+		auto internalUserData = std::make_unique<ListWidgetWithStoreUserdata>();
 
 		g_signal_connect(tree, "button-release-event", G_CALLBACK(list_button_release), static_cast<void*>(internalUserData.get()));
 		g_signal_connect(tree, "button-press-event", G_CALLBACK(list_button_press), static_cast<void*>(internalUserData.get()));
@@ -255,7 +255,7 @@ namespace FileListView
 	
 	void ListWidgetWithStore::RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>& action)
 	{
-		auto& typedUserdata = *static_cast<ListButtonPress_Userdata*>(_internalUserdata.get());
+		auto& typedUserdata = *static_cast<ListWidgetWithStoreUserdata*>(_internalUserdata.get());
 
 		typedUserdata.directoryChangedActions.push_back(action);
 	}
