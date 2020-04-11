@@ -71,9 +71,7 @@ namespace DirectoryNavigationField
 
 		g_signal_connect(directoryEntry, "activate", G_CALLBACK(ActivateDirectoryEntry), static_cast<void*>(userdata.get()));
 
-		DirectoryNavigationFieldWidget result = { *directoryEntry,  std::move(userdata) };
-
-		return result;
+		return DirectoryNavigationFieldWidget(*directoryEntry, std::move(userdata));
 	}
 
 	std::unique_ptr<FileListView::DirectoryChangedAction> CreateDirectoryChangedCallback(DirectoryNavigationFieldWidget& widgetWithStore)
@@ -87,5 +85,12 @@ namespace DirectoryNavigationField
 	{
 		auto& typedUserData = *static_cast<NavigationDirectoryFieldUserdata*>(_internalUserdata.get());
 		typedUserData.directoryChangedActions.push_back(action);
+	}
+	
+	const FileSystem::Directory& DirectoryNavigationFieldWidget::Get() const
+	{
+		auto& typedUserData = *static_cast<NavigationDirectoryFieldUserdata*>(_internalUserdata.get());
+
+		return typedUserData.lastValidDirectory;
 	}
 }

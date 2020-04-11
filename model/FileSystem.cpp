@@ -35,4 +35,11 @@ namespace FileSystem
 
         return files;
     }
+    
+    RawPath GetParent(const Directory& dir)
+    {
+        std::filesystem::path dirPath = dir.path();
+
+        return dirPath.parent_path().string();
+    }
 }

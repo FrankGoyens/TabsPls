@@ -25,7 +25,10 @@ namespace
 {
 	struct ListWidgetWithStoreUserdata : FileListView::InternalUserdata
 	{
-		ListWidgetWithStoreUserdata() : newItemWasAlreadySelected(false){}
+		ListWidgetWithStoreUserdata(std::shared_ptr<CurrentDirectoryProvider> currentDirectoryProvider_) : 
+			newItemWasAlreadySelected(false),
+			currentDirectoryProvider(std::move(currentDirectoryProvider_))
+		{}
 
 		void DoActions(const FileSystem::Directory& dir)
 		{
@@ -36,6 +39,7 @@ namespace
 
 		bool newItemWasAlreadySelected;
 		std::vector<std::weak_ptr<FileListView::DirectoryChangedAction>> directoryChangedActions;
+		std::shared_ptr<CurrentDirectoryProvider> currentDirectoryProvider;
 	};
 }
 
@@ -162,8 +166,11 @@ void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewColumn* c
 	
 	GtkTreeIter it;
 	if (gtk_tree_model_get_iter(model, &it, path))
-		if (const auto dir = FileSystem::Directory::FromPath(GetFilenameFromRow(model, &it)))
+		if (auto dir = FileSystem::Directory::FromPath(GetFilenameFromRow(model, &it)))
 		{
+			if (dir->path() == "..")
+				*dir = typedUserdata.currentDirectoryProvider->Get().Parent();
+
 			gtk_list_store_clear(GTK_LIST_STORE(model));
 			FileListView::FillListStoreWithFiles(*GTK_LIST_STORE(model), FileSystem::GetFilesInDirectory(*dir));
 
@@ -171,17 +178,28 @@ void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewColumn* c
 		}
 }
 
+static void AddParentDirectoryToStore(GtkListStore& store)
+{
+	GtkTreeIter it;
+	gtk_list_store_append(&store, &it);
+
+	gtk_list_store_set(&store,
+		&it,
+		FILENAME_COLUMN, FileSystem::RawPath("..").c_str(),
+		-1);
+}
+
 namespace FileListView
 {
 
-	ListWidgetWithStore BuildFileListView()
+	ListWidgetWithStore BuildFileListView(const std::shared_ptr<CurrentDirectoryProvider>& currentDirProvider)
 	{
 		const auto store = SmartGtk::MakeObject(gtk_list_store_new, 
 			[](auto* obj){g_object_unref(G_OBJECT(obj));}, 
 			N_COLUMNS, G_TYPE_STRING);
 
 		auto* tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (store.get()));
-		auto internalUserData = std::make_unique<ListWidgetWithStoreUserdata>();
+		auto internalUserData = std::make_unique<ListWidgetWithStoreUserdata>(currentDirProvider);
 
 		g_signal_connect(tree, "button-release-event", G_CALLBACK(list_button_release), static_cast<void*>(internalUserData.get()));
 		g_signal_connect(tree, "button-press-event", G_CALLBACK(list_button_press), static_cast<void*>(internalUserData.get()));
@@ -211,6 +229,8 @@ namespace FileListView
 	void FillListStoreWithFiles(GtkListStore& store, const FileSystem::RawPathVector& fileNames)
 	{
 		GtkTreeIter it;
+
+		AddParentDirectoryToStore(store);
 
 		for(auto& fileName: fileNames)
 		{

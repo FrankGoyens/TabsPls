@@ -18,4 +18,6 @@ namespace FileSystem
     
     RawPathVector GetFilesInDirectory(const Directory& dir);
     RawPathVector _getFilesInDirectory(const RawPath& dir);
+
+    RawPath GetParent(const Directory& dir);
 }

@@ -18,6 +18,8 @@ namespace FileSystem
 
 		Directory& operator=(Directory other);
 
+		Directory Parent() const;
+
 		auto& path() const { return m_path; }
 
 		friend void swap(Directory& first, Directory& second);

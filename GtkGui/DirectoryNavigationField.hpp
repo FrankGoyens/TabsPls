@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <GtkGui/FileListView.hpp>
+#include <CurrentDirectoryProvider.hpp>
 
 typedef struct _GtkWidget GtkWidget;
 
@@ -29,12 +30,17 @@ namespace DirectoryNavigationField
 		virtual void Do(const FileSystem::Directory& dir) = 0;
 	};
 
-	struct DirectoryNavigationFieldWidget
+	struct DirectoryNavigationFieldWidget : CurrentDirectoryProvider
 	{
-		GtkWidget& widget;
+		DirectoryNavigationFieldWidget(GtkWidget& widget_, std::unique_ptr<InternalUserdata> internalUserdata_) :
+			widget(widget_),
+			_internalUserdata(std::move(internalUserdata_))
+		{}
 
 		void RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>&);
+		const FileSystem::Directory& Get() const override;
 
+		GtkWidget& widget;
 		std::unique_ptr<InternalUserdata> _internalUserdata;
 	};
 

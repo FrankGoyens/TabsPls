@@ -7,6 +7,7 @@
 #include <GtkGui/DragAndDrop.hpp>
 #include <GtkGui/DirectoryNavigationField.hpp>
 #include <model/FileSystem.hpp>
+#include <CurrentDirectoryProvider.hpp>
 
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkListStore GtkListStore;
@@ -45,7 +46,7 @@ namespace FileListView
 		std::unique_ptr<DragAndDrop::GetDragData_Userdata> impl;
 	};
 
-	ListWidgetWithStore BuildFileListView();
+	ListWidgetWithStore BuildFileListView(const std::shared_ptr<CurrentDirectoryProvider>&);
 	void FillListStoreWithFiles(GtkListStore& store, const FileSystem::RawPathVector& fileNames);
 
 	DragSourceListWidgetDataClosure ConnectDragSourceToListview(ListWidgetWithStore& listWidgetWithStore);

@@ -20,6 +20,11 @@ namespace FileSystem
         swap(*this, other);
         return *this;
     }
+
+    Directory Directory::Parent() const
+    {
+        return Directory(FileSystem::GetParent(*this));
+    }
 	
     void swap(Directory& first, Directory& second)
 	{

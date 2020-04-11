@@ -55,23 +55,25 @@ int main (int argc, char **argv)
         auto* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 
         auto currentDirectory = directoryFromArgument ? *directoryFromArgument : FileSystem::Directory::FromCurrentWorkingDirectory();
+        
+        std::shared_ptr<DirectoryNavigationField::DirectoryNavigationFieldWidget> directoryEntry = 
+            std::make_shared<DirectoryNavigationField::DirectoryNavigationFieldWidget>(
+                DirectoryNavigationField::BuildDirectoryNavigationField(currentDirectory));
 
-        auto listviewWithStore = FileListView::BuildFileListView();
+        auto listviewWithStore = FileListView::BuildFileListView(directoryEntry);
         const auto files = directoryFromArgument ? FileSystem::GetFilesInDirectory(*directoryFromArgument) : FileSystem::GetFilesInCurrentDirectory();
         FileListView::FillListStoreWithFiles(listviewWithStore.store, files);
-
-        auto directoryEntry = DirectoryNavigationField::BuildDirectoryNavigationField(currentDirectory);
             
         std::shared_ptr<DirectoryNavigationField::DirectoryChangedAction> directoryChangedActionFromNavField = FileListView::CreateDirectoryChangedCallback(listviewWithStore);
-        std::shared_ptr<FileListView::DirectoryChangedAction> directoryChangedActionFromListView = DirectoryNavigationField::CreateDirectoryChangedCallback(directoryEntry);
+        std::shared_ptr<FileListView::DirectoryChangedAction> directoryChangedActionFromListView = DirectoryNavigationField::CreateDirectoryChangedCallback(*directoryEntry);
 
-        directoryEntry.RegisterDirectoryChanged(directoryChangedActionFromNavField);
+        directoryEntry->RegisterDirectoryChanged(directoryChangedActionFromNavField);
         listviewWithStore.RegisterDirectoryChanged(directoryChangedActionFromListView);
 
         /* Pack the widgets */
         gtk_container_add (GTK_CONTAINER (window), hbox);
 
-        gtk_container_add (GTK_CONTAINER (vbox), &directoryEntry.widget);
+        gtk_container_add (GTK_CONTAINER (vbox), &directoryEntry->widget);
         gtk_container_add (GTK_CONTAINER (vbox), &listviewWithStore.listWidget);
 
         gtk_container_add (GTK_CONTAINER (hbox), vbox);
