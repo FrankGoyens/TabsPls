@@ -3,6 +3,7 @@
 extern "C"
 {
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 }
 
 #include <sstream>
@@ -30,7 +31,7 @@ namespace
 			currentDirectoryProvider(std::move(currentDirectoryProvider_))
 		{}
 
-		void DoActions(const FileSystem::Directory& dir)
+		void DoActions(const FileSystem::Directory& dir) const
 		{
 			for (const auto& action : directoryChangedActions)
 				if (const auto validChangedCallback = action.lock())
@@ -159,7 +160,17 @@ static gboolean list_button_press(GtkWidget *treeview, GdkEventButton *event, gp
 	return FALSE; /* we did not handle this */
 }
 
-void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewColumn* column,	gpointer user_data)
+static void ResetFileListViewContent(GtkTreeView& view, const ListWidgetWithStoreUserdata& userdata, const FileSystem::Directory& dir)
+{
+	auto* model = gtk_tree_view_get_model(&view);
+
+	gtk_list_store_clear(GTK_LIST_STORE(model));
+	FileListView::FillListStoreWithFiles(*GTK_LIST_STORE(model), FileSystem::GetFilesInDirectory(dir));
+
+	userdata.DoActions(dir);
+}
+
+static void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewColumn* column,	gpointer user_data)
 {
 	auto& typedUserdata = *static_cast<ListWidgetWithStoreUserdata*>(user_data);
 	auto* model = gtk_tree_view_get_model(tree_view);
@@ -171,10 +182,7 @@ void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewColumn* c
 			if (dir->path() == "..")
 				*dir = typedUserdata.currentDirectoryProvider->Get().Parent();
 
-			gtk_list_store_clear(GTK_LIST_STORE(model));
-			FileListView::FillListStoreWithFiles(*GTK_LIST_STORE(model), FileSystem::GetFilesInDirectory(*dir));
-
-			typedUserdata.DoActions(*dir);
+			ResetFileListViewContent(*tree_view, typedUserdata, *dir);
 		}
 }
 
@@ -187,6 +195,39 @@ static void AddParentDirectoryToStore(GtkListStore& store)
 		&it,
 		FILENAME_COLUMN, FileSystem::RawPath("..").c_str(),
 		-1);
+}
+
+static bool GotoParentDirectoryKeysPressed(GdkEvent& event)
+{
+	const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+	return event.key.keyval == GDK_KEY_Up
+		&& (event.key.state & modifiers) == GDK_MOD1_MASK;
+}
+
+static gboolean ListViewKeyPress(GtkWidget* widget, GdkEvent* event, gpointer user_data)
+{
+
+	if (GotoParentDirectoryKeysPressed(*event))
+	{
+		auto& typedUserdata = *static_cast<ListWidgetWithStoreUserdata*>(user_data);
+		
+		ResetFileListViewContent(*GTK_TREE_VIEW(widget), typedUserdata, typedUserdata.currentDirectoryProvider->Get().Parent());
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+static gboolean ListViewKeyRelease(GtkWidget* widget, GdkEvent* event, gpointer user_data)
+{
+	return FALSE;
+}
+
+static void SetupKeyEventHandling(GtkTreeView& tree, ListWidgetWithStoreUserdata& internalUserdata)
+{
+	g_signal_connect(&tree, "key-press-event", G_CALLBACK(ListViewKeyPress), static_cast<void*>(&internalUserdata));
+	g_signal_connect(&tree, "key-release-event", G_CALLBACK(ListViewKeyRelease), static_cast<void*>(&internalUserdata));
 }
 
 namespace FileListView
@@ -204,6 +245,8 @@ namespace FileListView
 		g_signal_connect(tree, "button-release-event", G_CALLBACK(list_button_release), static_cast<void*>(internalUserData.get()));
 		g_signal_connect(tree, "button-press-event", G_CALLBACK(list_button_press), static_cast<void*>(internalUserData.get()));
 		g_signal_connect(tree, "row-activated", G_CALLBACK(ActivateRow), static_cast<void*>(internalUserData.get()));
+
+		SetupKeyEventHandling(*GTK_TREE_VIEW(tree), *internalUserData);
 
 		auto* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree));
 		gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
