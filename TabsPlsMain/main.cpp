@@ -25,6 +25,7 @@
 #include <GtkGui/FileListView.hpp>
 #include <GtkGui/DragAndDrop.hpp>
 #include <GtkGui/DirectoryNavigationField.hpp>
+#include <GtkGui/DirectoryHistoryButtons.hpp>
 
 #include <model/FileSystem.hpp>
 #include <FileSystemDirectory.hpp>
@@ -49,10 +50,12 @@ int main (int argc, char **argv)
 
         /* Create the widgets */
         auto* window  = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-        auto* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+        auto* topLevelHbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
         auto* well_dest = gtk_label_new("[drop here]");
 
-        auto* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+        auto* topLevelVbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+
+        auto* navigationHbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
         auto currentDirectory = directoryFromArgument ? *directoryFromArgument : FileSystem::Directory::FromCurrentWorkingDirectory();
         
@@ -70,14 +73,19 @@ int main (int argc, char **argv)
         directoryEntry->RegisterDirectoryChanged(directoryChangedActionFromNavField);
         listviewWithStore.RegisterDirectoryChanged(directoryChangedActionFromListView);
 
+        auto directoryHistoryButtons = DirectoryHistoryButtons::BuildDirectoryHistoryButtons();
+
         /* Pack the widgets */
-        gtk_container_add (GTK_CONTAINER (window), hbox);
+        gtk_container_add (GTK_CONTAINER (window), topLevelHbox);
 
-        gtk_container_add (GTK_CONTAINER (vbox), &directoryEntry->widget);
-        gtk_container_add (GTK_CONTAINER (vbox), &listviewWithStore.listWidget);
+        gtk_container_add (GTK_CONTAINER (navigationHbox), &directoryHistoryButtons.widget);
+        gtk_container_add (GTK_CONTAINER (navigationHbox), &directoryEntry->widget);
 
-        gtk_container_add (GTK_CONTAINER (hbox), vbox);
-        gtk_container_add (GTK_CONTAINER (hbox), well_dest);
+        gtk_container_add (GTK_CONTAINER (topLevelVbox), navigationHbox);
+        gtk_container_add (GTK_CONTAINER (topLevelVbox), &listviewWithStore.listWidget);
+
+        gtk_container_add (GTK_CONTAINER (topLevelHbox), topLevelVbox);
+        gtk_container_add (GTK_CONTAINER (topLevelHbox), well_dest);
 
         /* Make the window big enough for some DnD action */
         gtk_window_set_default_size (GTK_WINDOW(window), win_xsize, win_ysize);
