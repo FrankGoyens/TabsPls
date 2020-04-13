@@ -66,14 +66,35 @@ int main (int argc, char **argv)
         auto listviewWithStore = FileListView::BuildFileListView(directoryEntry);
         const auto files = directoryFromArgument ? FileSystem::GetFilesInDirectory(*directoryFromArgument) : FileSystem::GetFilesInCurrentDirectory();
         FileListView::FillListStoreWithFiles(listviewWithStore.store, files);
+
+        auto directoryHistoryButtons = DirectoryHistoryButtons::BuildDirectoryHistoryButtons(*directoryEntry);
             
-        std::shared_ptr<DirectoryNavigationField::DirectoryChangedAction> directoryChangedActionFromNavField = FileListView::CreateDirectoryChangedCallback(listviewWithStore);
-        std::shared_ptr<FileListView::DirectoryChangedAction> directoryChangedActionFromListView = DirectoryNavigationField::CreateDirectoryChangedCallback(*directoryEntry);
+        std::shared_ptr<DirectoryNavigationField::DirectoryChangedAction> changeListviewDirFromNavField = 
+            FileListView::CreateDirectoryChangedCallback_DirectoryNavigationField(listviewWithStore);
 
-        directoryEntry->RegisterDirectoryChanged(directoryChangedActionFromNavField);
-        listviewWithStore.RegisterDirectoryChanged(directoryChangedActionFromListView);
+        std::shared_ptr<DirectoryHistoryButtons::DirectoryChangedAction> changeFileListViewFromDirHistoryButtons =
+            FileListView::CreateDirectoryChangedCallback_DirHistoryButtons(listviewWithStore);
 
-        auto directoryHistoryButtons = DirectoryHistoryButtons::BuildDirectoryHistoryButtons();
+        std::shared_ptr<FileListView::DirectoryChangedAction> changeNavFieldDirFromListView = 
+            DirectoryNavigationField::CreateDirectoryChangedCallback_FileListView(*directoryEntry);
+
+        std::shared_ptr<DirectoryHistoryButtons::DirectoryChangedAction> changeDirNavigationFromDirHistoryButtons =
+            DirectoryNavigationField::CreateDirectoryChangedCallback_DirHistoryButtons(*directoryEntry);
+        
+        std::shared_ptr<FileListView::DirectoryChangedAction> changeHistoryButtonsDirFromFileListViewAction =
+            DirectoryHistoryButtons::CreateDirectoryChangedCallback_FileListView(directoryHistoryButtons);
+
+        std::shared_ptr<DirectoryNavigationField::DirectoryChangedAction> changeHistoryButtonsDirFromDirectoryNavigationAction =
+            DirectoryHistoryButtons::CreateDirectoryChangedCallback_DirectoryNavigationField(directoryHistoryButtons);
+
+        directoryEntry->RegisterDirectoryChanged(changeListviewDirFromNavField);
+        directoryEntry->RegisterDirectoryChanged(changeHistoryButtonsDirFromDirectoryNavigationAction);
+
+        listviewWithStore.RegisterDirectoryChanged(changeNavFieldDirFromListView);
+        listviewWithStore.RegisterDirectoryChanged(changeHistoryButtonsDirFromFileListViewAction);
+
+        directoryHistoryButtons.RegisterDirectoryChanged(changeFileListViewFromDirHistoryButtons);
+        directoryHistoryButtons.RegisterDirectoryChanged(changeDirNavigationFromDirHistoryButtons);
 
         /* Pack the widgets */
         gtk_container_add (GTK_CONTAINER (window), topLevelHbox);

@@ -6,6 +6,9 @@
 
 #include <GtkGui/DragAndDrop.hpp>
 #include <GtkGui/DirectoryNavigationField.hpp>
+
+#include <Gui/DirectoryChangedAction.hpp>
+
 #include <model/FileSystem.hpp>
 #include <CurrentDirectoryProvider.hpp>
 
@@ -13,6 +16,11 @@ typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkListStore GtkListStore;
 
 namespace DirectoryNavigationField
+{
+	struct DirectoryChangedAction;
+}
+
+namespace DirectoryHistoryButtons
 {
 	struct DirectoryChangedAction;
 }
@@ -25,11 +33,7 @@ namespace FileListView
 		virtual ~InternalUserdata() = default;
 	};
 
-	struct DirectoryChangedAction
-	{
-		virtual ~DirectoryChangedAction() = default;
-		virtual void Do(const FileSystem::Directory& dir) = 0;
-	};
+	struct DirectoryChangedAction : Gui::DirectoryChangedAction {};
 
 	struct ListWidgetWithStore
 	{
@@ -51,5 +55,6 @@ namespace FileListView
 
 	DragSourceListWidgetDataClosure ConnectDragSourceToListview(ListWidgetWithStore& listWidgetWithStore);
 
-	std::unique_ptr<DirectoryNavigationField::DirectoryChangedAction> CreateDirectoryChangedCallback(ListWidgetWithStore& widgetWithStore);
+	std::unique_ptr<DirectoryNavigationField::DirectoryChangedAction> CreateDirectoryChangedCallback_DirectoryNavigationField(ListWidgetWithStore& widgetWithStore);
+	std::unique_ptr<DirectoryHistoryButtons::DirectoryChangedAction> CreateDirectoryChangedCallback_DirHistoryButtons(ListWidgetWithStore& widgetWithStore);
 }

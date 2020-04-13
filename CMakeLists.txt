@@ -10,6 +10,8 @@ set(TabsPls_Headers SmartGtk.hpp
 	GtkGui/DirectoryNavigationField.hpp
 	GtkGui/DirectoryHistoryButtons.hpp
     
+    Gui/DirectoryChangedAction.hpp
+
     model/FileSystem.hpp
 )
 

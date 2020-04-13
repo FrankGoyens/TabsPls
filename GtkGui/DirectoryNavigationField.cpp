@@ -14,16 +14,15 @@ namespace
 
 		void DoActions(const FileSystem::Directory& dir)
 		{
-			for (const auto& action : directoryChangedActions)
-				if(const auto validChangedCallback = action.lock())
-					validChangedCallback->Do(dir);
+			Gui::DoActions(directoryChangedActions, dir);
 		}
 
 		FileSystem::Directory lastValidDirectory;
 		std::vector<std::weak_ptr<DirectoryNavigationField::DirectoryChangedAction>> directoryChangedActions;
 	};
 
-	struct DirectoryChangedActionImpl : FileListView::DirectoryChangedAction
+	template<typename BaseT>
+	struct DirectoryChangedActionImpl : BaseT
 	{
 		DirectoryChangedActionImpl(GtkEntry& entry_, NavigationDirectoryFieldUserdata& entryUserdata_) :
 			entry(entry_),
@@ -74,11 +73,22 @@ namespace DirectoryNavigationField
 		return DirectoryNavigationFieldWidget(*directoryEntry, std::move(userdata));
 	}
 
-	std::unique_ptr<FileListView::DirectoryChangedAction> CreateDirectoryChangedCallback(DirectoryNavigationFieldWidget& widgetWithStore)
+	template<typename BaseT>
+	static std::unique_ptr<DirectoryChangedActionImpl<BaseT>> CreateDirectoryChangedCallback(DirectoryNavigationFieldWidget& widgetWithStore)
 	{
 		auto& typedUserData = *static_cast<NavigationDirectoryFieldUserdata*>(widgetWithStore._internalUserdata.get());
 
-		return std::make_unique<DirectoryChangedActionImpl>(*GTK_ENTRY(&widgetWithStore.widget), typedUserData);
+		return std::make_unique<DirectoryChangedActionImpl<BaseT>>(*GTK_ENTRY(&widgetWithStore.widget), typedUserData);
+	}
+
+	std::unique_ptr<FileListView::DirectoryChangedAction> CreateDirectoryChangedCallback_FileListView(DirectoryNavigationFieldWidget& widgetWithStore)
+	{
+		return CreateDirectoryChangedCallback<FileListView::DirectoryChangedAction>(widgetWithStore);
+	}
+
+	std::unique_ptr<DirectoryHistoryButtons::DirectoryChangedAction> CreateDirectoryChangedCallback_DirHistoryButtons(DirectoryNavigationFieldWidget& widgetWithStore)
+	{
+		return CreateDirectoryChangedCallback<DirectoryHistoryButtons::DirectoryChangedAction>(widgetWithStore);
 	}
 	
 	void DirectoryNavigationFieldWidget::RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>& action)

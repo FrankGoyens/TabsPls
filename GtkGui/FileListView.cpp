@@ -33,9 +33,7 @@ namespace
 
 		void DoActions(const FileSystem::Directory& dir) const
 		{
-			for (const auto& action : directoryChangedActions)
-				if (const auto validChangedCallback = action.lock())
-					validChangedCallback->Do(dir);
+			Gui::DoActions(directoryChangedActions, dir);
 		}
 
 		bool newItemWasAlreadySelected;
@@ -297,7 +295,8 @@ namespace FileListView
 	
 	namespace
 	{
-		struct DirectoryChangedActionImpl : DirectoryNavigationField::DirectoryChangedAction
+		template<typename BaseT>
+		struct DirectoryChangedActionImpl : BaseT
 		{
 			DirectoryChangedActionImpl(GtkListStore& store_) : store(store_) {}
 
@@ -311,9 +310,14 @@ namespace FileListView
 		};
 	}
 
-	std::unique_ptr<DirectoryNavigationField::DirectoryChangedAction> CreateDirectoryChangedCallback(ListWidgetWithStore& widgetWithStore)
+	std::unique_ptr<DirectoryNavigationField::DirectoryChangedAction> CreateDirectoryChangedCallback_DirectoryNavigationField(ListWidgetWithStore& widgetWithStore)
 	{
-		return std::make_unique<DirectoryChangedActionImpl>(widgetWithStore.store);
+		return std::make_unique<DirectoryChangedActionImpl<DirectoryNavigationField::DirectoryChangedAction>>(widgetWithStore.store);
+	}
+
+	std::unique_ptr<DirectoryHistoryButtons::DirectoryChangedAction> CreateDirectoryChangedCallback_DirHistoryButtons(ListWidgetWithStore& widgetWithStore)
+	{
+		return std::make_unique<DirectoryChangedActionImpl<DirectoryHistoryButtons::DirectoryChangedAction>>(widgetWithStore.store);
 	}
 	
 	void ListWidgetWithStore::RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>& action)

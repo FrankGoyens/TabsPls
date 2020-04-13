@@ -1,7 +1,12 @@
 #pragma once
 
 #include <memory>
+
 #include <GtkGui/FileListView.hpp>
+#include <GtkGui/DirectoryHistoryButtons.hpp>
+
+#include <Gui/DirectoryChangedAction.hpp>
+
 #include <CurrentDirectoryProvider.hpp>
 
 typedef struct _GtkWidget GtkWidget;
@@ -16,6 +21,11 @@ namespace FileListView
 	struct DirectoryChangedAction;
 }
 
+namespace DirectoryHistoryButtons
+{
+	struct DirectoryChangedAction;
+}
+
 namespace DirectoryNavigationField
 {
 	/*! \brief This is used to exchange data internally, this should be kept in scope as long as the list widget is in scope*/
@@ -24,11 +34,7 @@ namespace DirectoryNavigationField
 		virtual ~InternalUserdata() = default;
 	};
 
-	struct DirectoryChangedAction
-	{
-		virtual ~DirectoryChangedAction() = default;
-		virtual void Do(const FileSystem::Directory& dir) = 0;
-	};
+	struct DirectoryChangedAction : Gui::DirectoryChangedAction {};
 
 	struct DirectoryNavigationFieldWidget : CurrentDirectoryProvider
 	{
@@ -46,5 +52,6 @@ namespace DirectoryNavigationField
 
 	DirectoryNavigationFieldWidget BuildDirectoryNavigationField(const FileSystem::Directory& dir);
 
-	std::unique_ptr<FileListView::DirectoryChangedAction> CreateDirectoryChangedCallback(DirectoryNavigationFieldWidget& widgetWithStore);
+	std::unique_ptr<FileListView::DirectoryChangedAction> CreateDirectoryChangedCallback_FileListView(DirectoryNavigationFieldWidget& widgetWithStore);
+	std::unique_ptr<DirectoryHistoryButtons::DirectoryChangedAction> CreateDirectoryChangedCallback_DirHistoryButtons(DirectoryNavigationFieldWidget& widgetWithStore);
 }
