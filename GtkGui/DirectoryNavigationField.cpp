@@ -65,6 +65,7 @@ namespace DirectoryNavigationField
 			static_cast<gint>(dir.path().size()));
 
 		auto* const directoryEntry = gtk_entry_new_with_buffer(directoryEntryBuffer);
+		gtk_entry_set_width_chars(GTK_ENTRY(directoryEntry), 100);
 
 		auto userdata = std::make_unique<NavigationDirectoryFieldUserdata>(dir);
 
