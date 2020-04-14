@@ -4,6 +4,8 @@ project(TabsPls)
 
 set(TabsPls_Headers SmartGtk.hpp
     FileSystemDirectory.hpp
+    CurrentDirectoryProvider.hpp
+    DirectoryHistory.hpp
 
 	GtkGui/FileListView.hpp
 	GtkGui/DragAndDrop.hpp

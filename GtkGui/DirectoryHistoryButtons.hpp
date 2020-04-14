@@ -1,6 +1,9 @@
 #pragma once
 
 #include <memory>
+
+#include <DirectoryHistory.hpp>
+
 #include <Gui/DirectoryChangedAction.hpp>
 
 typedef struct _GtkWidget GtkWidget;
@@ -26,12 +29,19 @@ namespace DirectoryHistoryButtons
 	
 	struct DirectoryChangedAction : Gui::DirectoryChangedAction {};
 
-	struct DirectoryHistoryButtonWidget
+	struct DirectoryHistoryButtonWidget : DirectoryHistory
 	{
-		GtkWidget& widget;
+		DirectoryHistoryButtonWidget(GtkWidget& widget_, std::unique_ptr<InternalUserdata> internalUserdata_):
+			widget(widget_),
+			_internalUserdata(std::move(internalUserdata_))
+		{}
 
 		void RegisterDirectoryChanged(const std::weak_ptr<DirectoryChangedAction>&);
 
+		void RequestPreviousDirectory() const override;
+		void RequestNextDirectory() const override;
+
+		GtkWidget& widget;
 		std::unique_ptr<InternalUserdata> _internalUserdata;
 	};
 

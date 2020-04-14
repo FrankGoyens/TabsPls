@@ -25,6 +25,8 @@ namespace DirectoryHistoryButtons
 	struct DirectoryChangedAction;
 }
 
+struct DirectoryHistory;
+
 namespace FileListView
 {
 	/*! \brief This is used to exchange data internally, this should be kept in scope as long as the list widget is in scope*/
@@ -50,7 +52,7 @@ namespace FileListView
 		std::unique_ptr<DragAndDrop::GetDragData_Userdata> impl;
 	};
 
-	ListWidgetWithStore BuildFileListView(const std::shared_ptr<CurrentDirectoryProvider>&);
+	ListWidgetWithStore BuildFileListView(const std::shared_ptr<CurrentDirectoryProvider>&, const std::shared_ptr<DirectoryHistory>&);
 	void FillListStoreWithFiles(GtkListStore& store, const FileSystem::RawPathVector& fileNames);
 
 	DragSourceListWidgetDataClosure ConnectDragSourceToListview(ListWidgetWithStore& listWidgetWithStore);

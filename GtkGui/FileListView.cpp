@@ -26,9 +26,11 @@ namespace
 {
 	struct ListWidgetWithStoreUserdata : FileListView::InternalUserdata
 	{
-		ListWidgetWithStoreUserdata(std::shared_ptr<CurrentDirectoryProvider> currentDirectoryProvider_) : 
+		ListWidgetWithStoreUserdata(std::shared_ptr<CurrentDirectoryProvider> currentDirectoryProvider_,
+			std::shared_ptr<DirectoryHistory> directoryHistory_) : 
 			newItemWasAlreadySelected(false),
-			currentDirectoryProvider(std::move(currentDirectoryProvider_))
+			currentDirectoryProvider(std::move(currentDirectoryProvider_)),
+			directoryHistory(std::move(directoryHistory_))
 		{}
 
 		void DoActions(const FileSystem::Directory& dir) const
@@ -39,6 +41,7 @@ namespace
 		bool newItemWasAlreadySelected;
 		std::vector<std::weak_ptr<FileListView::DirectoryChangedAction>> directoryChangedActions;
 		std::shared_ptr<CurrentDirectoryProvider> currentDirectoryProvider;
+		std::shared_ptr<DirectoryHistory> directoryHistory;
 	};
 }
 
@@ -195,6 +198,20 @@ static void AddParentDirectoryToStore(GtkListStore& store)
 		-1);
 }
 
+static bool GotoNextDirectoryKeysPressed(GdkEvent& event)
+{
+	const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+	return event.key.keyval == GDK_KEY_Right
+		&& (event.key.state & modifiers) == GDK_MOD1_MASK;
+}
+
+static bool GotoPreviousDirectoryKeysPressed(GdkEvent& event)
+{
+	const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+	return event.key.keyval == GDK_KEY_Left
+		&& (event.key.state & modifiers) == GDK_MOD1_MASK;
+}
+
 static bool GotoParentDirectoryKeysPressed(GdkEvent& event)
 {
 	const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
@@ -210,6 +227,22 @@ static gboolean ListViewKeyPress(GtkWidget* widget, GdkEvent* event, gpointer us
 		auto& typedUserdata = *static_cast<ListWidgetWithStoreUserdata*>(user_data);
 		
 		ResetFileListViewContent(*GTK_TREE_VIEW(widget), typedUserdata, typedUserdata.currentDirectoryProvider->Get().Parent());
+
+		return TRUE;
+	}
+	else if (GotoPreviousDirectoryKeysPressed(*event))
+	{
+		auto& typedUserdata = *static_cast<ListWidgetWithStoreUserdata*>(user_data);
+		
+		typedUserdata.directoryHistory->RequestPreviousDirectory();
+	
+		return TRUE;
+	}
+	else if (GotoNextDirectoryKeysPressed(*event))
+	{
+		auto& typedUserdata = *static_cast<ListWidgetWithStoreUserdata*>(user_data);
+
+		typedUserdata.directoryHistory->RequestNextDirectory();
 
 		return TRUE;
 	}
@@ -231,14 +264,14 @@ static void SetupKeyEventHandling(GtkTreeView& tree, ListWidgetWithStoreUserdata
 namespace FileListView
 {
 
-	ListWidgetWithStore BuildFileListView(const std::shared_ptr<CurrentDirectoryProvider>& currentDirProvider)
+	ListWidgetWithStore BuildFileListView(const std::shared_ptr<CurrentDirectoryProvider>& currentDirProvider, const std::shared_ptr<DirectoryHistory>& directoryHistory)
 	{
 		const auto store = SmartGtk::MakeObject(gtk_list_store_new, 
 			[](auto* obj){g_object_unref(G_OBJECT(obj));}, 
 			N_COLUMNS, G_TYPE_STRING);
 
 		auto* tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (store.get()));
-		auto internalUserData = std::make_unique<ListWidgetWithStoreUserdata>(currentDirProvider);
+		auto internalUserData = std::make_unique<ListWidgetWithStoreUserdata>(currentDirProvider, directoryHistory);
 
 		g_signal_connect(tree, "button-release-event", G_CALLBACK(list_button_release), static_cast<void*>(internalUserData.get()));
 		g_signal_connect(tree, "button-press-event", G_CALLBACK(list_button_press), static_cast<void*>(internalUserData.get()));
