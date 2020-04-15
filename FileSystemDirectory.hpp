@@ -6,12 +6,16 @@
 
 namespace FileSystem
 {
+	class FilePath;
+
 	/*! \brief Cannot be constructed unless a valid path was given. So only a check at contruction is needed.*/
 	class Directory
 	{
 	public:
 		static Directory FromCurrentWorkingDirectory();
 		static std::optional<Directory> FromPath(const FileSystem::RawPath& path);
+		
+		static Directory FromFilePathParent(const FilePath& path);
 
 		Directory(const Directory&) = default;
 		Directory(Directory&&) = default;

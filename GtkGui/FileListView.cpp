@@ -11,12 +11,14 @@ extern "C"
 #include <SmartGtk.hpp>
 #include <GtkGui/DragAndDrop.hpp>
 #include <FileSystemDirectory.hpp>
+#include <FileSystemFilePath.hpp>
 
 namespace
 {
 	enum
 	{
-		FILENAME_COLUMN = 0,
+		FILE_DISPLAY = 0,
+		FILE_PATH,
 		N_COLUMNS
 	};
 
@@ -56,10 +58,10 @@ static gboolean view_selection_func (GtkTreeSelection *selection,
 	return !dataFromPressEvent.newItemWasAlreadySelected;
 }
 
-static std::string GetFilenameFromRow(GtkTreeModel* model, GtkTreeIter* it)
+static std::string GetFilepathFromRow(GtkTreeModel* model, GtkTreeIter* it)
 {
 	gchar* filename;
-	gtk_tree_model_get(model, it, FILENAME_COLUMN, &filename, -1);
+	gtk_tree_model_get(model, it, FILE_PATH, &filename, -1);
 	const std::string filenameString(filename);
 	g_free(filename);
 
@@ -73,9 +75,9 @@ static void gtk_selection_foreach(GtkTreeModel* model,
 {
 	auto& filenames = *static_cast<std::stringstream*>(data);
 
-	const auto filenameString = GetFilenameFromRow(model, it);
+	const auto filepathString = GetFilepathFromRow(model, it);
 
-	filenames << filenameString << std::endl;
+	filenames << filepathString << std::endl;
 }
 
 namespace
@@ -90,11 +92,11 @@ namespace
 			auto* selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(&m_listview));
 			gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
 
-			std::stringstream filenames;
+			std::stringstream filepaths;
 
-			gtk_tree_selection_selected_foreach(selection, gtk_selection_foreach, static_cast<void*>(&filenames));
+			gtk_tree_selection_selected_foreach(selection, gtk_selection_foreach, static_cast<void*>(&filepaths));
 
-			return filenames.str();
+			return filepaths.str();
 		}
 
 	private:
@@ -178,7 +180,7 @@ static void ActivateRow(GtkTreeView* tree_view, GtkTreePath* path, GtkTreeViewCo
 	
 	GtkTreeIter it;
 	if (gtk_tree_model_get_iter(model, &it, path))
-		if (auto dir = FileSystem::Directory::FromPath(GetFilenameFromRow(model, &it)))
+		if (auto dir = FileSystem::Directory::FromPath(GetFilepathFromRow(model, &it)))
 		{
 			if (dir->path() == "..")
 				*dir = typedUserdata.currentDirectoryProvider->Get().Parent();
@@ -194,7 +196,8 @@ static void AddParentDirectoryToStore(GtkListStore& store)
 
 	gtk_list_store_set(&store,
 		&it,
-		FILENAME_COLUMN, FileSystem::RawPath("..").c_str(),
+		FILE_DISPLAY, FileSystem::RawPath("..").c_str(),
+		FILE_PATH, FileSystem::RawPath("..").c_str(),
 		-1);
 }
 
@@ -268,7 +271,7 @@ namespace FileListView
 	{
 		const auto store = SmartGtk::MakeObject(gtk_list_store_new, 
 			[](auto* obj){g_object_unref(G_OBJECT(obj));}, 
-			N_COLUMNS, G_TYPE_STRING);
+			N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
 
 		auto* tree = gtk_tree_view_new_with_model (GTK_TREE_MODEL (store.get()));
 		auto internalUserData = std::make_unique<ListWidgetWithStoreUserdata>(currentDirProvider, directoryHistory);
@@ -289,7 +292,7 @@ namespace FileListView
 		auto* column = gtk_tree_view_column_new_with_attributes(
 			"Filename",
 			renderer, 
-			"text", FILENAME_COLUMN,
+			"text", FILE_DISPLAY,
 			NULL);
 		
 		gtk_tree_view_append_column (GTK_TREE_VIEW (tree), column);
@@ -300,6 +303,21 @@ namespace FileListView
 		return result;
 	}
 
+	static std::optional<std::pair<std::string, std::string>> PathAndDisplayname(const FileSystem::RawPath& path)
+	{
+		const auto filePath = FileSystem::FilePath::FromPath(path);
+
+		if (filePath)
+			return { { filePath->path(), FileSystem::GetFilename(*filePath) } };
+
+		const auto dirPath = FileSystem::Directory::FromPath(path);
+
+		if (dirPath)
+			return { {dirPath->path(), FileSystem::GetDirectoryname(*dirPath)} };
+
+		return {};
+	}
+
 	void FillListStoreWithFiles(GtkListStore& store, const FileSystem::RawPathVector& fileNames)
 	{
 		GtkTreeIter it;
@@ -308,11 +326,19 @@ namespace FileListView
 
 		for(auto& fileName: fileNames)
 		{
+			const auto pathAndDisplay = PathAndDisplayname(fileName);
+
+			if (!pathAndDisplay)
+				continue;
+
+			const auto [actualPath, display] = *pathAndDisplay;
+
 			gtk_list_store_append (&store, &it);
 			
 			gtk_list_store_set(&store,
 				&it,
-				FILENAME_COLUMN, fileName.c_str(),
+				FILE_DISPLAY, display.c_str(),
+				FILE_PATH, actualPath.c_str(),
 				-1);
 		}
 	}

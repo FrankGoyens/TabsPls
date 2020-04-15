@@ -3,13 +3,45 @@
 #include <filesystem>
 
 #include <FileSystemDirectory.hpp>
+#include <FileSystemFilePath.hpp>
 
 namespace FileSystem
 {
 
     bool IsDirectory(const RawPath& dir)
     {
-        return std::filesystem::is_directory(dir);
+        std::error_code error;
+        const bool result = std::filesystem::is_directory(dir, error);
+        if (error)
+            return false;
+        return result;
+    }
+
+	bool IsRegularFile(const RawPath& path)
+	{
+        std::error_code error;
+		const bool result = std::filesystem::is_regular_file(path, error);
+        if (error)
+            return false;
+        return result;
+	}
+
+    RawPath RemoveFilename(const FilePath& filePath)
+    {
+        return std::filesystem::path(filePath.path()).remove_filename().string();
+    }
+
+    Filename GetFilename(const FilePath& filePath)
+    {
+        return std::filesystem::path(filePath.path()).filename().string();
+    }
+
+    Directoryname GetDirectoryname(const Directory& dir)
+    {
+        const std::filesystem::path dirPath(dir.path());
+        const std::filesystem::path parentDirPath(dir.Parent().path());
+
+        return dirPath.lexically_relative(parentDirPath).string();
     }
 
     RawPath GetWorkingDirectory()

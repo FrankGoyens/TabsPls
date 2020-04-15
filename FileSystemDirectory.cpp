@@ -1,5 +1,7 @@
 #include "FileSystemDirectory.hpp"
 
+#include <FileSystemFilePath.hpp>
+
 namespace FileSystem
 {
     Directory Directory::FromCurrentWorkingDirectory()
@@ -14,6 +16,12 @@ namespace FileSystem
 
         return Directory(path);
     }
+
+	Directory Directory::FromFilePathParent(const FilePath& filePath)
+	{
+        const auto parentDir = RemoveFilename(filePath);
+		return Directory(parentDir);
+	}
 
     Directory& Directory::operator=(Directory other)
     {
