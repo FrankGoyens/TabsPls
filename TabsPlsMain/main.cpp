@@ -29,6 +29,7 @@
 
 #include <model/FileSystem.hpp>
 #include <FileSystemDirectory.hpp>
+#include <FileUri.hpp>
 
 /******************************************************************************/
 int main (int argc, char **argv)
@@ -38,6 +39,8 @@ int main (int argc, char **argv)
 
         /* Always start GTK+ first! */
         gtk_init (&argc, &argv);
+
+        auto uri = FileUri::FromString("file:///C:/Users/Frank/Documents/test.csv");
 
         std::optional<FileSystem::RawPath> directoryStringFromArgument;
 
