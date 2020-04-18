@@ -12,6 +12,7 @@ extern "C"
 #include <GtkGui/DragAndDrop.hpp>
 #include <FileSystemDirectory.hpp>
 #include <FileSystemFilePath.hpp>
+#include <FileUri.hpp>
 
 namespace
 {
@@ -77,7 +78,14 @@ static void gtk_selection_foreach(GtkTreeModel* model,
 
 	const auto filepathString = GetFilepathFromRow(model, it);
 
-	filenames << filepathString << std::endl;
+	std::string uri;
+	
+	if (const auto filePath = FileSystem::FilePath::FromPath(filepathString))
+		uri = FileUri::FromFilePath(*filePath).string();
+	else if (const auto dirPath = FileSystem::Directory::FromPath(filepathString))
+		uri = FileUri::FromDirectory(*dirPath).string();
+
+	filenames << uri << std::endl;
 }
 
 namespace

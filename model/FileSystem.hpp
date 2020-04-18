@@ -8,8 +8,7 @@ namespace FileSystem
     class Directory;
     class FilePath;
 
-    using Filename = std::string;
-    using Directoryname = std::string;
+    using Name = std::string;
 
     using RawPath = std::string;
     using RawPathVector = std::vector<RawPath>;
@@ -18,8 +17,11 @@ namespace FileSystem
     bool IsRegularFile(const RawPath& path);
 
     RawPath RemoveFilename(const FilePath&);
-    Filename GetFilename(const FilePath&);
-    Directoryname GetDirectoryname(const Directory&);
+    Name GetFilename(const FilePath&);
+    Name GetDirectoryname(const Directory&);
+    
+    Name _getRootPath(const RawPath&);
+    Name _getRootName(const RawPath&);
 
     RawPath GetWorkingDirectory();
 

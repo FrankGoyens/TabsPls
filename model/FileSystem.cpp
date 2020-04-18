@@ -31,17 +31,27 @@ namespace FileSystem
         return std::filesystem::path(filePath.path()).remove_filename().string();
     }
 
-    Filename GetFilename(const FilePath& filePath)
+    Name GetFilename(const FilePath& filePath)
     {
         return std::filesystem::path(filePath.path()).filename().string();
     }
 
-    Directoryname GetDirectoryname(const Directory& dir)
+    Name GetDirectoryname(const Directory& dir)
     {
         const std::filesystem::path dirPath(dir.path());
         const std::filesystem::path parentDirPath(dir.Parent().path());
 
         return dirPath.lexically_relative(parentDirPath).string();
+    }
+
+    Name _getRootPath(const RawPath& path)
+    {
+        return std::filesystem::path(path).root_path().string();
+    }
+
+    Name _getRootName(const RawPath& path)
+    {
+        return std::filesystem::path(path).root_name().string();
     }
 
     RawPath GetWorkingDirectory()
