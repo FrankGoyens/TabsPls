@@ -41,6 +41,16 @@ if(PkgConfig_FOUND)
     target_link_libraries(TabsPls PUBLIC ${GTK3_LIBRARIES})
 endif()
 
+find_package(tl-expected CONFIG)
+if(tl-expected_FOUND)
+	target_link_libraries(TabsPls PUBLIC tl::expected)
+endif()
+
+find_package(skyr-url CONFIG)
+if(skyr-url_FOUND)
+	target_link_libraries(TabsPls PUBLIC skyr::skyr-url)
+endif()
+
 target_compile_features(TabsPls PUBLIC cxx_std_17)
 
 add_subdirectory(test)

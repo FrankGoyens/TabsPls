@@ -6,36 +6,51 @@ Because you're done with Windows' built in file explorer that still does not sup
 You also aren't satisfied using a conventional terminal emulator with nice and smooth tab completion. This currently also does not exist on Windows, and this does not integrate well with other tooling. You can't drag and drop files for example.
 
 ## Dependencies:
-* Gtk+3
-* gtest (only needed for testing)
 * CMake
-* PkgConfig (optional, for finding Gtk+3)
+* Gtk+3
+* PkgConfig (optional, for finding Gtk+3 without vcpkg)
+* Skyr url
+* tl-expected
+* vcpkg (optional, for installing dependencies)
+* gtest (only needed for testing)
 
 ## C++ standard
 At least c++17 is required.
 
-## Build environment on Linux
-This should be trivial to set up on Linux. Just download the dependencies using you favourite package manager and let CMake do the rest.
+## Dependency discovery
+CMake uses find_package for the following libraries:
+* PkgConfig
+* Gtk+3 if PkgConfig is found
+* Skyr url
+* tl-expected
+* gtest
 
-## Windows build environment
-This was mainly to replace Windows' built in file explorer in my workflow, so I've developed this mainly on Windows. MSYS2 is the fastest to get up and running due to its package manager, but debugging is hard. Not because gdb is hard, but because gdb runs terribly on Windows (mileage may vary). 
+These can all be installed using [vcpkg](https://github.com/Microsoft/vcpkg).
+Some of these might also be available from your system's package manager, I recommend installing as many as possible using your system's package manager.
+You DO NOT NEED PkgConfig for Gtk+3 if you use vcpkg to install Gtk+3.
 
-I have not tested this with a clang toolchain, this might work better, try it if you're curious.
+## Build environment on Linux with vcpkg
+CMake, PkgConfig, Gtk+3 and gtest are commonly availble from you system's package manager.
 
-Visual Studio is also supported, I prefer this one, but it's not as easy to set up.
+For the other dependancies vcpkg is recommended.
+Install [vcpkg](https://github.com/Microsoft/vcpkg) using the instructions on their page.
+Using vcpkg install the dependencies:
 
-### Option1: using [MSYS2](https://www.msys2.org/).
-1. Open MSYS2 terminal
-2. Install dependencies using pacman
-3. Clone this repository
-4. Run `cmake -G "MSYS2 Makefiles" -DCMAKE_MAKE_PROGRAM="mingw32-make" <source_dir>`
-5. Run `cmake --build .`
-6. Done!
+`./vcpkg install skyr-url tl-expected`
 
-### Option2: using Visual Studio + vcpkg
+Then, execute cmake with vcpkg's toolchain file:
+
+`cmake -DCMAKE_TOOLCHAIN_FILE=<vcpkg toolchain file> <TabsPls_sourcedir>`
+
+## Windows build environment with vcpkg
+This was mainly to replace Windows' built in file explorer in my workflow, so I've developed this mainly on Windows. 
+
+All dependencies except CMake should be installed using vcpkg.
+So first install [vcpkg](https://github.com/Microsoft/vcpkg) using the instructions on their page.
+
 1. Open Powershell
 2. Navigate to where you have vcpkg installed
-3. Install dependencies 
+3. Install dependencies `./vcpkg install gtk gtest skyr-url tl-expected`
 4. Create a folder where you want to build TabsPls
 5. In that build folder run `cmake <source_dir>`. note that VStudio's CMake project integration is NOT used, together with vcpkg this is a PITA.
 6. Open the resulting `sln` file, or if you want to build from command line run `cmake --build . --config <Debug|Release|...>` and skip to step 9
