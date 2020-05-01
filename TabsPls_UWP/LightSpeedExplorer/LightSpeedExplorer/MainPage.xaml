@@ -4,25 +4,20 @@
     xmlns:local="using:LightSpeedExplorer"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:Custom="using:Telerik.UI.Xaml.Controls.Grid"
-    xmlns:telerikGrid="using:Telerik.UI.Xaml.Controls.Grid"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     x:Class="LightSpeedExplorer.MainPage"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <TextBox x:Name="DirectoryNavigationField" 
-                 Text="C:\MegaProjects" 
-                 TextWrapping="Wrap"
-                 Grid.Row="0" />
-
-        <telerikGrid:RadDataGrid x:Name="FileListView"
-                                 Grid.Row="1"
-                                 UserGroupMode="Disabled"
-                                 SelectionMode="Extended"/>
-    </Grid>
+    <muxc:TabView x:Name="DirectoryTabView" 
+                  AddTabButtonClick="DirectoryTabView_AddTabButtonClick"
+                  TabCloseRequested="TabView_TabCloseRequested">
+        <muxc:TabView.TabStripHeader>
+            <Grid x:Name="ShellTitlebarInset" Background="Transparent" />
+        </muxc:TabView.TabStripHeader>
+        <muxc:TabView.TabStripFooter>
+            <Grid x:Name="CustomDragRegion" Background="Transparent" />
+        </muxc:TabView.TabStripFooter>
+    </muxc:TabView>
+    
 </Page>
