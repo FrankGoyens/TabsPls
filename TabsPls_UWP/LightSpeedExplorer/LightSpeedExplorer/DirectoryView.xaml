@@ -14,13 +14,23 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button Content="←"/>
-            <Button Content="→"/>
-            <TextBox x:Name="DirectoryNavigationField" 
-                     Text="C:\MegaProjects" 
-                     TextWrapping="Wrap" />
-        </StackPanel>
+        <Grid Grid.Row="0" >
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal">
+                    <Button Content="←"/>
+                    <Button Content="→"/>
+                </StackPanel>
+                <TextBox x:Name="DirectoryNavigationField"
+                         Grid.Column="1"
+                         Text="C:\MegaProjects" 
+                         TextWrapping="Wrap" />
+            </Grid>
+        </Grid>
 
         <telerikGrid:RadDataGrid x:Name="FileListView"
                                  Grid.Row="1"
