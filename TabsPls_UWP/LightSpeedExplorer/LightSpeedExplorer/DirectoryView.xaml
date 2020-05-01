@@ -35,6 +35,7 @@
         <telerikGrid:RadDataGrid x:Name="FileListView"
                                  Grid.Row="1"
                                  UserGroupMode="Disabled"
+                                 UserFilterMode="Disabled"
                                  SelectionMode="Extended"/>
     </Grid>
 </Page>
