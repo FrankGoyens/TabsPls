@@ -29,11 +29,39 @@ namespace LightSpeedExplorer
         {
             this.InitializeComponent();
 
+            MergeTabBarWithTitleBar();
+
+            NavigateToNewTabInTabView(DirectoryTabView);
+        }
+
+        private void MergeTabBarWithTitleBar()
+        {
             var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = true;
             coreTitleBar.LayoutMetricsChanged += CoreTitleBar_LayoutMetricsChanged;
 
             Window.Current.SetTitleBar(CustomDragRegion);
+        }
+
+        private muxc.TabViewItem CreateTab()
+        {
+            var newTab = new muxc.TabViewItem();
+            newTab.IconSource = new muxc.SymbolIconSource() { Symbol = Symbol.Document };
+            newTab.Header = "New Document";
+
+            return newTab;
+        }
+
+        private void NavigateToNewTabInTabView(muxc.TabView tabView)
+        {
+            var newTab = CreateTab();
+
+            // The Content of a TabViewItem is often a frame which hosts a page.
+            Frame frame = new Frame();
+            newTab.Content = frame;
+            frame.Navigate(typeof(DirectoryView));
+
+            tabView.TabItems.Add(newTab);
         }
 
         private void CoreTitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
@@ -54,17 +82,9 @@ namespace LightSpeedExplorer
 
         private void DirectoryTabView_AddTabButtonClick(muxc.TabView sender, object args)
         {
-            var newTab = new muxc.TabViewItem();
-            newTab.IconSource = new muxc.SymbolIconSource() { Symbol = Symbol.Document };
-            newTab.Header = "New Document";
-
-            // The Content of a TabViewItem is often a frame which hosts a page.
-            Frame frame = new Frame();
-            newTab.Content = frame;
-            frame.Navigate(typeof(DirectoryView));
-
-            sender.TabItems.Add(newTab);
+            NavigateToNewTabInTabView(sender);
         }
+
         private void TabView_TabCloseRequested(muxc.TabView sender, muxc.TabViewTabCloseRequestedEventArgs args)
         {
             sender.TabItems.Remove(args.Tab);
