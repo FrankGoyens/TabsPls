@@ -59,7 +59,12 @@ namespace LightSpeedExplorer
             // The Content of a TabViewItem is often a frame which hosts a page.
             Frame frame = new Frame();
             newTab.Content = frame;
-            frame.Navigate(typeof(DirectoryView));
+            frame.Navigate(typeof(DirectoryView), Directory.GetCurrentDirectory());
+
+            var view = frame.Content as DirectoryView;
+
+            view.TabDisplayNameChanged += (string newName) => { newTab.Header = newName; };
+            newTab.Header = view.TabDisplayName;
 
             tabView.TabItems.Add(newTab);
         }

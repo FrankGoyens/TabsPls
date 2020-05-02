@@ -27,7 +27,7 @@
                 </StackPanel>
                 <TextBox x:Name="DirectoryNavigationField"
                          Grid.Column="1"
-                         Text="C:\MegaProjects" 
+                         Text="{x:Bind DirectoryFieldContent, Mode=TwoWay}" 
                          TextWrapping="Wrap" />
             </Grid>
         </Grid>
