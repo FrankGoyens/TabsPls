@@ -1,4 +1,5 @@
-#include "FileSystemFilePath.hpp"
+#include "pch.h"
+#include <TabsPlsCore/FileSystemFilePath.hpp>
 
 namespace FileSystem
 {
@@ -22,5 +23,3 @@ namespace FileSystem
 		swap(first.m_path, second.m_path);
 	}
 }
-
-

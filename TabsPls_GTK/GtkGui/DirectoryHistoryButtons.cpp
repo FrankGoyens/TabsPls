@@ -10,7 +10,7 @@ extern "C"
 #include <GtkGui/FileListView.hpp>
 #include <GtkGui/DirectoryNavigationField.hpp>
 
-#include <FileSystemDirectory.hpp>
+#include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <CurrentDirectoryProvider.hpp>
 
 namespace

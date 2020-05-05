@@ -22,13 +22,18 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0"
                             Orientation="Horizontal">
-                    <Button Content="←"/>
-                    <Button Content="→"/>
+                    <Button x:Name="BackButton" 
+                            Content="←"
+                            Click="BackButton_Click"/>
+                    <Button x:Name="ForwardButton"
+                            Content="→"
+                            Click="ForwardButton_Click"/>
                 </StackPanel>
                 <TextBox x:Name="DirectoryNavigationField"
                          Grid.Column="1"
                          Text="{x:Bind DirectoryFieldContent, Mode=TwoWay}" 
-                         TextWrapping="Wrap" />
+                         TextWrapping="Wrap"
+                         KeyDown="DirectoryNavigationField_KeyDown"/>
             </Grid>
         </Grid>
 

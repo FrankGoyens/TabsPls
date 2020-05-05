@@ -1,6 +1,7 @@
-#include "FileSystemDirectory.hpp"
+#include "pch.h"
+#include <TabsPlsCore/FileSystemDirectory.hpp>
 
-#include <FileSystemFilePath.hpp>
+#include <TabsPlsCore/FileSystemFilePath.hpp>
 
 namespace FileSystem
 {

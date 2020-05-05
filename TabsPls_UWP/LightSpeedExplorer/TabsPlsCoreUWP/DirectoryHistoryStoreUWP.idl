@@ -1,0 +1,15 @@
+namespace TabsPlsCoreUWP
+{
+    [default_interface]
+    runtimeclass DirectoryHistoryStore
+    {
+        DirectoryHistoryStore();
+        
+        void OnNewDirectory(Windows.Storage.StorageFolder storageFolder);
+
+        Boolean SwitchToNext();
+        Boolean SwitchToPrevious();
+
+        Windows.Foundation.IAsyncOperation<Windows.Storage.StorageFolder> GetCurrent();
+    }
+}

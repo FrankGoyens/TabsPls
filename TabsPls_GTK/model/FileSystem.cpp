@@ -1,9 +1,9 @@
-#include "FileSystem.hpp"
+#include <TabsPlsCore/FileSystem.hpp>
 
 #include <filesystem>
 
-#include <FileSystemDirectory.hpp>
-#include <FileSystemFilePath.hpp>
+#include <TabsPlsCore/FileSystemDirectory.hpp>
+#include <TabsPlsCore/FileSystemFilePath.hpp>
 
 namespace FileSystem
 {

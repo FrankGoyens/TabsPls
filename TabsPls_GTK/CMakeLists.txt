@@ -2,12 +2,20 @@ cmake_minimum_required(VERSION 3.11)
 
 project(TabsPls)
 
+set(TabsPlsCorePrefix ${CMAKE_SOURCE_DIR}/../TabsPls_Core)
+
 set(TabsPls_Headers SmartGtk.hpp
-    FileSystemDirectory.hpp
+    ${TabsPlsCorePrefix}/include/TabsPlsCore/FileSystemDirectory.hpp
+    ${TabsPlsCorePrefix}/include/TabsPlsCore/DirectoryHistoryStore.hpp
+    ${TabsPlsCorePrefix}/include/TabsPlsCore/FileSystemFilePath.hpp
+    ${TabsPlsCorePrefix}/include/TabsPlsCore/FileSystem.hpp
+    
+    TabsPlsCore_defs/pch.h
+    TabsPlsCore_defs/FileSystemDefs.hpp
+
+    FileUri.hpp
     CurrentDirectoryProvider.hpp
     DirectoryHistory.hpp
-    FileSystemFilePath.hpp
-    FileUri.hpp
 
 	GtkGui/FileListView.hpp
 	GtkGui/DragAndDrop.hpp
@@ -15,12 +23,11 @@ set(TabsPls_Headers SmartGtk.hpp
 	GtkGui/DirectoryHistoryButtons.hpp
     
     Gui/DirectoryChangedAction.hpp
-
-    model/FileSystem.hpp
 )
 
-set(TabsPls_Sources FileSystemDirectory.cpp
-    FileSystemFilePath.cpp
+set(TabsPls_Sources ${TabsPlsCorePrefix}/source/FileSystemDirectory.cpp
+    ${TabsPlsCorePrefix}/source/FileSystemFilePath.cpp
+    ${TabsPlsCorePrefix}/source/DirectoryHistoryStore.cpp
     FileUri.cpp
 
     GtkGui/FileListView.cpp
@@ -33,6 +40,8 @@ set(TabsPls_Sources FileSystemDirectory.cpp
 
 add_library(TabsPls ${TabsPls_Headers} ${TabsPls_Sources})
 target_include_directories(TabsPls PUBLIC .)
+target_include_directories(TabsPls PUBLIC ${TabsPlsCorePrefix}/include)
+target_include_directories(TabsPls PUBLIC TabsPlsCore_defs)
 
 find_package(PkgConfig)
 if(PkgConfig_FOUND)

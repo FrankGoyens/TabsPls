@@ -1,17 +1,13 @@
 #pragma once
 
 #include <vector>
-#include <string>
+
+#include <FileSystemDefs.hpp>
 
 namespace FileSystem
 {
     class Directory;
     class FilePath;
-
-    using Name = std::string;
-
-    using RawPath = std::string;
-    using RawPathVector = std::vector<RawPath>;
 
     bool IsDirectory(const RawPath& path);
     bool IsRegularFile(const RawPath& path);

@@ -2,7 +2,8 @@
 
 #include <string>
 #include <optional>
-#include <model/FileSystem.hpp>
+
+#include "FileSystem.hpp"
 
 namespace FileSystem
 {
@@ -20,9 +21,10 @@ namespace FileSystem
 		auto& path() const { return m_path; }
 
 		friend void swap(FilePath& first, FilePath& second);
-	private:
+	protected:
 		FilePath(RawPath path) : m_path(std::move(path)) {}
 
+	private:
 		FileSystem::RawPath m_path;
 	};
 }

@@ -9,7 +9,7 @@
 
 #include <Gui/DirectoryChangedAction.hpp>
 
-#include <model/FileSystem.hpp>
+#include <TabsPlsCore/FileSystem.hpp>
 #include <CurrentDirectoryProvider.hpp>
 
 typedef struct _GtkWidget GtkWidget;

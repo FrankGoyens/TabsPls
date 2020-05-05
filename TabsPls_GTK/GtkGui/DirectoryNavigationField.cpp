@@ -1,6 +1,6 @@
 #include "DirectoryNavigationField.hpp"
 
-#include <FileSystemDirectory.hpp>
+#include <TabsPlsCore/FileSystemDirectory.hpp>
 
 #include <gtk/gtk.h>
 

@@ -168,6 +168,12 @@
       <Version>1.0.1.8</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TabsPlsCoreUWP\TabsPlsCoreUWP.vcxproj">
+      <Project>{51021948-7e89-44f8-ae32-4a051024f877}</Project>
+      <Name>TabsPlsCoreUWP</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

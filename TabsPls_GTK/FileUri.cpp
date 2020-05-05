@@ -4,8 +4,8 @@
 
 #include <skyr/url.hpp>
 
-#include <FileSystemFilePath.hpp>
-#include <FileSystemDirectory.hpp>
+#include <TabsPlsCore/FileSystemFilePath.hpp>
+#include <TabsPlsCore/FileSystemDirectory.hpp>
 
 std::optional<FileUri> FileUri::FromURIString(const std::string& uri)
 {

@@ -10,8 +10,8 @@ extern "C"
 
 #include <SmartGtk.hpp>
 #include <GtkGui/DragAndDrop.hpp>
-#include <FileSystemDirectory.hpp>
-#include <FileSystemFilePath.hpp>
+#include <TabsPlsCore/FileSystemDirectory.hpp>
+#include <TabsPlsCore/FileSystemFilePath.hpp>
 #include <FileUri.hpp>
 
 namespace

@@ -27,10 +27,10 @@
 #include <GtkGui/DirectoryNavigationField.hpp>
 #include <GtkGui/DirectoryHistoryButtons.hpp>
 
-#include <model/FileSystem.hpp>
-#include <FileSystemDirectory.hpp>
+#include <TabsPlsCore/FileSystem.hpp>
+#include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <FileUri.hpp>
-#include <FileSystemFilePath.hpp>
+#include <TabsPlsCore/FileSystemFilePath.hpp>
 
 /******************************************************************************/
 int main (int argc, char **argv)
