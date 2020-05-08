@@ -36,7 +36,7 @@
 int main (int argc, char **argv)
 {
         guint           win_xsize       = 450;
-        guint           win_ysize       = 200;
+        guint           win_ysize       = 600;
 
         /* Always start GTK+ first! */
         gtk_init (&argc, &argv);
@@ -107,7 +107,11 @@ int main (int argc, char **argv)
         gtk_container_add (GTK_CONTAINER (navigationHbox), &directoryEntry->widget);
 
         gtk_container_add (GTK_CONTAINER (topLevelVbox), navigationHbox);
-        gtk_container_add (GTK_CONTAINER (topLevelVbox), &listviewWithStore.listWidget);
+        
+        auto* scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+
+        gtk_container_add (GTK_CONTAINER(scrolled_window), &listviewWithStore.listWidget);
+        gtk_box_pack_end (GTK_BOX (topLevelVbox), scrolled_window, true, true, 10);
 
         gtk_container_add (GTK_CONTAINER (topLevelHbox), topLevelVbox);
         gtk_container_add (GTK_CONTAINER (topLevelHbox), well_dest);
