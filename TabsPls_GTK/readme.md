@@ -1,9 +1,7 @@
-# TabsPls
-A modern approach to a file system explorer, can we have some tabs please?
+# Light Speed File Explorer GTK
+The GTK flavour of Light Speed File Explorer. This flavour targets the GNU/Linux platform.
 
-## Why use this?
-Because you're done with Windows' built in file explorer that still does not support tabs to this date.
-You also aren't satisfied using a conventional terminal emulator with nice and smooth tab completion. This currently also does not exist on Windows, and this does not integrate well with other tooling. You can't drag and drop files for example.
+Note: this can also be built for Windows, but the UWP flavour has better Windows support.
 
 ## Dependencies:
 * CMake
@@ -32,7 +30,7 @@ You DO NOT NEED PkgConfig for Gtk+3 if you use vcpkg to install Gtk+3.
 ## Build environment on Linux with vcpkg
 CMake, PkgConfig, Gtk+3 and gtest are commonly availble from you system's package manager.
 
-For the other dependancies vcpkg is recommended.
+For the other dependencies vcpkg is recommended.
 Install [vcpkg](https://github.com/Microsoft/vcpkg) using the instructions on their page.
 Using vcpkg install the dependencies:
 
@@ -40,7 +38,7 @@ Using vcpkg install the dependencies:
 
 Then, execute cmake with vcpkg's toolchain file:
 
-`cmake -DCMAKE_TOOLCHAIN_FILE=<vcpkg toolchain file> <TabsPls_sourcedir>`
+`cmake -DCMAKE_TOOLCHAIN_FILE=<vcpkg toolchain file> <TabsPls_sourcedir>/TabsPls_GTK`
 
 ## Windows build environment with vcpkg
 This was mainly to replace Windows' built in file explorer in my workflow, so I've developed this mainly on Windows. 
