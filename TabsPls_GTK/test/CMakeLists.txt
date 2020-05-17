@@ -1,18 +1,18 @@
-project(TabsPlsTest)
+project(TabsPls_GTK_Test)
 
-set(TabsPlsTest_Sources gtest_main.cc
+set(TabsPls_GTK_Test_Sources gtest_main.cc
     testSmartGtk.cpp
 )
 
-add_executable(TabsPlsTest ${TabsPlsTest_Sources})
+add_executable(TabsPls_GTK_Test ${TabsPlsTest_Sources})
 
-target_link_libraries(TabsPlsTest TabsPls)
+target_link_libraries(TabsPls_GTK_Test TabsPls)
 
 find_package(GTest)
 if(GTest_FOUND)
-	target_link_libraries(TabsPlsTest gtest)
+	target_link_libraries(TabsPls_GTK_Test gtest)
 endif()
 
 if(UNIX)
-	target_link_libraries(TabsPlsTest pthread)
+	target_link_libraries(TabsPls_GTK_Test pthread)
 endif()
