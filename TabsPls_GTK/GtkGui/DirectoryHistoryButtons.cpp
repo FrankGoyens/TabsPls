@@ -11,6 +11,7 @@ extern "C"
 #include <GtkGui/DirectoryNavigationField.hpp>
 
 #include <TabsPlsCore/FileSystemDirectory.hpp>
+#include <TabsPlsCore/DirectoryHistoryStore.hpp>
 #include <CurrentDirectoryProvider.hpp>
 
 namespace
@@ -19,27 +20,8 @@ namespace
 
 	struct DirectoryHistoryButtonsUserdata : DirectoryHistoryButtons::InternalUserdata
 	{
-		void SwitchToPrevious()
-		{
-			if (previousDirs.size() <= 1)
-				throw ImpossibleSwitchException();
 
-			nextDirs.push(previousDirs.top());
-			previousDirs.pop();
-		}
-
-		void SwitchToNext()
-		{
-			if (nextDirs.empty())
-				throw ImpossibleSwitchException();
-
-			previousDirs.push(nextDirs.top());
-			nextDirs.pop();
-		}
-
-		std::stack<FileSystem::Directory> previousDirs;
-		std::stack<FileSystem::Directory> nextDirs;
-
+		DirectoryHistoryStore directoryHistoryStore;
 		std::vector<std::weak_ptr<DirectoryHistoryButtons::DirectoryChangedAction>> directoryChangedActions;
 	};
 }
@@ -50,11 +32,11 @@ static void BackButtonClicked(GtkButton* button, gpointer userdata)
 
 	try
 	{
-		typedUserdata.SwitchToPrevious();
+		typedUserdata.directoryHistoryStore.SwitchToPrevious();
 
-		Gui::DoActions(typedUserdata.directoryChangedActions, typedUserdata.previousDirs.top());
+		Gui::DoActions(typedUserdata.directoryChangedActions, typedUserdata.directoryHistoryStore.GetCurrent());
 	}
-	catch (const ImpossibleSwitchException&) {}
+	catch (const ::ImpossibleSwitchException&) {}
 }
 
 static void ForwardButtonClicked(GtkButton* button, gpointer userdata)
@@ -63,11 +45,11 @@ static void ForwardButtonClicked(GtkButton* button, gpointer userdata)
 
 	try
 	{
-		typedUserdata.SwitchToNext();
+		typedUserdata.directoryHistoryStore.SwitchToNext();
 
-		Gui::DoActions(typedUserdata.directoryChangedActions, typedUserdata.previousDirs.top());
+		Gui::DoActions(typedUserdata.directoryChangedActions, typedUserdata.directoryHistoryStore.GetCurrent());
 	}
-	catch (const ImpossibleSwitchException&) {}
+	catch (const ::ImpossibleSwitchException&) {}
 }
 
 namespace DirectoryHistoryButtons
@@ -76,7 +58,7 @@ namespace DirectoryHistoryButtons
 	{
 		auto userdata = std::make_unique<DirectoryHistoryButtonsUserdata>();
 
-		userdata->previousDirs.push(currentDirProdider.Get());
+		userdata->directoryHistoryStore.OnNewDirectory(currentDirProdider.Get());
 
 		auto* backButton = gtk_button_new_with_label(u8"←");
 		auto* forwardButton = gtk_button_new_with_label(u8"→");
@@ -105,11 +87,11 @@ namespace DirectoryHistoryButtons
 
 		try
 		{
-			typedUserdata.SwitchToPrevious();
+			typedUserdata.directoryHistoryStore.SwitchToPrevious();
 
-			Gui::DoActions(typedUserdata.directoryChangedActions, typedUserdata.previousDirs.top());
+			Gui::DoActions(typedUserdata.directoryChangedActions, typedUserdata.directoryHistoryStore.GetCurrent());
 		}
-		catch (const ImpossibleSwitchException&) {}
+		catch (const ::ImpossibleSwitchException&) {}
 	}
 
 	void DirectoryHistoryButtonWidget::RequestNextDirectory() const
@@ -118,11 +100,11 @@ namespace DirectoryHistoryButtons
 
 		try
 		{
-			typedUserdata.SwitchToNext();
+			typedUserdata.directoryHistoryStore.SwitchToNext();
 
-			Gui::DoActions(typedUserdata.directoryChangedActions, typedUserdata.previousDirs.top());
+			Gui::DoActions(typedUserdata.directoryChangedActions, typedUserdata.directoryHistoryStore.GetCurrent());
 		}
-		catch (const ImpossibleSwitchException&) {}
+		catch (const ::ImpossibleSwitchException&) {}
 	}
 
 	namespace
@@ -134,9 +116,7 @@ namespace DirectoryHistoryButtons
 
 			void Do(const FileSystem::Directory& dir) override
 			{
-				userdata.previousDirs.push(dir);
-
-				userdata.nextDirs = std::stack<FileSystem::Directory>();
+				userdata.directoryHistoryStore.OnNewDirectory(dir);
 			}
 
 			DirectoryHistoryButtonsUserdata& userdata;
