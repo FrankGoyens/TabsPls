@@ -4,6 +4,7 @@
 #include "FileSystemDirectory.hpp"
 
 struct ImpossibleSwitchException : std::exception {};
+struct StoreIsEmptyException : std::exception {};
 
 class DirectoryHistoryStore
 {
@@ -13,7 +14,7 @@ public:
 	void SwitchToPrevious();
 	void SwitchToNext();
 
-	const FileSystem::Directory& GetCurrent() const;
+	const FileSystem::Directory GetCurrent() const;
 
 private:
 	std::stack<FileSystem::Directory> m_previousDirs;

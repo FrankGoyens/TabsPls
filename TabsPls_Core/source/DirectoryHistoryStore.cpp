@@ -26,7 +26,10 @@ void DirectoryHistoryStore::SwitchToNext()
 	m_nextDirs.pop();
 }
 
-const FileSystem::Directory& DirectoryHistoryStore::GetCurrent() const
+const FileSystem::Directory DirectoryHistoryStore::GetCurrent() const
 {
+	if (m_previousDirs.empty())
+		throw StoreIsEmptyException();
+
 	return m_previousDirs.top();
 }
