@@ -18,6 +18,7 @@
     <ClCompile Include="..\..\..\TabsPls_Core\source\FileSystemDirectory.cpp" />
     <ClCompile Include="..\..\..\TabsPls_Core\source\FileSystemFilePath.cpp" />
     <ClCompile Include="Generated Files\module.g.cpp" />
+    <ClCompile Include="..\..\..\TabsPls_Core\source\RobustDirectoryHistoryStore.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -27,6 +28,7 @@
     <ClInclude Include="..\..\..\TabsPls_Core\include\TabsPlsCore\FileSystem.hpp" />
     <ClInclude Include="..\..\..\TabsPls_Core\include\TabsPlsCore\FileSystemDirectory.hpp" />
     <ClInclude Include="..\..\..\TabsPls_Core\include\TabsPlsCore\FileSystemFilePath.hpp" />
+    <ClInclude Include="..\..\..\TabsPls_Core\include\TabsPlsCore\RobustDirectoryHistoryStore.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TabsPlsCoreUWP.def" />
@@ -36,6 +38,6 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="DirectoryHistoryStoreUWP.idl" />
+    <Midl Include="RobustDirectoryHistoryStoreUWP.idl" />
   </ItemGroup>
 </Project>

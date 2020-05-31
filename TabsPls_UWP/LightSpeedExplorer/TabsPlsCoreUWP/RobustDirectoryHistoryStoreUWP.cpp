@@ -1,32 +1,32 @@
 ﻿#include "pch.h"
-#include "DirectoryHistoryStoreUWP.h"
-#include <DirectoryHistoryStore.g.cpp>
+#include "RobustDirectoryHistoryStoreUWP.h"
+#include <RobustDirectoryHistoryStore.g.cpp>
 
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Foundation.h>
 
 #include <FileSystemDirectoryUWP.hpp>
 
-#include <TabsPlsCore/DirectoryHistoryStore.hpp>
+#include <TabsPlsCore/RobustDirectoryHistoryStore.hpp>
 
 using winrt::Windows::Storage::StorageFolder;
 using winrt::Windows::Foundation::IAsyncOperation;
 
 namespace winrt::TabsPlsCoreUWP::implementation
 {
-	DirectoryHistoryStore::DirectoryHistoryStore() :
-		m_storeImpl(std::make_unique<::DirectoryHistoryStore>())
+	RobustDirectoryHistoryStore::RobustDirectoryHistoryStore() :
+		m_storeImpl(std::make_unique<::RobustDirectoryHistoryStore>())
 	{
 	}
 
-	DirectoryHistoryStore::~DirectoryHistoryStore() = default;
+	RobustDirectoryHistoryStore::~RobustDirectoryHistoryStore() = default;
 
-	void DirectoryHistoryStore::OnNewDirectory(const StorageFolder& storageFolder) const
+	void RobustDirectoryHistoryStore::OnNewDirectory(const StorageFolder& storageFolder) const
 	{
 		m_storeImpl->OnNewDirectory(FileSystem::DirectoryUWP::FromUWPStorageFolder(storageFolder));
 	}
 
-	bool DirectoryHistoryStore::SwitchToPrevious()
+	bool RobustDirectoryHistoryStore::SwitchToPrevious()
 	{
 		try
 		{
@@ -37,7 +37,7 @@ namespace winrt::TabsPlsCoreUWP::implementation
 		return false;
 	}
 
-	bool DirectoryHistoryStore::SwitchToNext()
+	bool RobustDirectoryHistoryStore::SwitchToNext()
 	{
 		try
 		{
@@ -48,7 +48,7 @@ namespace winrt::TabsPlsCoreUWP::implementation
 		return false;
 	}
 
-	IAsyncOperation<StorageFolder> DirectoryHistoryStore::GetCurrent() const
+	IAsyncOperation<StorageFolder> RobustDirectoryHistoryStore::GetCurrent() const
 	{
 		return StorageFolder::GetFolderFromPathAsync(m_storeImpl->GetCurrent().path().c_str());
 	}

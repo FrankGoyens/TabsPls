@@ -115,17 +115,19 @@
     <ClInclude Include="..\..\..\TabsPls_Core\include\TabsPlsCore\FileSystem.hpp" />
     <ClInclude Include="..\..\..\TabsPls_Core\include\TabsPlsCore\FileSystemDirectory.hpp" />
     <ClInclude Include="..\..\..\TabsPls_Core\include\TabsPlsCore\FileSystemFilePath.hpp" />
+    <ClInclude Include="..\..\..\TabsPls_Core\include\TabsPlsCore\RobustDirectoryHistoryStore.hpp" />
     <ClInclude Include="FilePathUWP.hpp" />
     <ClInclude Include="FileSystemDirectoryUWP.hpp" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="DirectoryHistoryStoreUWP.h">
-      <DependentUpon>DirectoryHistoryStoreUWP.idl</DependentUpon>
+    <ClInclude Include="RobustDirectoryHistoryStoreUWP.h">
+      <DependentUpon>RobustDirectoryHistoryStoreUWP.idl</DependentUpon>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\TabsPls_Core\source\DirectoryHistoryStore.cpp" />
     <ClCompile Include="..\..\..\TabsPls_Core\source\FileSystemDirectory.cpp" />
     <ClCompile Include="..\..\..\TabsPls_Core\source\FileSystemFilePath.cpp" />
+    <ClCompile Include="..\..\..\TabsPls_Core\source\RobustDirectoryHistoryStore.cpp" />
     <ClCompile Include="FilePathUWP.cpp" />
     <ClCompile Include="FileSystemDirectoryUWP.cpp" />
     <ClCompile Include="FileSystemUWP.cpp" />
@@ -133,12 +135,12 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="DirectoryHistoryStoreUWP.cpp">
-      <DependentUpon>DirectoryHistoryStoreUWP.idl</DependentUpon>
+    <ClCompile Include="RobustDirectoryHistoryStoreUWP.cpp">
+      <DependentUpon>RobustDirectoryHistoryStoreUWP.idl</DependentUpon>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="DirectoryHistoryStoreUWP.idl" />
+    <Midl Include="RobustDirectoryHistoryStoreUWP.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
