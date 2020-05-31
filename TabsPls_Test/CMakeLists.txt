@@ -3,23 +3,23 @@ cmake_minimum_required(VERSION 3.11)
 project(TabsPlsTest)
 
 set(TabsPlsCorePrefix ${CMAKE_SOURCE_DIR}/../TabsPls_Core)
+include(${TabsPlsCorePrefix}/provision_sources.cmake)
+ProvisionCoreSources(${TabsPlsCorePrefix})
 
-set(TabsPlsTest_Headers ${TabsPlsCorePrefix}/include/TabsPlsCore/FileSystemDirectory.hpp
-    ${TabsPlsCorePrefix}/include/TabsPlsCore/DirectoryHistoryStore.hpp
-    ${TabsPlsCorePrefix}/include/TabsPlsCore/FileSystemFilePath.hpp
-    ${TabsPlsCorePrefix}/include/TabsPlsCore/FileSystem.hpp
+set(TabsPlsTest_Headers 
+    ${TabsPls_Core_Headers}
 
     FakeFileSystem.hpp
 )
 
-set(TabsPlsTest_Sources gtest_main.cc
+set(TabsPlsTest_Sources 
+    ${TabsPls_Core_Sources}
+
+    gtest_main.cc
     testDirectoryHistoryStore.cpp
+    testRobustDirectoryHistoryStore.cpp
 
     meta/testFakeFileSystem.cpp
-
-    ${TabsPlsCorePrefix}/source/FileSystemDirectory.cpp
-    ${TabsPlsCorePrefix}/source/FileSystemFilePath.cpp
-    ${TabsPlsCorePrefix}/source/DirectoryHistoryStore.cpp
 
     FakeFileSystem.cpp
 )

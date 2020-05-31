@@ -84,6 +84,40 @@ namespace
                 throw std::logic_error("A newly created structure somehow failed because the new tail does not exist");
         }
 
+        void DeleteDirectory(const std::vector<FileSystem::Name>& absoluteComponents)
+        {
+            if (absoluteComponents.empty())
+                return;
+
+            if (absoluteComponents.size() == 1)
+            {
+                rootNodes.erase(
+                    std::remove_if(rootNodes.begin(), rootNodes.end(), [&](const auto& rootNode) {return absoluteComponents.front() == rootNode->nodeName; }),
+                    rootNodes.end()
+                );
+            }
+            else if (const auto node = Lookup(absoluteComponents))
+            {
+                if (const auto parentNode = node->parentNode.lock())
+                {
+                    parentNode->childNodes.erase(
+                        std::remove_if(parentNode->childNodes.begin(), parentNode->childNodes.end(), [&](const auto& childNode) {return childNode->nodeName == node->nodeName; }),
+                        parentNode->childNodes.end());
+                }
+            }
+        }
+
+        void DeleteFile(const std::vector<FileSystem::Name>& parentAbsoluteComponents, const FileSystem::Name& fileName)
+        {
+            if (const auto node = Lookup(parentAbsoluteComponents))
+            {
+                node->files.erase(
+                    std::remove(node->files.begin(), node->files.end(), fileName),
+                    node->files.end()
+                );
+            }
+        }
+
         std::shared_ptr<FileSystemNode> Lookup(const std::vector<FileSystem::Name>& parentAbsoluteComponents)
         {
             if (parentAbsoluteComponents.empty())
@@ -172,6 +206,16 @@ namespace FakeFileSystem
     {
         FakeFileSystemImpl::Instance().AddFile(parentAbsoluteComponents, fileName);
     }
+
+	void DeleteDirectory(const std::initializer_list<FileSystem::Name>& absoluteComponents)
+	{
+        FakeFileSystemImpl::Instance().DeleteDirectory(absoluteComponents);
+	}
+
+	void DeleteFile(const std::initializer_list<FileSystem::Name>& parentAbsoluteComponents, const FileSystem::Name& fileName)
+	{
+        FakeFileSystemImpl::Instance().DeleteFile(parentAbsoluteComponents, fileName);
+	}
 
     FileSystem::RawPath MergeUsingSeparator(const std::vector<FileSystem::Name>& components)
     {
