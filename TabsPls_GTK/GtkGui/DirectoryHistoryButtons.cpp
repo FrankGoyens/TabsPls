@@ -11,7 +11,7 @@ extern "C"
 #include <GtkGui/DirectoryNavigationField.hpp>
 
 #include <TabsPlsCore/FileSystemDirectory.hpp>
-#include <TabsPlsCore/DirectoryHistoryStore.hpp>
+#include <TabsPlsCore/RobustDirectoryHistoryStore.hpp>
 #include <CurrentDirectoryProvider.hpp>
 
 namespace
@@ -21,7 +21,7 @@ namespace
 	struct DirectoryHistoryButtonsUserdata : DirectoryHistoryButtons::InternalUserdata
 	{
 
-		DirectoryHistoryStore directoryHistoryStore;
+		RobustDirectoryHistoryStore directoryHistoryStore;
 		std::vector<std::weak_ptr<DirectoryHistoryButtons::DirectoryChangedAction>> directoryChangedActions;
 	};
 }

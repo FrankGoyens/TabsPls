@@ -1,9 +1,9 @@
 namespace TabsPlsCoreUWP
 {
     [default_interface]
-    runtimeclass DirectoryHistoryStore
+    runtimeclass RobustDirectoryHistoryStore
     {
-        DirectoryHistoryStore();
+        RobustDirectoryHistoryStore();
         
         void OnNewDirectory(Windows.Storage.StorageFolder storageFolder);
 

@@ -45,7 +45,7 @@ namespace LightSpeedExplorer
 
         private ObservableCollection<DirectoryEntry> directoryItems = new ObservableCollection<DirectoryEntry>();
         private StorageFolder currentDirectory;
-        private DirectoryHistoryStore directoryHistoryStore = new DirectoryHistoryStore();
+        private RobustDirectoryHistoryStore directoryHistoryStore = new RobustDirectoryHistoryStore();
 
         public DirectoryView()
         {

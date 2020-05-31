@@ -1,3 +1,4 @@
+#include "pch.h"
 #include <TabsPlsCore/RobustDirectoryHistoryStore.hpp>
 
 void RobustDirectoryHistoryStore::OnNewDirectory(const FileSystem::Directory& dir)
