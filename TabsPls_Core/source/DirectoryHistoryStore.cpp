@@ -1,6 +1,13 @@
 #include "pch.h"
 
 #include <TabsPlsCore/DirectoryHistoryStore.hpp>
+#include "..\include\TabsPlsCore\DirectoryHistoryStore.hpp"
+
+DirectoryHistoryStore& DirectoryHistoryStore::operator=(DirectoryHistoryStore other)
+{
+	swap(*this, other);
+	return *this;
+}
 
 void DirectoryHistoryStore::OnNewDirectory(const FileSystem::Directory& dir)
 {
@@ -32,4 +39,11 @@ const FileSystem::Directory DirectoryHistoryStore::GetCurrent() const
 		throw StoreIsEmptyException();
 
 	return m_previousDirs.top();
+}
+
+void swap(DirectoryHistoryStore& first, DirectoryHistoryStore& second)
+{
+	using std::swap;
+	swap(first.m_previousDirs, second.m_previousDirs);
+	swap(first.m_nextDirs, second.m_nextDirs);
 }

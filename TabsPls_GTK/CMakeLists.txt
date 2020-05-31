@@ -3,12 +3,12 @@ cmake_minimum_required(VERSION 3.11)
 project(TabsPls)
 
 set(TabsPlsCorePrefix ${CMAKE_SOURCE_DIR}/../TabsPls_Core)
+include(${TabsPlsCorePrefix}/provision_sources.cmake)
+ProvisionCoreSources(${TabsPlsCorePrefix})
 
-set(TabsPls_Headers SmartGtk.hpp
-    ${TabsPlsCorePrefix}/include/TabsPlsCore/FileSystemDirectory.hpp
-    ${TabsPlsCorePrefix}/include/TabsPlsCore/DirectoryHistoryStore.hpp
-    ${TabsPlsCorePrefix}/include/TabsPlsCore/FileSystemFilePath.hpp
-    ${TabsPlsCorePrefix}/include/TabsPlsCore/FileSystem.hpp
+set(TabsPls_Headers 
+    ${TabsPls_Core_Headers}
+    SmartGtk.hpp
     
     TabsPlsCore_defs/pch.h
     TabsPlsCore_defs/FileSystemDefs.hpp
@@ -25,9 +25,8 @@ set(TabsPls_Headers SmartGtk.hpp
     Gui/DirectoryChangedAction.hpp
 )
 
-set(TabsPls_Sources ${TabsPlsCorePrefix}/source/FileSystemDirectory.cpp
-    ${TabsPlsCorePrefix}/source/FileSystemFilePath.cpp
-    ${TabsPlsCorePrefix}/source/DirectoryHistoryStore.cpp
+set(TabsPls_Sources
+    ${TabsPls_Core_Sources}
     FileUri.cpp
 
     GtkGui/FileListView.cpp

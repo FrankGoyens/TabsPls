@@ -133,4 +133,32 @@ namespace FakeFileSystemMetaTest
 		const auto createdRootDirectory = FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({ "C:" }));
 		EXPECT_EQ(FileSystem::GetParent(*createdRootDirectory), FakeFileSystem::MergeUsingSeparator({ "C:"}));
 	}
+
+	TEST_F(FakeFileSystemTest, DeleteDirectory)
+	{
+		EXPECT_FALSE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" })));
+		FakeFileSystem::DeleteDirectory({ "C:", "users", "jeff" });
+
+		EXPECT_FALSE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" })));
+		FakeFileSystem::AddDirectory({ "C:", "users", "jeff" });
+
+		EXPECT_TRUE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" })));
+		FakeFileSystem::DeleteDirectory({ "C:", "users", "jeff" });
+
+		EXPECT_FALSE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" })));
+	}
+
+	TEST_F(FakeFileSystemTest, DeleteFile)
+	{
+		EXPECT_FALSE(FileSystem::IsRegularFile(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })));
+		FakeFileSystem::DeleteFile({ "C:", "users", "jeff" }, "file.txt");
+
+		EXPECT_FALSE(FileSystem::IsRegularFile(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })));
+		FakeFileSystem::AddFile({ "C:", "users", "jeff" }, "file.txt");
+
+		EXPECT_TRUE(FileSystem::IsRegularFile(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })));
+		FakeFileSystem::DeleteFile({ "C:", "users", "jeff" }, "file.txt");
+
+		EXPECT_FALSE(FileSystem::IsRegularFile(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })));
+	}
 }
