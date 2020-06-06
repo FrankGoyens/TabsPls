@@ -1,0 +1,51 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get dependencies from apt
+        run: sudo apt install libgtk-3-dev libgtest-dev
+      - uses: actions/checkout@v2
+        with:
+          submodules: true    
+      - name: Set vcpkg's response file path used as part of cache's key.
+        uses: lukka/set-shell-env@master
+        with:
+          VCPKGRESPONSEFILE: ${{ github.workspace }}/TabsPls_GTK/cmakeliststxt/vcpkg_x64-linux.txt
+
+      - name: dir
+        run: find $RUNNER_WORKSPACE
+        shell: bash
+      - name: Restore artifacts, or run vcpkg, build and cache artifacts
+        uses: lukka/run-vcpkg@master
+        id: runvcpkg
+        with:
+          vcpkgArguments: '@${{ env.VCPKGRESPONSEFILE }}'
+          vcpkgDirectory: '${{ github.workspace }}/TabsPls_GTK/vcpkg'
+          # Ensure the cache key changes any time the content of the response file changes.
+          appendedCacheKey: ${{ hashFiles( env.VCPKGRESPONSEFILE ) }}
+
+      - name: Run CMake with Ninja
+        uses: lukka/run-cmake@v2
+        id: runcmake
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeListsTxtPath: '${{ github.workspace }}/TabsPls_GTK/CMakeLists.txt'
+          useVcpkgToolchainFile: true
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 -DCMAKE_MAKE_PROGRAM=make
+          buildWithCMakeArgs: '-- -v'
+      - name: Prints output of run-vcpkg's task
+        run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_TRIPLET_OUT }}' "
+
+      - name: dir
+        run: find $RUNNER_WORKSPACE
+        shell: bash
