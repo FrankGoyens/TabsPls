@@ -26,7 +26,7 @@ public:
 
     QHash<int, QByteArray> roleNames() const override
     {
-        return { {Qt::DisplayRole, "display"} };
+        return { {Qt::DisplayRole, "display"}, {Qt::UserRole, "full_paths" } };
     }
 
     /*TabsPls app*/
@@ -39,4 +39,7 @@ private:
     std::vector<FileSystem::FilePath> m_fileEntries;
 
     std::vector<QString> m_display;
+    std::vector<QString> m_fullPaths;
+
+    void FillModelData();
 };

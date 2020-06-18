@@ -7,6 +7,8 @@
 #include <QMimeData>
 #include <QDebug>
 
+#include <iostream>
+
 FileListTableView::FileListTableView()
 {
 	verticalHeader()->hide();
@@ -37,7 +39,7 @@ void FileListTableView::mouseMoveEvent(QMouseEvent* event)
 	QDrag drag(this);
 	QMimeData* mimeData = new QMimeData;
 
-	mimeData->setData("text/uri-list", "file:///C:/file.txt");
+	mimeData->setData("text/uri-list", AggregateSelectionDataForDrag().toUtf8());
 	drag.setMimeData(mimeData);
 
 	Qt::DropAction dropAction = drag.exec(Qt::CopyAction);
@@ -62,4 +64,16 @@ void FileListTableView::dragMoveEvent(QDragMoveEvent* event)
 void FileListTableView::dropEvent(QDropEvent* event)
 {
 	qDebug() << event->mimeData()->text();
+}
+
+QString FileListTableView::AggregateSelectionDataForDrag() const
+{
+	const auto selectionIndices = selectionModel()->selectedRows();
+	QStringList dataAsList;
+	for (const auto& index : selectionIndices)
+	{
+		const QString filePath = model()->data(index, Qt::UserRole).toString();
+		dataAsList << QUrl::fromLocalFile(filePath).toString();
+	}
+	return dataAsList.join('\n');
 }
