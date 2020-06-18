@@ -36,19 +36,10 @@ static auto RetrieveDirectoryContents(const QString& initialDirectory)
     return std::make_pair(files, dirs);
 }
 
-template<typename FileContainer, typename DirContainer>
-static auto CombineAllEntriesIntoNameVec(const FileContainer& files, const DirContainer& dirs)
-{
-    std::vector<QString> names;
-    std::transform(begin(files), end(files), std::back_inserter(names), [&](const auto& file) {return QString::fromStdString(FileSystem::GetFilename(file)); });
-    std::transform(begin(dirs), end(dirs), std::back_inserter(names), [&](const auto& dir) {return QString::fromStdString(FileSystem::GetDirectoryname(dir)); });
-    return names;
-}
-
 FileListViewModel::FileListViewModel(const QString& initialDirectory)
 {
     std::tie(m_fileEntries, m_directoryEntries) = RetrieveDirectoryContents(initialDirectory);
-    m_display = CombineAllEntriesIntoNameVec(m_fileEntries, m_directoryEntries);
+    FillModelData();
 }
 
 QVariant FileListViewModel::data(const QModelIndex& index, int role) const
@@ -56,6 +47,8 @@ QVariant FileListViewModel::data(const QModelIndex& index, int role) const
     switch (role) {
     case Qt::DisplayRole:
         return m_display[index.row()];
+    case Qt::UserRole:
+        return m_fullPaths[index.row()];
     default:
         break;
     }
@@ -67,13 +60,37 @@ void FileListViewModel::ChangeDirectory(const QString& dir)
 {
     beginResetModel();
     std::tie(m_fileEntries, m_directoryEntries) = RetrieveDirectoryContents(dir);
-    m_display = CombineAllEntriesIntoNameVec(m_fileEntries, m_directoryEntries);
+    FillModelData();
     endResetModel();
+}
+
+template<typename FileContainer, typename DirContainer>
+static auto CombineAllEntriesIntoNameVec(const FileContainer& files, const DirContainer& dirs)
+{
+    std::vector<QString> names;
+    std::transform(begin(files), end(files), std::back_inserter(names), [&](const auto& file) {return QString::fromStdString(FileSystem::GetFilename(file)); });
+    std::transform(begin(dirs), end(dirs), std::back_inserter(names), [&](const auto& dir) {return QString::fromStdString(FileSystem::GetDirectoryname(dir)); });
+    return names;
+}
+
+template<typename FileContainer, typename DirContainer>
+static auto CombineAllEntriesIntoFullPathsVec(const FileContainer& files, const DirContainer& dirs)
+{
+    std::vector<QString> fullPaths;
+    std::transform(begin(files), end(files), std::back_inserter(fullPaths), [&](const auto& file) {return QString::fromStdString(file.path()); });
+    std::transform(begin(dirs), end(dirs), std::back_inserter(fullPaths), [&](const auto& dir) {return QString::fromStdString(dir.path()); });
+    return fullPaths;
+}
+
+void FileListViewModel::FillModelData()
+{
+    m_display = CombineAllEntriesIntoNameVec(m_fileEntries, m_directoryEntries);
+    m_fullPaths = CombineAllEntriesIntoFullPathsVec(m_fileEntries, m_directoryEntries);
 }
 
 int FileListViewModel::rowCount(const QModelIndex&) const
 {
-    return m_display.size();
+    return static_cast<int>(m_display.size());
 }
 
 QVariant FileListViewModel::headerData(int section, Qt::Orientation orientation, int role) const

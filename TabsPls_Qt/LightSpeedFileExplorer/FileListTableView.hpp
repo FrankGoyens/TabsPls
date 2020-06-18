@@ -22,4 +22,6 @@ protected:
 
 private:
 	QPoint m_dragStartPosition;
+
+	QString AggregateSelectionDataForDrag() const;
 };
