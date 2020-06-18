@@ -32,10 +32,7 @@ void FileListTableView::mouseMoveEvent(QMouseEvent* event)
 
 	if ((event->pos() - m_dragStartPosition).manhattanLength()
 		< QApplication::startDragDistance())
-	{
-		QTableView::mouseMoveEvent(event);
 		return;
-	}
 
 	QDrag drag(this);
 	QMimeData* mimeData = new QMimeData;
@@ -65,6 +62,4 @@ void FileListTableView::dragMoveEvent(QDragMoveEvent* event)
 void FileListTableView::dropEvent(QDropEvent* event)
 {
 	qDebug() << event->mimeData()->text();
-
-	event->acceptProposedAction();
 }
