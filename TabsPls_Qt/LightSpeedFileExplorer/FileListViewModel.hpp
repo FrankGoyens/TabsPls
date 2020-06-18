@@ -1,5 +1,7 @@
 #include <QAbstractTableModel>
 
+#include <QString>
+
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
@@ -11,10 +13,7 @@ public:
     FileListViewModel(const QString& initialDirectory);
 
     /*Qt table model implementation*/
-    int rowCount(const QModelIndex & = QModelIndex()) const override
-    {
-        return 3;
-    }
+    int rowCount(const QModelIndex & = QModelIndex()) const override;
 
     int columnCount(const QModelIndex & = QModelIndex()) const override
     {
@@ -30,7 +29,7 @@ public:
         return { {Qt::DisplayRole, "display"} };
     }
 
-    /*Custom*/
+    /*TabsPls app*/
 
     //! \brief This will have no effect if the given directory does not exist
     void ChangeDirectory(const QString&);
@@ -38,4 +37,6 @@ public:
 private:
     std::vector<FileSystem::Directory> m_directoryEntries;
     std::vector<FileSystem::FilePath> m_fileEntries;
+
+    std::vector<QString> m_display;
 };
