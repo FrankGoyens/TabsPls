@@ -12,7 +12,7 @@
 <context>
     <name>TabsPlsMainWindow</name>
     <message>
-        <location filename="TabsPlsMainWindow.cpp" line="88"/>
+        <location filename="TabsPlsMainWindow.cpp" line="118"/>
         <source>Light Speed File Explorer</source>
         <translation type="unfinished"></translation>
     </message>

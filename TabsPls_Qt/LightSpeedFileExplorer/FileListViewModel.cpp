@@ -86,6 +86,9 @@ void FileListViewModel::FillModelData()
 {
     m_display = CombineAllEntriesIntoNameVec(m_fileEntries, m_directoryEntries);
     m_fullPaths = CombineAllEntriesIntoFullPathsVec(m_fileEntries, m_directoryEntries);
+    
+    m_display.insert(m_display.begin(), "..");
+    m_fullPaths.insert(m_fullPaths.begin(), "..");
 }
 
 int FileListViewModel::rowCount(const QModelIndex&) const
