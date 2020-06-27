@@ -39,7 +39,7 @@ static auto RetrieveDirectoryContents(const QString& initialDirectory)
 FileListViewModel::FileListViewModel(const QString& initialDirectory)
 {
     std::tie(m_fileEntries, m_directoryEntries) = RetrieveDirectoryContents(initialDirectory);
-    FillModelData();
+    FillModelDataCheckingForRoot(initialDirectory);
 }
 
 QVariant FileListViewModel::data(const QModelIndex& index, int role) const
@@ -60,7 +60,7 @@ void FileListViewModel::ChangeDirectory(const QString& dir)
 {
     beginResetModel();
     std::tie(m_fileEntries, m_directoryEntries) = RetrieveDirectoryContents(dir);
-    FillModelData();
+    FillModelDataCheckingForRoot(dir);
     endResetModel();
 }
 
@@ -82,13 +82,26 @@ static auto CombineAllEntriesIntoFullPathsVec(const FileContainer& files, const 
     return fullPaths;
 }
 
+static bool DirIsRoot(const QString& dir)
+{
+    return dir.toStdString() == FileSystem::_getRootPath(dir.toStdString());
+}
+
+void FileListViewModel::FillModelDataCheckingForRoot(const QString& dir)
+{
+    FillModelData();
+
+    if (!DirIsRoot(dir))
+    {
+        m_display.insert(m_display.begin(), "..");
+        m_fullPaths.insert(m_fullPaths.begin(), "..");
+    }
+}
+
 void FileListViewModel::FillModelData()
 {
     m_display = CombineAllEntriesIntoNameVec(m_fileEntries, m_directoryEntries);
-    m_fullPaths = CombineAllEntriesIntoFullPathsVec(m_fileEntries, m_directoryEntries);
-    
-    m_display.insert(m_display.begin(), "..");
-    m_fullPaths.insert(m_fullPaths.begin(), "..");
+    m_fullPaths = CombineAllEntriesIntoFullPathsVec(m_fileEntries, m_directoryEntries);   
 }
 
 int FileListViewModel::rowCount(const QModelIndex&) const
