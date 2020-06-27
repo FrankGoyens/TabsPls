@@ -41,5 +41,6 @@ private:
     std::vector<QString> m_display;
     std::vector<QString> m_fullPaths;
 
+    void FillModelDataCheckingForRoot(const QString& dir);
     void FillModelData();
 };
