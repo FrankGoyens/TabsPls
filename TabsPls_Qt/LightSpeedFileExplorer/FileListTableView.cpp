@@ -42,7 +42,7 @@ void FileListTableView::mouseMoveEvent(QMouseEvent* event)
 	mimeData->setData("text/uri-list", AggregateSelectionDataForDrag().toUtf8());
 	drag.setMimeData(mimeData);
 
-	Qt::DropAction dropAction = drag.exec(Qt::CopyAction);
+	drag.exec(Qt::CopyAction);
 }
 
 static void AcceptEventIfFormatIsOK(QDragMoveEvent& event)
