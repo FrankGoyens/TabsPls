@@ -1,9 +1,12 @@
 ﻿#include "TabsPlsMainWindow.hpp"
 
+#include <stdexcept>
+
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QSizePolicy>
+#include <QShortcut>
 
 #include "DirectoryInputField.hpp"
 #include "FileListTableView.hpp"
@@ -26,9 +29,9 @@ static void SwitchHistory(RobustDirectoryHistoryStore& history, const HistoryFor
 }
 
 template<typename HistoryVariant>
-static void ConnectHistoryButton(RobustDirectoryHistoryStore& history, const QPushButton& backButton, FileListViewModel& model, QLineEdit& directoryInputField, const HistoryVariant& variant)
+static auto CreateHistoryActionClosure(RobustDirectoryHistoryStore& history, FileListViewModel& model, QLineEdit& directoryInputField, const HistoryVariant& variant)
 {
-	QObject::connect(&backButton, &QPushButton::pressed, [&]()
+	return [&]()
 	{
 		try
 		{
@@ -38,7 +41,7 @@ static void ConnectHistoryButton(RobustDirectoryHistoryStore& history, const QPu
 			model.ChangeDirectory(newDir);
 		}
 		catch (const ImpossibleSwitchException&) {}
-	});
+	};
 }
 
 static auto SetupTopBar(QWidget& widget, const QString& initialDirectory)
@@ -104,6 +107,12 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory)
 			m_historyStore.OnNewDirectory(*dir);
 	});
 
-	ConnectHistoryButton(m_historyStore, *backButton, *fileListViewModel, *topBarDirectoryInputField, HistoryBackVariant());
-	ConnectHistoryButton(m_historyStore, *forwardButton, *fileListViewModel, *topBarDirectoryInputField, HistoryForwardVariant());
+	const auto backActionClosure = CreateHistoryActionClosure(m_historyStore, *fileListViewModel, *topBarDirectoryInputField, HistoryBackVariant());
+	const auto forwardActionClosure = CreateHistoryActionClosure(m_historyStore, *fileListViewModel, *topBarDirectoryInputField, HistoryForwardVariant());
+
+	backButton->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Left));
+	forwardButton->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Right));
+
+	connect(backButton, &QPushButton::pressed, backActionClosure);
+	connect(forwardButton, &QPushButton::pressed, forwardActionClosure);
 }

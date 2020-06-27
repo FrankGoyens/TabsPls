@@ -1,5 +1,7 @@
 ﻿#include "DirectoryInputField.hpp"
 
+#include <stdexcept>
+
 #include <QLineEdit>
 
 #include <TabsPlsCore/FileSystem.hpp>
