@@ -93,9 +93,9 @@ int FileListViewModel::rowCount(const QModelIndex&) const
     return static_cast<int>(m_display.size());
 }
 
-QVariant FileListViewModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant FileListViewModel::headerData(int section, Qt::Orientation, int role) const
 {
-    if (section >= mockupTableHeaders.size())
+    if (static_cast<unsigned>(section) >= mockupTableHeaders.size())
         return {};
 
     switch (role) {
