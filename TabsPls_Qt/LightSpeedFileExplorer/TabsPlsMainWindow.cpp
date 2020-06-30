@@ -7,9 +7,11 @@
 #include <QPushButton>
 #include <QSizePolicy>
 #include <QShortcut>
+#include <QLabel>
 
 #include "DirectoryInputField.hpp"
 #include "FileListTableView.hpp"
+#include "FileListTableViewWithFilter.hpp"
 #include "FileListViewModel.hpp"
 
 static void ChangeDirectoryWithoutHistoryUpdate(const FileSystem::Directory& newDir, FileListViewModel& model, QLineEdit& directoryInputField)
@@ -102,11 +104,14 @@ static auto SetupCentralWidget(const QString& initialDirectory)
 	auto* topBarWidget = new QWidget();
 	auto[backButton, forwardButton, topBarDirectoryInputField] = SetupTopBar(*topBarWidget, initialDirectory);
 
-	auto* fileListViewWidget = new FileListTableView();
+	auto* fileListViewWidget = new FileListTableViewWithFilter();
+
+	auto* fileListViewActiveFilterLabel = new QLabel();
 
 	auto* rootLayout = new QVBoxLayout();
 	rootLayout->addWidget(topBarWidget);
 	rootLayout->addWidget(fileListViewWidget);
+	rootLayout->addWidget(fileListViewActiveFilterLabel);
 
 	centralWidget->setLayout(rootLayout);
 
@@ -128,7 +133,7 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory)
 	setCentralWidget(centralWidget);
 
 	auto* fileListViewModel = new FileListViewModel(initialDirectory);
-	fileListViewWidget->setModel(fileListViewModel);
+	fileListViewWidget->GetFileListTableView().setModel(fileListViewModel);
 
 	connect(topBarDirectoryInputField, &DirectoryInputField::directoryChanged, [=](const auto& dirPath) {fileListViewModel->ChangeDirectory(dirPath); });
 	connect(topBarDirectoryInputField, &DirectoryInputField::directoryChanged, [=](const auto& dirPath) 
@@ -149,7 +154,7 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory)
 	const auto directoryChangedByGoingToParentClosure = CreateDirectoryChangedByGoingToParent(m_historyStore, *fileListViewModel, *topBarDirectoryInputField);
 	const auto directoryChangedFromTableClosure = CreateDirectoryChangedFromTableClosure(m_historyStore, *fileListViewModel, *topBarDirectoryInputField);
 
-	connect(fileListViewWidget, &QTableView::activated, [=](const QModelIndex& index)
+	connect(&fileListViewWidget->GetFileListTableView(), &QTableView::activated, [=](const QModelIndex& index)
 	{
 		const auto dirString = fileListViewModel->data(index, Qt::UserRole);
 

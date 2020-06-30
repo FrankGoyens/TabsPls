@@ -6,14 +6,23 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QDebug>
-
-#include <iostream>
+#include <QLineEdit>
 
 FileListTableView::FileListTableView()
 {
 	verticalHeader()->hide();
 	setShowGrid(false);
 	setAcceptDrops(true);
+}
+
+int FileListTableView::GetModelRoleForFullPaths()
+{
+	return Qt::UserRole;
+}
+
+int FileListTableView::GetModelRoleForNames()
+{
+	return Qt::DisplayRole;
 }
 
 void FileListTableView::mousePressEvent(QMouseEvent* event)
