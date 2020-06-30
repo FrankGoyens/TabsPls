@@ -5,6 +5,7 @@
 class QMouseEvent;
 class QDragEnterEvent;
 class QDropEvent;
+class QLabel;
 
 class FileListTableView: public QTableView
 {
@@ -12,6 +13,9 @@ class FileListTableView: public QTableView
 
 public:
 	FileListTableView();
+
+	static int GetModelRoleForFullPaths();
+	static int GetModelRoleForNames();
 
 protected:
 	void mousePressEvent(QMouseEvent*) override;

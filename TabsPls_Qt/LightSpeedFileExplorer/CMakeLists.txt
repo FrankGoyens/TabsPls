@@ -29,6 +29,7 @@ set(LightSpeedFileExplorer_Headers
   FileListViewModel.hpp
   FileListTableView.hpp
   DirectoryInputField.hpp
+  FileListTableViewWithFilter.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -40,6 +41,7 @@ set(LightSpeedFileExplorer_Sources
   FileListViewModel.cpp
   FileListTableView.cpp
   DirectoryInputField.cpp
+  FileListTableViewWithFilter.cpp
 )
 
 add_executable(LightSpeedFileExplorer
