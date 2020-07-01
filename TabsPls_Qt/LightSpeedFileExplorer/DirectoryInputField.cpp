@@ -16,6 +16,9 @@ DirectoryInputField::DirectoryInputField(QString initialDirectory) :
 
 	connect(this, &QLineEdit::editingFinished, [this]()
 	{
+		if (text() == m_currentDirectory)
+			return;
+
 		if (!FileSystem::IsDirectory(text().toStdString()))
 		{
 			setText(m_currentDirectory);

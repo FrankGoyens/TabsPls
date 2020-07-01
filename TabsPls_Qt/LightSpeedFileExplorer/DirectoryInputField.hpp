@@ -3,8 +3,6 @@
 #include <QLineEdit>
 #include <QString>
 
-class QLineEdit;
-
 class DirectoryInputField : public QLineEdit
 {
 	Q_OBJECT

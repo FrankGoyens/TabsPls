@@ -14,6 +14,8 @@ public:
 
 	FileListTableView& GetFileListTableView() { return *m_fileListTableView; }
 
+	void ClearFilter();
+
 private:
 	FileListTableView* m_fileListTableView;
 	QLineEdit* m_filterField;
