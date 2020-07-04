@@ -13,14 +13,14 @@ jobs:
 
     steps:
       - name: Get dependencies from apt
-        run: sudo apt install libgtk-3-dev libgtest-dev
+        run: sudo apt install libx11-dev libglu1-mesa-dev libxi-dev libxext-dev libgtest-dev flex bison
       - uses: actions/checkout@v2
         with:
           submodules: true    
       - name: Set vcpkg's response file path used as part of cache's key.
         uses: lukka/set-shell-env@master
         with:
-          VCPKGRESPONSEFILE: ${{ github.workspace }}/TabsPls_GTK/cmakeliststxt/vcpkg_x64-linux.txt
+          VCPKGRESPONSEFILE: ${{ github.workspace }}/TabsPls_Qt/cmakeliststxt/vcpkg_x64-linux.txt
 
       - name: dir
         run: find $RUNNER_WORKSPACE
@@ -30,7 +30,7 @@ jobs:
         id: runvcpkg
         with:
           vcpkgArguments: '@${{ env.VCPKGRESPONSEFILE }}'
-          vcpkgDirectory: '${{ github.workspace }}/TabsPls_GTK/vcpkg'
+          vcpkgDirectory: '${{ github.workspace }}/TabsPls_Qt/vcpkg'
           # Ensure the cache key changes any time the content of the response file changes.
           appendedCacheKey: ${{ hashFiles( env.VCPKGRESPONSEFILE ) }}
 
@@ -39,7 +39,7 @@ jobs:
         id: runcmake
         with:
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeListsTxtPath: '${{ github.workspace }}/TabsPls_GTK/CMakeLists.txt'
+          cmakeListsTxtPath: '${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/CMakeLists.txt'
           useVcpkgToolchainFile: true
           cmakeAppendedArgs: -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 -DCMAKE_MAKE_PROGRAM=make
           buildWithCMakeArgs: '-- -v'
