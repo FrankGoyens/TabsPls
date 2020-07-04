@@ -1,3 +1,6 @@
 [submodule "TabsPls_GTK/vcpkg"]
 	path = TabsPls_GTK/vcpkg
 	url = https://github.com/microsoft/vcpkg.git
+[submodule "TabsPls_Qt/vcpkg"]
+	path = TabsPls_Qt/vcpkg
+	url = https://github.com/microsoft/vcpkg.git
