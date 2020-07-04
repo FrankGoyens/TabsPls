@@ -1,7 +1,6 @@
 #include "pch.h"
 
 #include <TabsPlsCore/DirectoryHistoryStore.hpp>
-#include "..\include\TabsPlsCore\DirectoryHistoryStore.hpp"
 
 DirectoryHistoryStore& DirectoryHistoryStore::operator=(DirectoryHistoryStore other)
 {
