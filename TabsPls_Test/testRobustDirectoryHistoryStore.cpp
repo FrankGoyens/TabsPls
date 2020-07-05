@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <TabsPlsCore/RobustDirectoryHistoryStore.hpp>
+#include <TabsPlsCore/FileSystemOp.hpp>
 
 #include "FakeFileSystem.hpp"
 
@@ -19,7 +20,7 @@ namespace RobustDirectoryHistoryStoreTests
         RobustDirectoryHistoryStore givenStore;
         const auto givenDirectory = FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" }));
         
-        FakeFileSystem::DeleteDirectory({ "C:", "users", "jeff" });
+        FileSystem::Op::RemoveAll(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" }));
         givenStore.OnNewDirectory(*givenDirectory);
     }
 
@@ -33,7 +34,7 @@ namespace RobustDirectoryHistoryStoreTests
         const auto givenSecondDirectory = FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({ "C:", "users" }));
         givenStore.OnNewDirectory(*givenSecondDirectory);
 
-        FakeFileSystem::DeleteDirectory({ "C:", "users", "jeff" });
+        FileSystem::Op::RemoveAll(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" }));
         givenStore.SwitchToPrevious();
         EXPECT_EQ(givenStore.GetCurrent().path(), FakeFileSystem::MergeUsingSeparator({ "C:", "users" })); //SwitchToPrevious() was a no-op
     }
@@ -49,7 +50,7 @@ namespace RobustDirectoryHistoryStoreTests
         givenStore.OnNewDirectory(*givenSecondDirectory);
         givenStore.SwitchToPrevious();
 
-        FakeFileSystem::DeleteDirectory({ "C:", "users", "jeff" });
+        FileSystem::Op::RemoveAll(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" }));
         givenStore.SwitchToNext();
         EXPECT_EQ(givenStore.GetCurrent().path(), FakeFileSystem::MergeUsingSeparator({ "C:", "users" })); //SwitchToPrevious() was a no-op
     }

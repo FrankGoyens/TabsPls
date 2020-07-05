@@ -3,6 +3,8 @@
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
+#include <TabsPlsCore/FileSystemOp.hpp>
+
 #include "../FakeFileSystem.hpp"
 
 namespace FakeFileSystemMetaTest
@@ -137,13 +139,13 @@ namespace FakeFileSystemMetaTest
 	TEST_F(FakeFileSystemTest, DeleteDirectory)
 	{
 		EXPECT_FALSE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" })));
-		FakeFileSystem::DeleteDirectory({ "C:", "users", "jeff" });
+		FileSystem::Op::RemoveAll(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" }));
 
 		EXPECT_FALSE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" })));
 		FakeFileSystem::AddDirectory({ "C:", "users", "jeff" });
 
 		EXPECT_TRUE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" })));
-		FakeFileSystem::DeleteDirectory({ "C:", "users", "jeff" });
+		FileSystem::Op::RemoveAll(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" }));
 
 		EXPECT_FALSE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" })));
 	}
@@ -151,13 +153,13 @@ namespace FakeFileSystemMetaTest
 	TEST_F(FakeFileSystemTest, DeleteFile)
 	{
 		EXPECT_FALSE(FileSystem::IsRegularFile(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })));
-		FakeFileSystem::DeleteFile({ "C:", "users", "jeff" }, "file.txt");
+		FileSystem::Op::RemoveAll(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" }));
 
 		EXPECT_FALSE(FileSystem::IsRegularFile(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })));
 		FakeFileSystem::AddFile({ "C:", "users", "jeff" }, "file.txt");
 
 		EXPECT_TRUE(FileSystem::IsRegularFile(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })));
-		FakeFileSystem::DeleteFile({ "C:", "users", "jeff" }, "file.txt");
+		FileSystem::Op::RemoveAll(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff" , "file.txt" }));
 
 		EXPECT_FALSE(FileSystem::IsRegularFile(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })));
 	}

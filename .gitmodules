@@ -4,3 +4,6 @@
 [submodule "TabsPls_Qt/vcpkg"]
 	path = TabsPls_Qt/vcpkg
 	url = https://github.com/microsoft/vcpkg.git
+[submodule "TabsPls_Test/vcpkg"]
+	path = TabsPls_Test/vcpkg
+	url = https://github.com/microsoft/vcpkg.git
