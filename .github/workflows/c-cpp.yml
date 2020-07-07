@@ -9,11 +9,11 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Get dependencies from apt
-        run: sudo apt install libx11-dev libglu1-mesa-dev libxi-dev libxext-dev libgtest-dev flex bison
+        run: sudo apt install libx11-dev libx11-xcb-dev libglu1-mesa-dev libxi-dev libxext-dev googletest libgtest-dev flex bison
       - uses: actions/checkout@v2
         with:
           submodules: true    
@@ -38,10 +38,9 @@ jobs:
         uses: lukka/run-cmake@v2
         id: runcmake
         with:
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeListsOrSettingsJson: CMakeListsTxtBasic
           cmakeListsTxtPath: '${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/CMakeLists.txt'
           useVcpkgToolchainFile: true
-          cmakeAppendedArgs: -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 -DCMAKE_MAKE_PROGRAM=make
           buildWithCMakeArgs: '-- -v'
       - name: Prints output of run-vcpkg's task
         run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_TRIPLET_OUT }}' "
