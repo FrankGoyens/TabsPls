@@ -1,0 +1,30 @@
+name: C/C++ Core Test CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Get dependencies from apt
+        run: sudo apt install libgtest-dev googletest
+      - uses: actions/checkout@v2
+
+      - name: Configure and build with cmake
+        run: |
+          cd ${{ github.workspace }}/../../_temp
+          cmake -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 -DCMAKE_MAKE_PROGRAM=make ${{ github.workspace }}/TabsPls_Test
+          cmake --build .
+          
+      - name: dir
+        run: find ${{ github.workspace }}/../../_temp
+      - name: Run CTest
+        run: |
+          cd ${{ github.workspace }}/../../_temp 
+          ctest -C Debug 
