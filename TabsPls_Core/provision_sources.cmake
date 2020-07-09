@@ -7,6 +7,8 @@ macro(ProvisionCoreSources prefix)
         ${prefix}/include/TabsPlsCore/FileSystemFilePath.hpp
         ${prefix}/include/TabsPlsCore/FileSystem.hpp
         ${prefix}/include/TabsPlsCore/RobustDirectoryHistoryStore.hpp
+        ${prefix}/include/TabsPlsCore/CurrentDirectoryFileOp.hpp
+	${prefix}/include/TabsPlsCore/FileSystemAlgorithm.hpp
     )
 
     set(TabsPls_Core_Sources
@@ -14,6 +16,8 @@ macro(ProvisionCoreSources prefix)
         ${prefix}/source/FileSystemFilePath.cpp
         ${prefix}/source/DirectoryHistoryStore.cpp
         ${prefix}/source/RobustDirectoryHistoryStore.cpp
+        ${prefix}/source/CurrentDirectoryFileOp.cpp
+	${prefix}/source/FileSystemAlgorithm.cpp
     )
 
 endmacro()

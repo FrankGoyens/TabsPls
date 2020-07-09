@@ -46,14 +46,14 @@ static auto CreateFilterUpdatedClosure(FileListTableView& tableView)
 	};
 }
 
-FileListTableViewWithFilter::FileListTableViewWithFilter()
+FileListTableViewWithFilter::FileListTableViewWithFilter(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp)
 {
 	auto* filterField = new FilterHookedLineEdit;
 	m_filterField = filterField;
 
 	m_filterField->hide(); //Hidden when empty
 
-	auto* fileListTableView = new FilterHookedFileListTableView;
+	auto* fileListTableView = new FilterHookedFileListTableView(std::move(currentDirFileOp));
 	m_fileListTableView = fileListTableView;
 
 	connect(fileListTableView, &FilterHookedFileListTableView::focusChangeCharacterReceived, [this](char c)

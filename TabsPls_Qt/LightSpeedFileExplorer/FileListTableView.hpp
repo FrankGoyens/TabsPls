@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <QTableView>
 
 class QMouseEvent;
@@ -7,12 +9,14 @@ class QDragEnterEvent;
 class QDropEvent;
 class QLabel;
 
+class CurrentDirectoryFileOp;
+
 class FileListTableView: public QTableView
 {
 	Q_OBJECT
 
 public:
-	FileListTableView();
+	FileListTableView(std::weak_ptr<CurrentDirectoryFileOp>);
 
 	static int GetModelRoleForFullPaths();
 	static int GetModelRoleForNames();
@@ -26,6 +30,12 @@ protected:
 
 private:
 	QPoint m_dragStartPosition;
+	std::weak_ptr<CurrentDirectoryFileOp> m_currentDirFileOp;
 
-	QString AggregateSelectionDataForDrag() const;
+	static std::vector<QUrl> DecodeFileUris(const QString&);
+
+	QString AggregateSelectionDataAsUriList() const;
+	void pasteEvent();
+
+	void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);
 };

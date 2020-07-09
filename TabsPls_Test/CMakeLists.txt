@@ -22,6 +22,7 @@ set(TabsPlsTest_Sources
     gtest_main.cc
     testDirectoryHistoryStore.cpp
     testRobustDirectoryHistoryStore.cpp
+    testFileSystemAlgorithm.cpp
 
     meta/testFakeFileSystem.cpp
     meta/testFakeFileSystemOp.cpp

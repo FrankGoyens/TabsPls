@@ -1,5 +1,7 @@
 #include "FileListTableView.hpp"
 
+#include <stdexcept>
+
 #include <QHeaderView>
 #include <QMouseEvent>
 #include <QApplication>
@@ -7,12 +9,32 @@
 #include <QMimeData>
 #include <QDebug>
 #include <QLineEdit>
+#include <QClipboard>
+#include <QShortcut>
 
-FileListTableView::FileListTableView()
+#include <TabsPlsCore/FileSystemOp.hpp>
+#include <TabsPlsCore/CurrentDirectoryFileOp.hpp>
+
+static void SetUriListOnClipboard(const QString& data)
+{
+	auto* clipboard = QApplication::clipboard();
+	auto* mimeData = new QMimeData;
+	mimeData->setData("text/uri-list", data.toUtf8());
+	clipboard->setMimeData(mimeData);
+}
+
+FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp):
+	m_currentDirFileOp(std::move(currentDirFileOp))
 {
 	verticalHeader()->hide();
 	setShowGrid(false);
 	setAcceptDrops(true);
+
+	const auto* copyUrisToClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+	connect(copyUrisToClipboardShortcut, &QShortcut::activated, [this]() {return SetUriListOnClipboard(AggregateSelectionDataAsUriList()); });
+
+	const auto pasteUrisFromClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
+	connect(pasteUrisFromClipboardShortcut, &QShortcut::activated, [this]() { pasteEvent(); });
 }
 
 int FileListTableView::GetModelRoleForFullPaths()
@@ -48,7 +70,7 @@ void FileListTableView::mouseMoveEvent(QMouseEvent* event)
 	QDrag drag(this);
 	QMimeData* mimeData = new QMimeData;
 
-	mimeData->setData("text/uri-list", AggregateSelectionDataForDrag().toUtf8());
+	mimeData->setData("text/uri-list", AggregateSelectionDataAsUriList().toUtf8());
 	drag.setMimeData(mimeData);
 
 	drag.exec(Qt::CopyAction);
@@ -72,10 +94,31 @@ void FileListTableView::dragMoveEvent(QDragMoveEvent* event)
 
 void FileListTableView::dropEvent(QDropEvent* event)
 {
-	qDebug() << event->mimeData()->text();
+	if (event->mimeData()->hasFormat("text/uri-list")) {
+		const auto urls = DecodeFileUris(event->mimeData()->data("text/uri-list"));
+		CopyFileUrisIntoCurrentDir(urls);
+	}
 }
 
-QString FileListTableView::AggregateSelectionDataForDrag() const
+static bool IsValidFileUrl(const QUrl& url)
+{
+	return url.isValid() && url.scheme() == "file";
+}
+
+std::vector<QUrl> FileListTableView::DecodeFileUris(const QString& data)
+{
+	std::vector<QUrl> uris;
+	for (const auto& uri : data.split(QRegExp("[\r\n]"), QString::SkipEmptyParts)) {
+		const QUrl url(uri);
+		if (!IsValidFileUrl(url))
+			continue;
+		uris.push_back(url);
+	}
+
+	return uris;
+}
+
+QString FileListTableView::AggregateSelectionDataAsUriList() const
 {
 	const auto selectionIndices = selectionModel()->selectedRows();
 	QStringList dataAsList;
@@ -85,4 +128,25 @@ QString FileListTableView::AggregateSelectionDataForDrag() const
 		dataAsList << QUrl::fromLocalFile(filePath).toString();
 	}
 	return dataAsList.join('\n');
+}
+
+void FileListTableView::pasteEvent()
+{
+	auto* clipboard = QApplication::clipboard();
+	auto* mimeData = clipboard->mimeData();
+	if (mimeData->hasFormat("text/uri-list")) {
+		const auto urls = DecodeFileUris(mimeData->data("text/uri-list"));
+		CopyFileUrisIntoCurrentDir(urls);
+	}
+}
+
+void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls)
+{
+	for (const auto& url : urls) {
+		try {
+			if (const auto liveCurrentDirFileOp = m_currentDirFileOp.lock())
+				liveCurrentDirFileOp->CopyRecursive(url.toLocalFile().toStdString(), url.fileName().toStdString());
+		}
+		catch (const FileSystem::Op::CopyException&) {}
+	}
 }
