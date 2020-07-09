@@ -13,7 +13,6 @@ public:
 
 	void updateCurrentDir(FileSystem::Directory);
 
-protected:
 	FileSystem::Directory GetCurrentDir() const override;
 
 private:

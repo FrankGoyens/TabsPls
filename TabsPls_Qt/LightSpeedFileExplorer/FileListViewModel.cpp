@@ -64,6 +64,11 @@ void FileListViewModel::ChangeDirectory(const QString& dir)
     endResetModel();
 }
 
+void FileListViewModel::RefreshDirectory(const QString& dir)
+{
+    ChangeDirectory(dir);
+}
+
 template<typename FileContainer, typename DirContainer>
 static auto CombineAllEntriesIntoNameVec(const FileContainer& files, const DirContainer& dirs)
 {

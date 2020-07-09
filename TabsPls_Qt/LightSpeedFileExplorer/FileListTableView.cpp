@@ -16,6 +16,8 @@
 #include <TabsPlsCore/FileSystemOp.hpp>
 #include <TabsPlsCore/CurrentDirectoryFileOp.hpp>
 
+#include "FileListViewModel.hpp"
+
 static void SetUriListOnClipboard(const QString& data)
 {
 	auto* clipboard = QApplication::clipboard();
@@ -160,4 +162,7 @@ void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls
 
 	if(!failedCopies.empty())
 		QMessageBox::warning(this, tr("Problem copying"), failedCopies.join('\n'));
+
+	if (auto* fileListViewModel = dynamic_cast<FileListViewModel*>(model()))
+		fileListViewModel->RefreshDirectory(liveCurrentDirFileOp->GetCurrentDir().path().c_str());
 }
