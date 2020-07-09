@@ -11,6 +11,4 @@ namespace FakeFileSystem
 	void AddFile(const std::initializer_list<FileSystem::Name>& parentAbsoluteComponents, const FileSystem::Name& fileName);
 
 	FileSystem::RawPath MergeUsingSeparator(const std::vector<FileSystem::Name>& components);
-
-	FileSystem::Name GetSeparator();
 }

@@ -32,6 +32,7 @@ set(LightSpeedFileExplorer_Headers
   FileListTableViewWithFilter.hpp
   FilterHookedFileListTableView.hpp
   FilterHookedLineEdit.hpp
+  CurrentDirectoryFileOpQtImpl.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -46,6 +47,8 @@ set(LightSpeedFileExplorer_Sources
   FileListTableViewWithFilter.cpp
   FilterHookedFileListTableView.cpp
   FilterHookedLineEdit.cpp
+  CurrentDirectoryFileOpQtImpl.cpp
+  FileSystemOp.cpp
 )
 
 add_executable(LightSpeedFileExplorer

@@ -7,6 +7,14 @@
 
 namespace FileSystem
 {
+    Name Separator()
+    {
+        //A bit hacky, but on Windows the separator is a wchar_t and on Linux it's not
+        //So let the std::filesystem api insert the separator and make it into an std::string
+        static const auto dummyPath = (std::filesystem::path("C") / "").string();
+        static const auto sep = dummyPath.substr(1, dummyPath.length() - 1);
+        return sep;
+    }
 
     bool IsDirectory(const RawPath& dir)
     {

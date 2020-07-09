@@ -15,6 +15,11 @@ namespace FakeFileSystemMetaTest
 		~FakeFileSystemTest() { FakeFileSystem::Cleanup(); }
 	};
 
+	TEST_F(FakeFileSystemTest, Separator)
+	{
+		FileSystem::Separator();
+	}
+
 	TEST_F(FakeFileSystemTest, NoFileInEmptyFS)
 	{
 		EXPECT_FALSE(FileSystem::IsRegularFile(FakeFileSystem::MergeUsingSeparator({ "C:", "file.txt" })));
@@ -98,7 +103,7 @@ namespace FakeFileSystemMetaTest
 
 	TEST_F(FakeFileSystemTest, _getRootPath)
 	{
-		EXPECT_EQ(FileSystem::_getRootPath(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })), std::string("C:") + FakeFileSystem::GetSeparator());
+		EXPECT_EQ(FileSystem::_getRootPath(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "jeff", "file.txt" })), std::string("C:") + FileSystem::Separator());
 	}
 
 	TEST_F(FakeFileSystemTest, _getRootName)

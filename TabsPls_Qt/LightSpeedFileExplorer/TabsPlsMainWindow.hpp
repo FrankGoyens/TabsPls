@@ -1,8 +1,12 @@
 #pragma once
 
+#include <memory>
+
 #include <QMainWindow>
 
 #include <TabsPlsCore/RobustDirectoryHistoryStore.hpp>
+
+class CurrentDirectoryFileOp;
 
 class TabsPlsMainWindow : public QMainWindow
 {
@@ -13,4 +17,5 @@ public:
 
 private:
 	RobustDirectoryHistoryStore m_historyStore;
+	std::shared_ptr<CurrentDirectoryFileOp> m_currentDirFileOpImpl;
 };

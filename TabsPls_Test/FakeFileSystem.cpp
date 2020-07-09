@@ -207,13 +207,13 @@ static auto SplitUsingSeparator(FileSystem::RawPath path)
 {
     std::vector<FileSystem::Name> components;
 
-    auto sep = FakeFileSystem::GetSeparator();
+    auto sep = FileSystem::Separator();
     FileSystem::RawPath::size_type pos;
 
     while ((pos = path.find(sep)) != FileSystem::RawPath::npos)
     {
         components.push_back(path.substr(0, pos));
-        path.erase(0, pos + sep.length());
+        path.erase(0, pos + 1/*separator length*/);
     }
 
     components.push_back(path);
@@ -225,7 +225,7 @@ static FileSystem::RawPath MergeUsingSeparator(const std::vector<FileSystem::Nam
     if (components.empty())
         return "";
 
-    const auto sep = FakeFileSystem::GetSeparator();
+    const auto sep = FileSystem::Separator();
     std::ostringstream outStream;
     for (auto it = components.begin(); it != components.end() - 1; ++it)
         outStream << *it << sep;
@@ -263,15 +263,18 @@ namespace FakeFileSystem
     {
         return ::MergeUsingSeparator(components);
     }
-    
-    FileSystem::Name GetSeparator()
-    {
-        return "/";
-    }
 }
 
 namespace FileSystem
 {
+    FileSystem::Name Separator()
+    {
+        //A bit hacky, but on Windows the separator is a wchar_t and on Linux it's not
+        //So let the std::filesystem api insert the separator and make it into an std::string
+        static const auto dummyPath = (std::filesystem::path("C") / "").string();
+        static const auto sep = dummyPath.substr(1, dummyPath.length() - 1);
+        return sep;
+    }
 
     bool IsDirectory(const RawPath& dir)
     {
@@ -314,7 +317,7 @@ namespace FileSystem
     {
         const auto components = SplitUsingSeparator(path);
 
-        return components.front() + FakeFileSystem::GetSeparator();
+        return components.front() + FileSystem::Separator();
     }
 
     Name _getRootName(const RawPath& path)

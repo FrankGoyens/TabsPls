@@ -9,6 +9,8 @@ namespace FileSystem
     class Directory;
     class FilePath;
 
+    Name Separator();
+
     bool IsDirectory(const RawPath& path);
     bool IsRegularFile(const RawPath& path);
 

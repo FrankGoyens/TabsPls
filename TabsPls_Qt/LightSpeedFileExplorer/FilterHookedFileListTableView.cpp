@@ -1,8 +1,10 @@
 #include "FilterHookedFileListTableView.hpp"
 
-#include <locale>
-
 #include <QKeyEvent>
+
+FilterHookedFileListTableView::FilterHookedFileListTableView(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp):
+	FileListTableView(std::move(currentDirFileOp))
+{}
 
 static bool CharacterWouldShiftFocus(char c)
 {
