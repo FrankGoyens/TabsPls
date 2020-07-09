@@ -11,6 +11,7 @@
 #include <QLineEdit>
 #include <QClipboard>
 #include <QShortcut>
+#include <QMessageBox>
 
 #include <TabsPlsCore/FileSystemOp.hpp>
 #include <TabsPlsCore/CurrentDirectoryFileOp.hpp>
@@ -142,11 +143,21 @@ void FileListTableView::pasteEvent()
 
 void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls)
 {
+	const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
+	if (!liveCurrentDirFileOp)
+		return;
+
+	QStringList failedCopies;
+
 	for (const auto& url : urls) {
 		try {
-			if (const auto liveCurrentDirFileOp = m_currentDirFileOp.lock())
-				liveCurrentDirFileOp->CopyRecursive(url.toLocalFile().toStdString(), url.fileName().toStdString());
+			liveCurrentDirFileOp->CopyRecursive(url.toLocalFile().toStdString(), url.fileName().toStdString());
 		}
-		catch (const FileSystem::Op::CopyException&) {}
+		catch (const FileSystem::Op::CopyException& e) {
+			failedCopies << e.message.c_str();
+		}
 	}
+
+	if(!failedCopies.empty())
+		QMessageBox::warning(this, tr("Problem copying"), failedCopies.join('\n'));
 }
