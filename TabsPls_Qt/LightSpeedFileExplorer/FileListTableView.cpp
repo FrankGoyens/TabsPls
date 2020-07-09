@@ -36,8 +36,23 @@ FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> curre
 	const auto* copyUrisToClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
 	connect(copyUrisToClipboardShortcut, &QShortcut::activated, [this]() {return SetUriListOnClipboard(AggregateSelectionDataAsUriList()); });
 
-	const auto pasteUrisFromClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
+	const auto* pasteUrisFromClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
 	connect(pasteUrisFromClipboardShortcut, &QShortcut::activated, [this]() { pasteEvent(); });
+
+	const auto* deleteItemShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+	connect(deleteItemShortcut, &QShortcut::activated, [this]()
+	{
+		const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
+		if (!liveCurrentDirFileOp)
+			return;
+
+		const auto response = QMessageBox::question(this, tr("Delete file"), tr("Do you want to remove these files? (Cannot be undone!)"));
+		if (response == QMessageBox::StandardButton::Yes) {
+			for (const auto& entry : AggregateSelectionDataAsLocalFileList())
+				FileSystem::Op::RemoveAll(entry.toStdString());
+			NotifyModelOfChange(*liveCurrentDirFileOp);
+		}
+	});
 }
 
 int FileListTableView::GetModelRoleForFullPaths()
@@ -123,14 +138,32 @@ std::vector<QUrl> FileListTableView::DecodeFileUris(const QString& data)
 
 QString FileListTableView::AggregateSelectionDataAsUriList() const
 {
-	const auto selectionIndices = selectionModel()->selectedRows();
+	const auto selectedLocalFiles = AggregateSelectionDataAsLocalFileList();
 	QStringList dataAsList;
-	for (const auto& index : selectionIndices)
-	{
-		const QString filePath = model()->data(index, Qt::UserRole).toString();
-		dataAsList << QUrl::fromLocalFile(filePath).toString();
+	for (const auto& localFile : selectedLocalFiles){
+		dataAsList << QUrl::fromLocalFile(localFile).toString();
 	}
 	return dataAsList.join('\n');
+}
+
+QStringList FileListTableView::AggregateSelectionDataAsLocalFileList() const
+{
+	const auto selectionIndices = selectionModel()->selectedRows();
+	QStringList dataAsList;
+	for (const auto& index : selectionIndices){
+		const QString filePath = model()->data(index, Qt::UserRole).toString();
+		if (filePath == "..")
+			continue;
+		dataAsList << filePath;
+	}
+
+	return dataAsList;
+}
+
+void FileListTableView::NotifyModelOfChange(CurrentDirectoryFileOp& liveCurrentDirFileOp)
+{
+	if (auto* fileListViewModel = dynamic_cast<FileListViewModel*>(model()))
+		fileListViewModel->RefreshDirectory(liveCurrentDirFileOp.GetCurrentDir().path().c_str());
 }
 
 void FileListTableView::pasteEvent()
@@ -163,6 +196,5 @@ void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls
 	if(!failedCopies.empty())
 		QMessageBox::warning(this, tr("Problem copying"), failedCopies.join('\n'));
 
-	if (auto* fileListViewModel = dynamic_cast<FileListViewModel*>(model()))
-		fileListViewModel->RefreshDirectory(liveCurrentDirFileOp->GetCurrentDir().path().c_str());
+	NotifyModelOfChange(*liveCurrentDirFileOp);
 }

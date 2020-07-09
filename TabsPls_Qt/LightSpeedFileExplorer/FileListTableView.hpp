@@ -35,6 +35,8 @@ private:
 	static std::vector<QUrl> DecodeFileUris(const QString&);
 
 	QString AggregateSelectionDataAsUriList() const;
+	QStringList AggregateSelectionDataAsLocalFileList() const;
+	void NotifyModelOfChange(CurrentDirectoryFileOp&);
 	void pasteEvent();
 
 	void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);

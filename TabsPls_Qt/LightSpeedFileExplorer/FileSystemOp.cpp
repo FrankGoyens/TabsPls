@@ -15,5 +15,13 @@ namespace FileSystem
 				throw CopyException{ e.what() };
 			}
 		}
+
+		void RemoveAll(const RawPath& dest)
+		{
+			try {
+				std::filesystem::remove_all(std::filesystem::path(dest));
+			}
+			catch (const std::filesystem::filesystem_error& e) {}
+		}
 	}
 }
