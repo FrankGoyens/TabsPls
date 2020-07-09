@@ -4,7 +4,17 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="164"/>
+        <location filename="FileListTableView.cpp" line="49"/>
+        <source>Delete file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="FileListTableView.cpp" line="49"/>
+        <source>Do you want to remove these files? (Cannot be undone!)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="FileListTableView.cpp" line="197"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
