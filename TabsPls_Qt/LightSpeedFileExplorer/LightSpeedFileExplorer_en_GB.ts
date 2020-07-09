@@ -2,6 +2,14 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_GB">
 <context>
+    <name>FileListTableView</name>
+    <message>
+        <location filename="FileListTableView.cpp" line="162"/>
+        <source>Problem copying these files</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <location filename="FileListViewModel.cpp" line="11"/>
