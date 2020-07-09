@@ -4,8 +4,8 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="162"/>
-        <source>Problem copying these files</source>
+        <location filename="FileListTableView.cpp" line="164"/>
+        <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
