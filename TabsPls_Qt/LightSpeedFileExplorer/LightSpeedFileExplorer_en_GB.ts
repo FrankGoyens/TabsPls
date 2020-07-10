@@ -22,7 +22,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="FileListViewModel.cpp" line="13"/>
+        <location filename="FileListViewModel.cpp" line="15"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>

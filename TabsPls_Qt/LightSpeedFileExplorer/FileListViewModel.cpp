@@ -1,5 +1,7 @@
 #include "FileListViewModel.hpp"
 
+#include <QStyle>
+
 #include <TabsPlsCore/FileSystem.hpp>
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
 #include <TabsPlsCore/FileSystemOp.hpp>
@@ -38,7 +40,8 @@ static auto RetrieveDirectoryContents(const QString& initialDirectory)
     return std::make_pair(files, dirs);
 }
 
-FileListViewModel::FileListViewModel(const QString& initialDirectory)
+FileListViewModel::FileListViewModel(QStyle& styleProvider, const QString& initialDirectory):
+    m_styleProvider(styleProvider)
 {
     std::tie(m_fileEntries, m_directoryEntries) = RetrieveDirectoryContents(initialDirectory);
     FillModelDataCheckingForRoot(initialDirectory);
@@ -51,6 +54,8 @@ QVariant FileListViewModel::data(const QModelIndex& index, int role) const
         return m_display[index.row()];
     case Qt::UserRole:
         return m_fullPaths[index.row()];
+    case Qt::DecorationRole:
+        return m_icons[index.row()];
     default:
         break;
     }
@@ -150,13 +155,30 @@ void FileListViewModel::FillModelDataCheckingForRoot(const QString& dir)
     {
         m_display.insert(m_display.begin(), "..");
         m_fullPaths.insert(m_fullPaths.begin(), "..");
+        m_icons.insert(m_icons.begin(), m_styleProvider.standardIcon(QStyle::SP_DirIcon));
     }
 }
 
 void FileListViewModel::FillModelData()
 {
     m_display = CombineAllEntriesIntoNameVec(m_fileEntries, m_directoryEntries);
-    m_fullPaths = CombineAllEntriesIntoFullPathsVec(m_fileEntries, m_directoryEntries);   
+    m_fullPaths = CombineAllEntriesIntoFullPathsVec(m_fileEntries, m_directoryEntries);
+
+    const auto dirIcon = m_styleProvider.standardIcon(QStyle::SP_DirIcon);
+    const auto fileIcon = m_styleProvider.standardIcon(QStyle::SP_FileIcon);
+    
+    m_icons.clear();
+
+    std::transform(m_fullPaths.begin(), m_fullPaths.end(), std::back_inserter(m_icons), [&](const auto& fullPath)
+    {
+        const auto fullPathStdString = fullPath.toStdString();
+        if (FileSystem::IsDirectory(fullPathStdString))
+            return dirIcon;
+        else if (FileSystem::IsRegularFile(fullPathStdString))
+            return fileIcon;
+        
+        return QIcon();
+    });
 }
 
 int FileListViewModel::rowCount(const QModelIndex&) const

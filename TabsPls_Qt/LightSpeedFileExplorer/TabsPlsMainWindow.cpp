@@ -135,7 +135,7 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory)
 	auto currentDirFileOpImpl = std::make_shared<CurrentDirectoryFileOpQtImpl>(*validInitialDir);
 	m_currentDirFileOpImpl = currentDirFileOpImpl;
 
-	auto* fileListViewModel = new FileListViewModel(initialDirectory);
+	auto* fileListViewModel = new FileListViewModel(*style(), initialDirectory);
 
 	const auto[centralWidget, fileListViewWidget_from_binding, topBarDirectoryInputField, backButton, forwardButton] = SetupCentralWidget(currentDirFileOpImpl, *fileListViewModel, initialDirectory);
 	setCentralWidget(centralWidget);

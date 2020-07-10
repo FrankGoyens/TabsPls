@@ -1,16 +1,19 @@
 #include <QAbstractTableModel>
 
 #include <QString>
+#include <QIcon>
 
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
+
+class QStyle;
 
 class FileListViewModel : public QAbstractTableModel
 {
     Q_OBJECT
 
 public:
-    FileListViewModel(const QString& initialDirectory);
+    FileListViewModel(QStyle& styleProvider, const QString& initialDirectory);
 
     /*Qt table model implementation*/
     int rowCount(const QModelIndex & = QModelIndex()) const override;
@@ -28,7 +31,7 @@ public:
 
     QHash<int, QByteArray> roleNames() const override
     {
-        return { {Qt::DisplayRole, "display"}, {Qt::UserRole, "full_paths" } };
+        return { {Qt::DisplayRole, "display"}, {Qt::DecorationRole, "icon_decoration"}, {Qt::UserRole, "full_paths" } };
     }
 
     /*TabsPls app*/
@@ -50,6 +53,9 @@ private:
 
     std::vector<QString> m_display;
     std::vector<QString> m_fullPaths;
+    std::vector<QIcon> m_icons;
+
+    QStyle& m_styleProvider;
 
     std::optional<std::string> m_error;
 
