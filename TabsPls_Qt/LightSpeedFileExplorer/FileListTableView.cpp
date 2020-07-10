@@ -53,6 +53,8 @@ FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> curre
 			NotifyModelOfChange(*liveCurrentDirFileOp);
 		}
 	});
+
+	setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
 }
 
 int FileListTableView::GetModelRoleForFullPaths()

@@ -7,6 +7,7 @@
 
 #include "FilterHookedFileListTableView.hpp"
 #include "FilterHookedLineEdit.hpp"
+#include "FileListViewModel.hpp"
 
 static void ShowRowsThatMatchFilter(FileListTableView& tableView, const QAbstractItemModel& model, const QString& filter)
 {
@@ -46,7 +47,7 @@ static auto CreateFilterUpdatedClosure(FileListTableView& tableView)
 	};
 }
 
-FileListTableViewWithFilter::FileListTableViewWithFilter(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp)
+FileListTableViewWithFilter::FileListTableViewWithFilter(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp, FileListViewModel& viewModel)
 {
 	auto* filterField = new FilterHookedLineEdit;
 	m_filterField = filterField;
@@ -55,6 +56,7 @@ FileListTableViewWithFilter::FileListTableViewWithFilter(std::weak_ptr<CurrentDi
 
 	auto* fileListTableView = new FilterHookedFileListTableView(std::move(currentDirFileOp));
 	m_fileListTableView = fileListTableView;
+	m_fileListTableView->setModel(&viewModel);
 
 	connect(fileListTableView, &FilterHookedFileListTableView::focusChangeCharacterReceived, [this](char c)
 	{
@@ -88,6 +90,7 @@ FileListTableViewWithFilter::FileListTableViewWithFilter(std::weak_ptr<CurrentDi
 	connect(filterField, &FilterHookedLineEdit::escapePressed, shiftFocusToTableView);
 
 	connect(fileListTableView, &FilterHookedFileListTableView::escapePressed, [this]() {ClearFilter(); });
+	connect(fileListTableView->model(), &QAbstractItemModel::modelReset, [this]() {ClearFilter(); });
 }
 
 void FileListTableViewWithFilter::ClearFilter()
