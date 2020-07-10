@@ -2,6 +2,8 @@
 
 #include <filesystem>
 
+#include <TabsPlsCore/FileSystem.hpp>
+
 namespace FileSystem
 {
 	namespace Op
@@ -18,6 +20,9 @@ namespace FileSystem
 
 		void Rename(const RawPath& source, const RawPath& dest)
 		{
+			if(std::filesystem::exists(dest))
+				throw RenameException("This name already exists");
+
 			try {
 				std::filesystem::rename(source, dest);
 			}

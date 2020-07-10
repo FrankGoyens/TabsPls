@@ -120,6 +120,16 @@ void FileListTableView::dropEvent(QDropEvent* event)
 	}
 }
 
+void FileListTableView::commitData(QWidget* editor)
+{
+	QTableView::commitData(editor);
+
+	if(auto* fileListViewModel = dynamic_cast<FileListViewModel*>(model()))
+		if(const auto error = fileListViewModel->ClaimError())
+			QMessageBox::warning(editor, "Rename", error->c_str());
+	
+}
+
 static bool IsValidFileUrl(const QUrl& url)
 {
 	return url.isValid() && url.scheme() == "file";
