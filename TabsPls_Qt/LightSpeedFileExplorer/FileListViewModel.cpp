@@ -84,7 +84,8 @@ bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value,
         FileSystem::Op::Rename(renameCall->first, renameCall->second);
         RefreshDirectory(parentPath.c_str());
     }
-    catch (const FileSystem::Op::RenameException&) {
+    catch (const FileSystem::Op::RenameException& e) {
+        m_error = e.message;
         return false;
     }
 
@@ -109,6 +110,13 @@ void FileListViewModel::ChangeDirectory(const QString& dir)
 void FileListViewModel::RefreshDirectory(const QString& dir)
 {
     ChangeDirectory(dir);
+}
+
+std::optional<std::string> FileListViewModel::ClaimError()
+{
+    auto temp = m_error;
+    m_error = {};
+    return temp;
 }
 
 template<typename FileContainer, typename DirContainer>

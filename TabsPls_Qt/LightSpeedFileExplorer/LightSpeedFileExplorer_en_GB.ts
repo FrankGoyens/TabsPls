@@ -14,7 +14,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="199"/>
+        <location filename="FileListTableView.cpp" line="209"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>

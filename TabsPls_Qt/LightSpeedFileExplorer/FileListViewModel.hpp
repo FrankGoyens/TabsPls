@@ -42,12 +42,16 @@ public:
     */
     void RefreshDirectory(const QString&);
 
+    std::optional<std::string> ClaimError();
+
 private:
     std::vector<FileSystem::Directory> m_directoryEntries;
     std::vector<FileSystem::FilePath> m_fileEntries;
 
     std::vector<QString> m_display;
     std::vector<QString> m_fullPaths;
+
+    std::optional<std::string> m_error;
 
     void FillModelDataCheckingForRoot(const QString& dir);
     void FillModelData();

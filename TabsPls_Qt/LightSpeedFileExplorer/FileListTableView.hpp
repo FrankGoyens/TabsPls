@@ -28,6 +28,8 @@ protected:
 	void dragMoveEvent(QDragMoveEvent*) override;
 	void dropEvent(QDropEvent*) override;
 
+	void commitData(QWidget* editor) override;
+
 private:
 	QPoint m_dragStartPosition;
 	std::weak_ptr<CurrentDirectoryFileOp> m_currentDirFileOp;
