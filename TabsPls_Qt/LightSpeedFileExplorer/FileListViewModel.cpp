@@ -1,6 +1,8 @@
 #include "FileListViewModel.hpp"
 
 #include <TabsPlsCore/FileSystem.hpp>
+#include <TabsPlsCore/FileSystemAlgorithm.hpp>
+#include <TabsPlsCore/FileSystemOp.hpp>
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 
 namespace
@@ -54,6 +56,46 @@ QVariant FileListViewModel::data(const QModelIndex& index, int role) const
     }
 
     return {};
+}
+
+bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value, int)
+{
+    const auto fullPathAtIndex = data(index, Qt::UserRole).toString().toStdString();
+   
+    std::optional<std::pair<FileSystem::RawPath, FileSystem::RawPath>> renameCall = {};
+    FileSystem::RawPath parentPath;
+
+    if (const auto dir = FileSystem::Directory::FromPath(fullPathAtIndex)) {
+        parentPath = FileSystem::Algorithm::StripTrailingPathSeparators(dir->Parent().path());
+        if (FileSystem::Algorithm::StripTrailingPathSeparators(dir->path()) == parentPath)
+            return false;
+        
+        renameCall = std::make_pair(dir->path(), parentPath + FileSystem::Separator() + FileSystem::Algorithm::StripLeadingPathSeparators(value.toString().toStdString()));
+    }
+    else if (const auto file = FileSystem::FilePath::FromPath(fullPathAtIndex)) {
+        parentPath = FileSystem::Algorithm::StripTrailingPathSeparators(FileSystem::Directory::FromFilePathParent(*file).path());
+        renameCall = std::make_pair(file->path(), parentPath + FileSystem::Separator() + FileSystem::Algorithm::StripLeadingPathSeparators(value.toString().toStdString()));
+    }
+
+    if (!renameCall)
+        return false;
+
+    try {
+        FileSystem::Op::Rename(renameCall->first, renameCall->second);
+        RefreshDirectory(parentPath.c_str());
+    }
+    catch (const FileSystem::Op::RenameException&) {
+        return false;
+    }
+
+    return true;
+}
+
+Qt::ItemFlags FileListViewModel::flags(const QModelIndex& index) const
+{
+    if (index.column() == 1 && index.row() == 0)
+        return QAbstractTableModel::flags(index);
+    return QAbstractTableModel::flags(index) | Qt::ItemFlag::ItemIsEditable;
 }
 
 void FileListViewModel::ChangeDirectory(const QString& dir)

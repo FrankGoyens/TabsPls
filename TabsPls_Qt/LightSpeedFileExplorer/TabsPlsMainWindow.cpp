@@ -100,14 +100,14 @@ static auto SetupTopBar(QWidget& widget, const QString& initialDirectory)
 	return std::make_tuple(backButton, forwardButton, directoryInputField);
 }
 
-static auto SetupCentralWidget(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp, const QString& initialDirectory)
+static auto SetupCentralWidget(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp, FileListViewModel& viewModel, const QString& initialDirectory)
 {
 	auto* centralWidget = new QWidget();
 
 	auto* topBarWidget = new QWidget();
 	auto[backButton, forwardButton, topBarDirectoryInputField] = SetupTopBar(*topBarWidget, initialDirectory);
 
-	auto* fileListViewWidget = new FileListTableViewWithFilter(std::move(currentDirFileOp));
+	auto* fileListViewWidget = new FileListTableViewWithFilter(std::move(currentDirFileOp), viewModel);
 
 	auto* fileListViewActiveFilterLabel = new QLabel();
 
@@ -135,12 +135,12 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory)
 	auto currentDirFileOpImpl = std::make_shared<CurrentDirectoryFileOpQtImpl>(*validInitialDir);
 	m_currentDirFileOpImpl = currentDirFileOpImpl;
 
-	const auto[centralWidget, fileListViewWidget_from_binding, topBarDirectoryInputField, backButton, forwardButton] = SetupCentralWidget(currentDirFileOpImpl, initialDirectory);
+	auto* fileListViewModel = new FileListViewModel(initialDirectory);
+
+	const auto[centralWidget, fileListViewWidget_from_binding, topBarDirectoryInputField, backButton, forwardButton] = SetupCentralWidget(currentDirFileOpImpl, *fileListViewModel, initialDirectory);
 	setCentralWidget(centralWidget);
 
-	auto* fileListViewModel = new FileListViewModel(initialDirectory);
 	auto* fileListViewWidget = fileListViewWidget_from_binding; //This is done to be able to capture this in lambda's
-	fileListViewWidget->GetFileListTableView().setModel(fileListViewModel);
 
 	const auto directoryChangedClosure = CreateDirectoryChangedClosure(m_historyStore, *fileListViewWidget, *fileListViewModel, *topBarDirectoryInputField, *currentDirFileOpImpl);
 
