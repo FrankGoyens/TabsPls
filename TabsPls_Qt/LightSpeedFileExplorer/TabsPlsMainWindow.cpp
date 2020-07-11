@@ -12,8 +12,14 @@ int CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir)
 
 	auto* tab = new FileBrowserWidget(std::move(dir));
 	const int tabIndex = tabWidget.addTab(tab, tab->GetCurrentDirectoryName());
+	const QString namePrefix = tabIndex < 9 ? "&" + QString::number(tabIndex + 1) + " " : "";
 
-	QWidget::connect(tab, &FileBrowserWidget::currentDirectoryNameChanged, [&, tabIndex](const auto& newName) {tabWidget.setTabText(tabIndex, newName); });
+	tabWidget.setTabText(tabIndex, namePrefix + tabWidget.tabText(tabIndex));
+
+	QWidget::connect(tab, &FileBrowserWidget::currentDirectoryNameChanged, [&, tabIndex, namePrefix](const auto& newName) 
+	{
+		tabWidget.setTabText(tabIndex, namePrefix + newName);
+	});
 	return tabIndex;
 }
 

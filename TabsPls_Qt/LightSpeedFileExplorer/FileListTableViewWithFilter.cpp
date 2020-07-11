@@ -86,7 +86,13 @@ FileListTableViewWithFilter::FileListTableViewWithFilter(std::weak_ptr<CurrentDi
 	});
 
 	const auto shiftFocusToTableView = [this]() {m_fileListTableView->setFocus(); };
-	connect(filterField, &QLineEdit::returnPressed, shiftFocusToTableView);
+	connect(filterField, &QLineEdit::returnPressed, [=]()
+	{
+		shiftFocusToTableView();
+		for (int i = 0; i < m_fileListTableView->model()->rowCount(); ++i)
+			if (!m_fileListTableView->isRowHidden(i))
+				m_fileListTableView->selectRow(i);
+	});
 	connect(filterField, &FilterHookedLineEdit::escapePressed, shiftFocusToTableView);
 
 	connect(fileListTableView, &FilterHookedFileListTableView::escapePressed, [this]() {ClearFilter(); });

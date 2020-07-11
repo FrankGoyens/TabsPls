@@ -148,9 +148,10 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 
 	auto* fileListViewModel = new FileListViewModel(*style(), m_currentDirectory.path().c_str());
 
-	const auto [fileListViewWidget_from_binding, topBarDirectoryInputField, backButton, forwardButton] = SetupCentralWidget(*this, m_currentDirFileOpImpl, *fileListViewModel, m_currentDirectory.path().c_str());
+	const auto [fileListViewWidget_from_binding, topBarDirectoryInputField_from_binding, backButton, forwardButton] = SetupCentralWidget(*this, m_currentDirFileOpImpl, *fileListViewModel, m_currentDirectory.path().c_str());
 
 	auto* fileListViewWidget = fileListViewWidget_from_binding; //This is done to be able to capture fileListViewWidget in lambda's
+	auto* topBarDirectoryInputField = topBarDirectoryInputField_from_binding;
 
 	const auto setCurrentDirectoryMemberCall = [this](FileSystem::Directory newDir) {SetCurrentDirectory(std::move(newDir)); };
 
@@ -203,8 +204,14 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 	});
 
 	const auto* gotoParentActionShortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Up), this);
-
 	connect(gotoParentActionShortcut, &QShortcut::activated, directoryChangedByGoingToParentClosure);
+
+	const auto* focusAndSelectDirectoryInputField = new QShortcut(QKeySequence(Qt::Key_F6), this);
+	connect(focusAndSelectDirectoryInputField, &QShortcut::activated, [=]()
+	{
+		topBarDirectoryInputField->setFocus();
+		topBarDirectoryInputField->selectAll();
+	});
 }
 
 const QString FileBrowserWidget::GetCurrentDirectoryName() const
