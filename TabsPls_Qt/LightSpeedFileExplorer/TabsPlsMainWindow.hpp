@@ -16,6 +16,5 @@ public:
 	TabsPlsMainWindow(const QString& initialDirectory);
 
 private:
-	RobustDirectoryHistoryStore m_historyStore;
-	std::shared_ptr<CurrentDirectoryFileOp> m_currentDirFileOpImpl;
+
 };
