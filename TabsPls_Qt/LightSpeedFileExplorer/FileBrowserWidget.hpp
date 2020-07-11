@@ -11,15 +11,24 @@ namespace FileSystem
 	class Directory;
 }
 
-class CurrentDirectoryFileOp;
+class CurrentDirectoryFileOpQtImpl;
 
 class FileBrowserWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	FileBrowserWidget(const FileSystem::Directory& initialDir);
+	FileBrowserWidget(FileSystem::Directory initialDir);
+
+	const QString GetCurrentDirectoryName() const;
+	const FileSystem::Directory& GetCurrentDirectory() const { return m_currentDirectory; }
+
+signals:
+	void currentDirectoryNameChanged(const QString&);
 
 private:
+	FileSystem::Directory m_currentDirectory;
 	RobustDirectoryHistoryStore m_historyStore;
-	std::shared_ptr<CurrentDirectoryFileOp> m_currentDirFileOpImpl;
+	std::shared_ptr<CurrentDirectoryFileOpQtImpl> m_currentDirFileOpImpl;
+
+	void SetCurrentDirectory(FileSystem::Directory);
 };

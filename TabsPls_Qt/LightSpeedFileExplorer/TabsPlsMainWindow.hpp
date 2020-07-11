@@ -14,7 +14,5 @@ class TabsPlsMainWindow : public QMainWindow
 
 public:
 	TabsPlsMainWindow(const QString& initialDirectory);
-
-private:
-
+	
 };
