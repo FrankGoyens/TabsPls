@@ -13,18 +13,31 @@
 #include "FileListViewModel.hpp"
 #include "CurrentDirectoryFileOpQtImpl.hpp"
 
-static void ChangeDirectoryWithoutHistoryUpdate(const FileSystem::Directory& newDir, FileListTableViewWithFilter& fileListViewWithFilter, FileListViewModel& model, QLineEdit& directoryInputField, CurrentDirectoryFileOpQtImpl& currentDirFileOpImpl)
+namespace
+{
+	using CurrentDirSetter = std::function<void(FileSystem::Directory)>;
+}
+
+static void ChangeDirectoryWithoutHistoryUpdate(const FileSystem::Directory& newDir, 
+	FileListTableViewWithFilter& fileListViewWithFilter, 
+	FileListViewModel& model, 
+	QLineEdit& directoryInputField,
+	CurrentDirSetter currentDirSetter)
 {
 	const auto newDirString = QString::fromStdString(newDir.path());
 	directoryInputField.setText(newDirString);
 	model.ChangeDirectory(newDirString);
 	fileListViewWithFilter.ClearFilter();
-	currentDirFileOpImpl.updateCurrentDir(newDir);
+	currentDirSetter(newDir);
 }
 
-static auto CreateDirectoryChangedByGoingToParent(RobustDirectoryHistoryStore& history, FileListTableViewWithFilter& fileListViewWithFilter, FileListViewModel& model, QLineEdit& directoryInputField, CurrentDirectoryFileOpQtImpl& currentDirFileOpImpl)
+static auto CreateDirectoryChangedByGoingToParent(RobustDirectoryHistoryStore& history, 
+	FileListTableViewWithFilter& fileListViewWithFilter, 
+	FileListViewModel& model, 
+	QLineEdit& directoryInputField, 
+	CurrentDirSetter currentDirSetter)
 {
-	return [&]()
+	return [&, currentDirSetter]()
 	{
 		try
 		{
@@ -32,18 +45,22 @@ static auto CreateDirectoryChangedByGoingToParent(RobustDirectoryHistoryStore& h
 			if (newDir.path() == history.GetCurrent().path())
 				return;
 			history.OnNewDirectory(newDir);
-			ChangeDirectoryWithoutHistoryUpdate(newDir, fileListViewWithFilter, model, directoryInputField, currentDirFileOpImpl);
+			ChangeDirectoryWithoutHistoryUpdate(newDir, fileListViewWithFilter, model, directoryInputField, currentDirSetter);
 		}
 		catch (const StoreIsEmptyException&) {}
 	};
 }
 
-static auto CreateDirectoryChangedClosure(RobustDirectoryHistoryStore& history, FileListTableViewWithFilter& fileListViewWithFilter, FileListViewModel& model, QLineEdit& directoryInputField, CurrentDirectoryFileOpQtImpl& currentDirFileOpImpl)
+static auto CreateDirectoryChangedClosure(RobustDirectoryHistoryStore& history, 
+	FileListTableViewWithFilter& fileListViewWithFilter, 
+	FileListViewModel& model, 
+	QLineEdit& directoryInputField, 
+	CurrentDirSetter currentDirSetter)
 {
-	return [&](const FileSystem::Directory& newDir)
+	return [&, currentDirSetter](const FileSystem::Directory& newDir)
 	{
 		history.OnNewDirectory(newDir);
-		ChangeDirectoryWithoutHistoryUpdate(newDir, fileListViewWithFilter, model, directoryInputField, currentDirFileOpImpl);
+		ChangeDirectoryWithoutHistoryUpdate(newDir, fileListViewWithFilter, model, directoryInputField, currentDirSetter);
 	};
 }
 
@@ -64,14 +81,19 @@ static void SwitchHistory(RobustDirectoryHistoryStore& history, const HistoryFor
 }
 
 template<typename HistoryVariant>
-static auto CreateHistoryActionClosure(RobustDirectoryHistoryStore& history, FileListTableViewWithFilter& fileListViewWithFilter, FileListViewModel& model, QLineEdit& directoryInputField, CurrentDirectoryFileOpQtImpl& currentDirFileOpImpl, const HistoryVariant& variant)
+static auto CreateHistoryActionClosure(RobustDirectoryHistoryStore& history, 
+	FileListTableViewWithFilter& fileListViewWithFilter, 
+	FileListViewModel& model, 
+	QLineEdit& directoryInputField, 
+	CurrentDirSetter currentDirSetter,
+	const HistoryVariant& variant)
 {
-	return [&]()
+	return [&, currentDirSetter]()
 	{
 		try
 		{
 			SwitchHistory(history, variant);
-			ChangeDirectoryWithoutHistoryUpdate(history.GetCurrent(), fileListViewWithFilter, model, directoryInputField, currentDirFileOpImpl);
+			ChangeDirectoryWithoutHistoryUpdate(history.GetCurrent(), fileListViewWithFilter, model, directoryInputField, currentDirSetter);
 		}
 		catch (const ImpossibleSwitchException&) {}
 	};
@@ -117,20 +139,26 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::weak_ptr<Current
 	return std::make_tuple( fileListViewWidget, topBarDirectoryInputField, backButton, forwardButton);
 }
 
-FileBrowserWidget::FileBrowserWidget(const FileSystem::Directory& initialDir)
+FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
+	m_currentDirectory(std::move(initialDir))
 {
-	m_historyStore.OnNewDirectory(initialDir);
+	m_historyStore.OnNewDirectory(m_currentDirectory);
 
-	auto currentDirFileOpImpl = std::make_shared<CurrentDirectoryFileOpQtImpl>(initialDir);
-	m_currentDirFileOpImpl = currentDirFileOpImpl;
+	m_currentDirFileOpImpl = std::make_shared<CurrentDirectoryFileOpQtImpl>(m_currentDirectory);
 
-	auto* fileListViewModel = new FileListViewModel(*style(), initialDir.path().c_str());
+	auto* fileListViewModel = new FileListViewModel(*style(), m_currentDirectory.path().c_str());
 
-	const auto [fileListViewWidget_from_binding, topBarDirectoryInputField, backButton, forwardButton] = SetupCentralWidget(*this, currentDirFileOpImpl, *fileListViewModel, initialDir.path().c_str());
+	const auto [fileListViewWidget_from_binding, topBarDirectoryInputField, backButton, forwardButton] = SetupCentralWidget(*this, m_currentDirFileOpImpl, *fileListViewModel, m_currentDirectory.path().c_str());
 
-	auto* fileListViewWidget = fileListViewWidget_from_binding; //This is done to be able to capture this in lambda's
+	auto* fileListViewWidget = fileListViewWidget_from_binding; //This is done to be able to capture fileListViewWidget in lambda's
 
-	const auto directoryChangedClosure = CreateDirectoryChangedClosure(m_historyStore, *fileListViewWidget, *fileListViewModel, *topBarDirectoryInputField, *currentDirFileOpImpl);
+	const auto setCurrentDirectoryMemberCall = [this](FileSystem::Directory newDir) {SetCurrentDirectory(std::move(newDir)); };
+
+	const auto directoryChangedClosure = CreateDirectoryChangedClosure(m_historyStore, 
+		*fileListViewWidget, 
+		*fileListViewModel, 
+		*topBarDirectoryInputField,
+		setCurrentDirectoryMemberCall);
 
 	connect(topBarDirectoryInputField, &DirectoryInputField::directoryChanged, [=](const auto& dirString)
 	{
@@ -138,8 +166,19 @@ FileBrowserWidget::FileBrowserWidget(const FileSystem::Directory& initialDir)
 			directoryChangedClosure(*dir);
 	});
 
-	const auto backActionClosure = CreateHistoryActionClosure(m_historyStore, *fileListViewWidget, *fileListViewModel, *topBarDirectoryInputField, *currentDirFileOpImpl, HistoryBackVariant());
-	const auto forwardActionClosure = CreateHistoryActionClosure(m_historyStore, *fileListViewWidget, *fileListViewModel, *topBarDirectoryInputField, *currentDirFileOpImpl, HistoryForwardVariant());
+	const auto backActionClosure = CreateHistoryActionClosure(m_historyStore, 
+		*fileListViewWidget, 
+		*fileListViewModel, 
+		*topBarDirectoryInputField, 
+		setCurrentDirectoryMemberCall,
+		HistoryBackVariant());
+
+	const auto forwardActionClosure = CreateHistoryActionClosure(m_historyStore, 
+		*fileListViewWidget, 
+		*fileListViewModel, 
+		*topBarDirectoryInputField, 
+		setCurrentDirectoryMemberCall,
+		HistoryForwardVariant());
 
 	backButton->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Left));
 	forwardButton->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Right));
@@ -147,7 +186,11 @@ FileBrowserWidget::FileBrowserWidget(const FileSystem::Directory& initialDir)
 	connect(backButton, &QPushButton::pressed, backActionClosure);
 	connect(forwardButton, &QPushButton::pressed, forwardActionClosure);
 
-	const auto directoryChangedByGoingToParentClosure = CreateDirectoryChangedByGoingToParent(m_historyStore, *fileListViewWidget, *fileListViewModel, *topBarDirectoryInputField, *currentDirFileOpImpl);
+	const auto directoryChangedByGoingToParentClosure = CreateDirectoryChangedByGoingToParent(m_historyStore, 
+		*fileListViewWidget, 
+		*fileListViewModel, 
+		*topBarDirectoryInputField,
+		setCurrentDirectoryMemberCall);
 
 	connect(&fileListViewWidget->GetFileListTableView(), &QTableView::activated, [=](const QModelIndex& index)
 	{
@@ -162,4 +205,16 @@ FileBrowserWidget::FileBrowserWidget(const FileSystem::Directory& initialDir)
 	const auto* gotoParentActionShortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Up), this);
 
 	connect(gotoParentActionShortcut, &QShortcut::activated, directoryChangedByGoingToParentClosure);
+}
+
+const QString FileBrowserWidget::GetCurrentDirectoryName() const
+{
+	return FileSystem::GetDirectoryname(m_currentDirectory).c_str();
+}
+
+void FileBrowserWidget::SetCurrentDirectory(FileSystem::Directory newDir)
+{
+	m_currentDirectory = std::move(newDir);
+	m_currentDirFileOpImpl->updateCurrentDir(m_currentDirectory);
+	emit currentDirectoryNameChanged(GetCurrentDirectoryName());
 }
