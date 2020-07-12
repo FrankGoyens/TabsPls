@@ -197,14 +197,14 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 
 	connect(&fileListViewWidget->GetFileListTableView(), &QTableView::activated, [=](const QModelIndex& index)
 	{
-		const auto dirString = fileListViewModel->data(index, Qt::UserRole);
+		const auto itemString = fileListViewModel->data(index, Qt::UserRole);
 
-		if (dirString == "..")
+		if (itemString == "..")
 			directoryChangedByGoingToParentClosure();
-		else if (const auto dir = FileSystem::Directory::FromPath(dirString.toString().toStdString()))
+		else if (const auto dir = FileSystem::Directory::FromPath(itemString.toString().toStdString()))
 			directoryChangedClosure(*dir);
-		else if (FileSystem::IsRegularFile(dirString.toString().toStdString())) 
-			QDesktopServices::openUrl(QUrl::fromLocalFile(dirString.toString()));
+		else if (FileSystem::IsRegularFile(itemString.toString().toStdString())) 
+			QDesktopServices::openUrl(QUrl::fromLocalFile(itemString.toString()));
 	});
 
 	const auto* gotoParentActionShortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Up), this);
