@@ -6,6 +6,8 @@
 #include <QSizePolicy>
 #include <QShortcut>
 #include <QLabel>
+#include <QDesktopServices>
+#include <QUrl>
 
 #include "DirectoryInputField.hpp"
 #include "FileListTableView.hpp"
@@ -201,6 +203,8 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 			directoryChangedByGoingToParentClosure();
 		else if (const auto dir = FileSystem::Directory::FromPath(dirString.toString().toStdString()))
 			directoryChangedClosure(*dir);
+		else if (FileSystem::IsRegularFile(dirString.toString().toStdString())) 
+			QDesktopServices::openUrl(QUrl::fromLocalFile(dirString.toString()));
 	});
 
 	const auto* gotoParentActionShortcut = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Up), this);
