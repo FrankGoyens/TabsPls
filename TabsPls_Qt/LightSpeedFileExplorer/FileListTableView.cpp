@@ -17,6 +17,10 @@
 #include <TabsPlsCore/CurrentDirectoryFileOp.hpp>
 
 #include "FileListViewModel.hpp"
+#include "FileSystemDefsConversion.hpp"
+
+using FileSystem::StringConversionImpl::ToRawPath;
+using FileSystem::StringConversionImpl::FromRawPath;
 
 static void SetUriListOnClipboard(const QString& data)
 {
@@ -49,7 +53,7 @@ FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> curre
 		const auto response = QMessageBox::question(this, tr("Delete file"), tr("Do you want to remove these files? (Cannot be undone!)"));
 		if (response == QMessageBox::StandardButton::Yes) {
 			for (const auto& entry : AggregateSelectionDataAsLocalFileList())
-				FileSystem::Op::RemoveAll(entry.toStdString());
+				FileSystem::Op::RemoveAll(ToRawPath(entry));
 			NotifyModelOfChange(*liveCurrentDirFileOp);
 		}
 	});
@@ -176,7 +180,7 @@ QStringList FileListTableView::AggregateSelectionDataAsLocalFileList() const
 void FileListTableView::NotifyModelOfChange(CurrentDirectoryFileOp& liveCurrentDirFileOp)
 {
 	if (auto* fileListViewModel = dynamic_cast<FileListViewModel*>(model()))
-		fileListViewModel->RefreshDirectory(liveCurrentDirFileOp.GetCurrentDir().path().c_str());
+		fileListViewModel->RefreshDirectory(FromRawPath(liveCurrentDirFileOp.GetCurrentDir().path()));
 }
 
 void FileListTableView::pasteEvent()
@@ -199,7 +203,7 @@ void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls
 
 	for (const auto& url : urls) {
 		try {
-			liveCurrentDirFileOp->CopyRecursive(url.toLocalFile().toStdString(), url.fileName().toStdString());
+			liveCurrentDirFileOp->CopyRecursive(ToRawPath(url.toLocalFile()), ToRawPath(url.fileName()));
 		}
 		catch (const FileSystem::Op::CopyException& e) {
 			failedCopies << e.message.c_str();

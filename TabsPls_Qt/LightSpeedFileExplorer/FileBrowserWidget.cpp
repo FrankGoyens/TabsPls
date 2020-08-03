@@ -14,6 +14,11 @@
 #include "FileListTableViewWithFilter.hpp"
 #include "FileListViewModel.hpp"
 #include "CurrentDirectoryFileOpQtImpl.hpp"
+#include "FileSystemDefsConversion.hpp"
+
+using FileSystem::StringConversionImpl::FromRawPath;
+using FileSystem::StringConversionImpl::FromName;
+using FileSystem::StringConversionImpl::ToRawPath;
 
 namespace
 {
@@ -26,7 +31,7 @@ static void ChangeDirectoryWithoutHistoryUpdate(const FileSystem::Directory& new
 	QLineEdit& directoryInputField,
 	CurrentDirSetter currentDirSetter)
 {
-	const auto newDirString = QString::fromStdString(newDir.path());
+	const auto newDirString = FromRawPath(newDir.path());
 	directoryInputField.setText(newDirString);
 	model.ChangeDirectory(newDirString);
 	fileListViewWithFilter.ClearFilter();
@@ -148,9 +153,9 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 
 	m_currentDirFileOpImpl = std::make_shared<CurrentDirectoryFileOpQtImpl>(m_currentDirectory);
 
-	auto* fileListViewModel = new FileListViewModel(*style(), m_currentDirectory.path().c_str());
+	auto* fileListViewModel = new FileListViewModel(*style(), FromRawPath(m_currentDirectory.path()));
 
-	const auto [fileListViewWidget_from_binding, topBarDirectoryInputField_from_binding, backButton, forwardButton] = SetupCentralWidget(*this, m_currentDirFileOpImpl, *fileListViewModel, m_currentDirectory.path().c_str());
+	const auto [fileListViewWidget_from_binding, topBarDirectoryInputField_from_binding, backButton, forwardButton] = SetupCentralWidget(*this, m_currentDirFileOpImpl, *fileListViewModel, FromRawPath(m_currentDirectory.path()));
 
 	auto* fileListViewWidget = fileListViewWidget_from_binding; //This is done to be able to capture fileListViewWidget in lambda's
 	auto* topBarDirectoryInputField = topBarDirectoryInputField_from_binding;
@@ -165,7 +170,7 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 
 	connect(topBarDirectoryInputField, &DirectoryInputField::directoryChanged, [=](const auto& dirString)
 	{
-		if (const auto dir = FileSystem::Directory::FromPath(dirString.toStdString()))
+		if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(dirString)))
 			directoryChangedClosure(*dir);
 	});
 
@@ -201,9 +206,9 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 
 		if (itemString == "..")
 			directoryChangedByGoingToParentClosure();
-		else if (const auto dir = FileSystem::Directory::FromPath(itemString.toString().toStdString()))
+		else if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(itemString.toString())))
 			directoryChangedClosure(*dir);
-		else if (FileSystem::IsRegularFile(itemString.toString().toStdString())) 
+		else if (FileSystem::IsRegularFile(ToRawPath(itemString.toString())))
 			QDesktopServices::openUrl(QUrl::fromLocalFile(itemString.toString()));
 	});
 
@@ -220,7 +225,7 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 
 const QString FileBrowserWidget::GetCurrentDirectoryName() const
 {
-	return FileSystem::GetDirectoryname(m_currentDirectory).c_str();
+	return FromName(FileSystem::GetDirectoryname(m_currentDirectory));
 }
 
 void FileBrowserWidget::SetCurrentDirectory(FileSystem::Directory newDir)

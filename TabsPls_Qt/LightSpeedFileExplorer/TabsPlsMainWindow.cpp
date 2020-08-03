@@ -6,6 +6,9 @@
 #include <QTabWidget>
 
 #include "FileBrowserWidget.hpp"
+#include "FileSystemDefsConversion.hpp"
+
+using FileSystem::StringConversionImpl::ToRawPath;
 
 int CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir)
 {
@@ -27,7 +30,7 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory)
 {
 	setWindowTitle(tr("Light Speed File Explorer"));
 
-	const auto validInitialDir = FileSystem::Directory::FromPath(initialDirectory.toStdString());
+	const auto validInitialDir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory));
 
 	if (!validInitialDir)
 		throw std::invalid_argument("The given directory does not exist");

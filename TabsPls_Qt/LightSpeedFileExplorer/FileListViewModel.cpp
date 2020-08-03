@@ -7,6 +7,11 @@
 #include <TabsPlsCore/FileSystemOp.hpp>
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 
+#include "FileSystemDefsConversion.hpp"
+
+using FileSystem::StringConversionImpl::FromRawPath;
+using FileSystem::StringConversionImpl::ToRawPath;
+
 namespace
 {
     const std::vector<QString> mockupTableHeaders =
@@ -22,7 +27,7 @@ static auto RetrieveDirectoryContents(const QString& initialDirectory)
     std::vector<FileSystem::FilePath> files;
     std::vector<FileSystem::Directory> dirs;
 
-    if (auto dir = FileSystem::Directory::FromPath(initialDirectory.toStdString()))
+    if (auto dir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory)))
     {
         for (const auto& entry : FileSystem::GetFilesInDirectory(*dir))
         {
@@ -65,7 +70,7 @@ QVariant FileListViewModel::data(const QModelIndex& index, int role) const
 
 bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value, int)
 {
-    const auto fullPathAtIndex = data(index, Qt::UserRole).toString().toStdString();
+    const auto fullPathAtIndex = ToRawPath(data(index, Qt::UserRole).toString());
    
     std::optional<std::pair<FileSystem::RawPath, FileSystem::RawPath>> renameCall = {};
     FileSystem::RawPath parentPath;
@@ -75,11 +80,11 @@ bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value,
         if (FileSystem::Algorithm::StripTrailingPathSeparators(dir->path()) == parentPath)
             return false;
         
-        renameCall = std::make_pair(dir->path(), parentPath + FileSystem::Separator() + FileSystem::Algorithm::StripLeadingPathSeparators(value.toString().toStdString()));
+        renameCall = std::make_pair(dir->path(), parentPath + FileSystem::Separator() + FileSystem::Algorithm::StripLeadingPathSeparators(ToRawPath(value.toString())));
     }
     else if (const auto file = FileSystem::FilePath::FromPath(fullPathAtIndex)) {
         parentPath = FileSystem::Algorithm::StripTrailingPathSeparators(FileSystem::Directory::FromFilePathParent(*file).path());
-        renameCall = std::make_pair(file->path(), parentPath + FileSystem::Separator() + FileSystem::Algorithm::StripLeadingPathSeparators(value.toString().toStdString()));
+        renameCall = std::make_pair(file->path(), parentPath + FileSystem::Separator() + FileSystem::Algorithm::StripLeadingPathSeparators(ToRawPath(value.toString())));
     }
 
     if (!renameCall)
@@ -87,7 +92,7 @@ bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value,
 
     try {
         FileSystem::Op::Rename(renameCall->first, renameCall->second);
-        RefreshDirectory(parentPath.c_str());
+        RefreshDirectory(FromRawPath(parentPath));
     }
     catch (const FileSystem::Op::RenameException& e) {
         m_error = e.message;
@@ -128,8 +133,8 @@ template<typename FileContainer, typename DirContainer>
 static auto CombineAllEntriesIntoNameVec(const FileContainer& files, const DirContainer& dirs)
 {
     std::vector<QString> names;
-    std::transform(begin(files), end(files), std::back_inserter(names), [&](const auto& file) {return QString::fromStdString(FileSystem::GetFilename(file)); });
-    std::transform(begin(dirs), end(dirs), std::back_inserter(names), [&](const auto& dir) {return QString::fromStdString(FileSystem::GetDirectoryname(dir)); });
+    std::transform(begin(files), end(files), std::back_inserter(names), [&](const auto& file) {return FromRawPath(FileSystem::GetFilename(file)); });
+    std::transform(begin(dirs), end(dirs), std::back_inserter(names), [&](const auto& dir) {return FromRawPath(FileSystem::GetDirectoryname(dir)); });
     return names;
 }
 
@@ -137,14 +142,15 @@ template<typename FileContainer, typename DirContainer>
 static auto CombineAllEntriesIntoFullPathsVec(const FileContainer& files, const DirContainer& dirs)
 {
     std::vector<QString> fullPaths;
-    std::transform(begin(files), end(files), std::back_inserter(fullPaths), [&](const auto& file) {return QString::fromStdString(file.path()); });
-    std::transform(begin(dirs), end(dirs), std::back_inserter(fullPaths), [&](const auto& dir) {return QString::fromStdString(dir.path()); });
+    std::transform(begin(files), end(files), std::back_inserter(fullPaths), [&](const auto& file) {return FromRawPath(file.path()); });
+    std::transform(begin(dirs), end(dirs), std::back_inserter(fullPaths), [&](const auto& dir) {return FromRawPath(dir.path()); });
     return fullPaths;
 }
 
 static bool DirIsRoot(const QString& dir)
 {
-    return dir.toStdString() == FileSystem::_getRootPath(dir.toStdString());
+    const auto rawDir = ToRawPath(dir);
+    return rawDir == FileSystem::_getRootPath(rawDir);
 }
 
 void FileListViewModel::FillModelDataCheckingForRoot(const QString& dir)
@@ -171,7 +177,7 @@ void FileListViewModel::FillModelData()
 
     std::transform(m_fullPaths.begin(), m_fullPaths.end(), std::back_inserter(m_icons), [&](const auto& fullPath)
     {
-        const auto fullPathStdString = fullPath.toStdString();
+        const auto fullPathStdString = ToRawPath(fullPath);
         if (FileSystem::IsDirectory(fullPathStdString))
             return dirIcon;
         else if (FileSystem::IsRegularFile(fullPathStdString))

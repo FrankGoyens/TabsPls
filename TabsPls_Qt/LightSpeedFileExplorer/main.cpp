@@ -3,6 +3,7 @@
 #include <TabsPlsCore/FileSystem.hpp>
 
 #include "TabsPlsMainWindow.hpp"
+#include "FileSystemDefsConversion.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -10,7 +11,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);    
 
-    TabsPlsMainWindow mainWindow(QString::fromStdString(FileSystem::GetWorkingDirectory()));
+    TabsPlsMainWindow mainWindow(FileSystem::StringConversionImpl::FromRawPath(FileSystem::GetWorkingDirectory()));
     mainWindow.setMinimumWidth(600);
     mainWindow.setMinimumHeight(480);
 

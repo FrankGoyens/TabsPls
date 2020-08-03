@@ -25,6 +25,7 @@ set(LightSpeedFileExplorer_Headers
   TabsPlsCore_defs/pch.h
   TabsPlsCore_defs/FileSystemDefs.hpp
 
+  FileSystemDefsConversion.hpp
   TabsPlsMainWindow.hpp
   FileListViewModel.hpp
   FileListTableView.hpp
@@ -41,6 +42,7 @@ set(LightSpeedFileExplorer_Sources
   model/FileSystem.cpp
 
   main.cpp
+  FileSystemDefsConversion.cpp
   TabsPlsMainWindow.cpp
   FileListViewModel.cpp
   FileListTableView.cpp

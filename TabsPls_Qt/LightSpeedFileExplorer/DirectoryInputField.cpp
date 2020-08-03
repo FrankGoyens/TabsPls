@@ -4,12 +4,16 @@
 
 #include <QLineEdit>
 
+#include "FileSystemDefsConversion.hpp"
+
 #include <TabsPlsCore/FileSystem.hpp>
+
+using FileSystem::StringConversionImpl::ToRawPath;
 
 DirectoryInputField::DirectoryInputField(QString initialDirectory) :
 	m_currentDirectory(std::move(initialDirectory))
 {
-	if (!FileSystem::IsDirectory(m_currentDirectory.toStdString()))
+	if (!FileSystem::IsDirectory(ToRawPath(m_currentDirectory)))
 		throw std::invalid_argument("The given directory is not valid");
 
 	setText(m_currentDirectory);
@@ -19,7 +23,7 @@ DirectoryInputField::DirectoryInputField(QString initialDirectory) :
 		if (text() == m_currentDirectory)
 			return;
 
-		if (!FileSystem::IsDirectory(text().toStdString()))
+		if (!FileSystem::IsDirectory(ToRawPath(text())))
 		{
 			setText(m_currentDirectory);
 			return;

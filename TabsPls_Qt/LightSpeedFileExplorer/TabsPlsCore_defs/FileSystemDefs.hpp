@@ -5,8 +5,8 @@
 
 namespace FileSystem
 {
-    using Name = std::string;
+    using Name = std::wstring;
 
-    using RawPath = std::string;
+    using RawPath = std::wstring;
     using RawPathVector = std::vector<RawPath>;
 }
