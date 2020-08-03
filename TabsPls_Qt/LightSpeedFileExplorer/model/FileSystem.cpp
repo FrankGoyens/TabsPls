@@ -11,7 +11,7 @@ namespace FileSystem
     {
         //A bit hacky, but on Windows the separator is a wchar_t and on Linux it's not
         //So let the std::filesystem api insert the separator and make it into an std::string
-        static const auto dummyPath = (std::filesystem::path("C") / "").string();
+        static const auto dummyPath = (std::filesystem::path("C") / "").wstring();
         static const auto sep = dummyPath.substr(1, dummyPath.length() - 1);
         return sep;
     }
@@ -36,12 +36,12 @@ namespace FileSystem
 
     RawPath RemoveFilename(const FilePath& filePath)
     {
-        return std::filesystem::path(filePath.path()).remove_filename().string();
+        return std::filesystem::path(filePath.path()).remove_filename().wstring();
     }
 
     Name GetFilename(const FilePath& filePath)
     {
-        return std::filesystem::path(filePath.path()).filename().string();
+        return std::filesystem::path(filePath.path()).filename().wstring();
     }
 
     Name GetDirectoryname(const Directory& dir)
@@ -49,22 +49,22 @@ namespace FileSystem
         const std::filesystem::path dirPath(dir.path());
         const std::filesystem::path parentDirPath(dir.Parent().path());
 
-        return dirPath.lexically_relative(parentDirPath).string();
+        return dirPath.lexically_relative(parentDirPath).wstring();
     }
 
     Name _getRootPath(const RawPath& path)
     {
-        return std::filesystem::path(path).root_path().string();
+        return std::filesystem::path(path).root_path().wstring();
     }
 
     Name _getRootName(const RawPath& path)
     {
-        return std::filesystem::path(path).root_name().string();
+        return std::filesystem::path(path).root_name().wstring();
     }
 
     RawPath GetWorkingDirectory()
     {
-        return std::filesystem::current_path().string();
+        return std::filesystem::current_path().wstring();
     }
 
     RawPathVector GetFilesInCurrentDirectory()
@@ -81,7 +81,7 @@ namespace FileSystem
     {
         RawPathVector files;
         for(auto& it: std::filesystem::directory_iterator(dir))
-            files.push_back(it.path().string());
+            files.push_back(it.path().wstring());
 
         return files;
     }
@@ -90,6 +90,6 @@ namespace FileSystem
     {
         std::filesystem::path dirPath = dir.path();
 
-        return dirPath.parent_path().string();
+        return dirPath.parent_path().wstring();
     }
 }
