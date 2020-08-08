@@ -8,7 +8,7 @@
 #include "FileBrowserWidget.hpp"
 #include "FileSystemDefsConversion.hpp"
 
-using FileSystem::StringConversionImpl::ToRawPath;
+using FileSystem::StringConversion::ToRawPath;
 
 int CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir)
 {
