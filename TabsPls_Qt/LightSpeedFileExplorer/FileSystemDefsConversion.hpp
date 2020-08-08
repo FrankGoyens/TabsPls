@@ -8,7 +8,7 @@ namespace FileSystem
 {
     //Convert QStrings from and to internal string types
     //Internal string types are those defines in FileSystemDefs.hpp
-    namespace StringConversionImpl
+    namespace StringConversion
     {
         QString FromName(const Name&);
         QString FromRawPath(const RawPath&);

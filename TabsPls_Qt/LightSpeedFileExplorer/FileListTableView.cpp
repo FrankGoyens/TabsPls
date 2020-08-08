@@ -19,8 +19,8 @@
 #include "FileListViewModel.hpp"
 #include "FileSystemDefsConversion.hpp"
 
-using FileSystem::StringConversionImpl::ToRawPath;
-using FileSystem::StringConversionImpl::FromRawPath;
+using FileSystem::StringConversion::ToRawPath;
+using FileSystem::StringConversion::FromRawPath;
 
 static void SetUriListOnClipboard(const QString& data)
 {

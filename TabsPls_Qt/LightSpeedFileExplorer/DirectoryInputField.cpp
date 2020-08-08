@@ -8,7 +8,7 @@
 
 #include <TabsPlsCore/FileSystem.hpp>
 
-using FileSystem::StringConversionImpl::ToRawPath;
+using FileSystem::StringConversion::ToRawPath;
 
 DirectoryInputField::DirectoryInputField(QString initialDirectory) :
 	m_currentDirectory(std::move(initialDirectory))

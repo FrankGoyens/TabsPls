@@ -2,7 +2,7 @@
 
 namespace FileSystem
 {
-    namespace StringConversionImpl
+    namespace StringConversion
     {
         QString FromName(const Name& name)
         {

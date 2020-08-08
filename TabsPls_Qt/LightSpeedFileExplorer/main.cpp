@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);    
 
-    TabsPlsMainWindow mainWindow(FileSystem::StringConversionImpl::FromRawPath(FileSystem::GetWorkingDirectory()));
+    TabsPlsMainWindow mainWindow(FileSystem::StringConversion::FromRawPath(FileSystem::GetWorkingDirectory()));
     mainWindow.setMinimumWidth(600);
     mainWindow.setMinimumHeight(480);
 

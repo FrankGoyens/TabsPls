@@ -16,9 +16,9 @@
 #include "CurrentDirectoryFileOpQtImpl.hpp"
 #include "FileSystemDefsConversion.hpp"
 
-using FileSystem::StringConversionImpl::FromRawPath;
-using FileSystem::StringConversionImpl::FromName;
-using FileSystem::StringConversionImpl::ToRawPath;
+using FileSystem::StringConversion::FromRawPath;
+using FileSystem::StringConversion::FromName;
+using FileSystem::StringConversion::ToRawPath;
 
 namespace
 {
