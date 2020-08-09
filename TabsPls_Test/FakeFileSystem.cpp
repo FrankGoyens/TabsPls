@@ -11,6 +11,7 @@
 
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
+#include <TabsPlsCore/FileSystemAlgorithm.hpp>
 
 namespace
 {
@@ -489,6 +490,13 @@ namespace FileSystem
                 RemoveDir(path);
             else if (const auto file = FilePath::FromPath(path))
                 RemoveFile(*file);
+        }
+        
+        void CreateDirectory(const Directory& parent, const Name& name)
+        {
+	    const auto path = FileSystem::Algorithm::CombineDirectoryAndName(parent, name);
+
+            FakeFileSystemImpl::Instance().AddDirectory(SplitUsingSeparator(path));
         }
     }
 }
