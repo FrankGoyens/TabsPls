@@ -52,7 +52,8 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory)
 	const auto* closeTabShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this);
 	connect(closeTabShortcut, &QShortcut::activated, [=]()
 	{
-		tabWidget->removeTab(tabWidget->currentIndex());
+		if(tabWidget->count()>1)
+			tabWidget->removeTab(tabWidget->currentIndex());
 	});
 
 	setCentralWidget(tabWidget);
