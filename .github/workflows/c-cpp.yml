@@ -13,26 +13,8 @@ jobs:
 
     steps:
       - name: Get dependencies from apt
-        run: sudo apt install libx11-dev libx11-xcb-dev libglu1-mesa-dev libxi-dev libxext-dev googletest libgtest-dev flex bison
+        run: sudo apt install qt5-default qttools5-dev libx11-dev libx11-xcb-dev libglu1-mesa-dev libxi-dev libxext-dev googletest libgtest-dev flex bison
       - uses: actions/checkout@v2
-        with:
-          submodules: true    
-      - name: Set vcpkg's response file path used as part of cache's key.
-        uses: lukka/set-shell-env@master
-        with:
-          VCPKGRESPONSEFILE: ${{ github.workspace }}/TabsPls_Qt/cmakeliststxt/vcpkg_x64-linux.txt
-
-      - name: dir
-        run: find $RUNNER_WORKSPACE
-        shell: bash
-      - name: Restore artifacts, or run vcpkg, build and cache artifacts
-        uses: lukka/run-vcpkg@master
-        id: runvcpkg
-        with:
-          vcpkgArguments: '@${{ env.VCPKGRESPONSEFILE }}'
-          vcpkgDirectory: '${{ github.workspace }}/TabsPls_Qt/vcpkg'
-          # Ensure the cache key changes any time the content of the response file changes.
-          appendedCacheKey: ${{ hashFiles( env.VCPKGRESPONSEFILE ) }}
 
       - name: Run CMake with Ninja
         uses: lukka/run-cmake@v2
@@ -40,10 +22,7 @@ jobs:
         with:
           cmakeListsOrSettingsJson: CMakeListsTxtBasic
           cmakeListsTxtPath: '${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/CMakeLists.txt'
-          useVcpkgToolchainFile: true
           buildWithCMakeArgs: '-- -v'
-      - name: Prints output of run-vcpkg's task
-        run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_TRIPLET_OUT }}' "
 
       - name: dir
         run: find $RUNNER_WORKSPACE
