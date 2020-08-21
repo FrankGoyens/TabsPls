@@ -59,6 +59,7 @@ FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> curre
 	});
 
 	setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
+
 	horizontalHeader()->setStretchLastSection(true);
 }
 

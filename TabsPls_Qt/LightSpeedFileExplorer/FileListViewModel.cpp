@@ -55,6 +55,8 @@ FileListViewModel::FileListViewModel(QStyle& styleProvider, const QString& initi
 QVariant FileListViewModel::data(const QModelIndex& index, int role) const
 {
     switch (role) {
+    case Qt::EditRole:
+    //fallthrough
     case Qt::DisplayRole:
         return m_display[index.row()];
     case Qt::UserRole:
