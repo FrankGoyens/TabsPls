@@ -14,7 +14,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="214"/>
+        <location filename="FileListTableView.cpp" line="215"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
@@ -22,7 +22,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="FileListViewModel.cpp" line="20"/>
+        <location filename="FileListViewModel.cpp" line="21"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
