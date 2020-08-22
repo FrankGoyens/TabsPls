@@ -21,10 +21,12 @@ namespace CreateNewDirectoryTests
 		EXPECT_TRUE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "Jos" })));
 	}
 
-	TEST_F(CreateNewDirectoryTest, CreateDirectoryWithoutParent)
+	TEST_F(CreateNewDirectoryTest, CreateDirectoryWithUnsanitizedName)
 	{
-		FileSystem::Op::CreateDirectory(*FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({"C:", "users"})), "Jos" );
+		FakeFileSystem::AddDirectory({ "C:", "users" });
 
-		EXPECT_FALSE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "Jos" })));
+		FileSystem::Op::CreateDirectory(*FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({"C:", "users"})), "//Jos" );
+
+		EXPECT_TRUE(FileSystem::IsDirectory(FakeFileSystem::MergeUsingSeparator({ "C:", "users", "Jos" })));
 	}
 }

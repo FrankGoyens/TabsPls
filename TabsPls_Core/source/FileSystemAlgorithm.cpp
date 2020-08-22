@@ -29,7 +29,7 @@ namespace FileSystem
 
 		RawPath CombineDirectoryAndName(const FileSystem::Directory& dir, const FileSystem::RawPath& name)
 		{
-			return FileSystem::Algorithm::StripTrailingPathSeparators(dir.path() + FileSystem::Separator() + name);
+			return FileSystem::Algorithm::StripTrailingPathSeparators(dir.path()) + FileSystem::Separator() + FileSystem::Algorithm::StripLeadingPathSeparators(name);
 		}
 	}
 }
