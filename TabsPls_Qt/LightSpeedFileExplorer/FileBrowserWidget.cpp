@@ -8,6 +8,10 @@
 #include <QLabel>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QInputDialog>
+#include <QMessageBox>
+
+#include <TabsPlsCore/FileSystemOp.hpp>
 
 #include "DirectoryInputField.hpp"
 #include "FileListTableView.hpp"
@@ -106,31 +110,40 @@ static auto CreateHistoryActionClosure(RobustDirectoryHistoryStore& history,
 	};
 }
 
+static auto* CreateNewDirectoryButton(const QStyle& styleProvider)
+{
+	auto* newDirectoryButton = new QPushButton("+");
+	newDirectoryButton->setIcon(styleProvider.standardIcon(QStyle::SP_DirIcon));
+	return newDirectoryButton;
+}
+
 static auto SetupTopBar(QWidget& widget, const QString& initialDirectory)
 {
 	auto* vbox = new QHBoxLayout();
 	auto* backButton = new QPushButton(u8"←");
 	auto* forwardButton = new QPushButton(u8"→");
 	auto* directoryInputField = new DirectoryInputField(initialDirectory);
+	auto* newDirectoryButton = CreateNewDirectoryButton(*widget.style());
 
 	backButton->setFixedWidth(50);
 	forwardButton->setFixedWidth(50);
+	newDirectoryButton->setFixedWidth(50);
 
 	vbox->addWidget(backButton);
 	vbox->addWidget(forwardButton);
-
 	vbox->addWidget(directoryInputField);
+	vbox->addWidget(newDirectoryButton);
 	vbox->setMargin(0);
 
 	widget.setLayout(vbox);
 
-	return std::make_tuple(backButton, forwardButton, directoryInputField);
+	return std::make_tuple(backButton, forwardButton, directoryInputField, newDirectoryButton);
 }
 
 static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp, FileListViewModel& viewModel, const QString& initialDirectory)
 {
 	auto* topBarWidget = new QWidget();
-	auto[backButton, forwardButton, topBarDirectoryInputField] = SetupTopBar(*topBarWidget, initialDirectory);
+	auto[backButton, forwardButton, topBarDirectoryInputField, newDirectoryButton] = SetupTopBar(*topBarWidget, initialDirectory);
 
 	auto* fileListViewWidget = new FileListTableViewWithFilter(std::move(currentDirFileOp), viewModel);
 
@@ -143,7 +156,7 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::weak_ptr<Current
 
 	fileBrowserWidget.setLayout(rootLayout);
 
-	return std::make_tuple( fileListViewWidget, topBarDirectoryInputField, backButton, forwardButton);
+	return std::make_tuple( fileListViewWidget, topBarDirectoryInputField, backButton, forwardButton, newDirectoryButton);
 }
 
 FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
@@ -155,7 +168,7 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 
 	auto* fileListViewModel = new FileListViewModel(*style(), FromRawPath(m_currentDirectory.path()));
 
-	const auto [fileListViewWidget_from_binding, topBarDirectoryInputField_from_binding, backButton, forwardButton] = SetupCentralWidget(*this, m_currentDirFileOpImpl, *fileListViewModel, FromRawPath(m_currentDirectory.path()));
+	const auto [fileListViewWidget_from_binding, topBarDirectoryInputField_from_binding, backButton, forwardButton, newDirectoryButton] = SetupCentralWidget(*this, m_currentDirFileOpImpl, *fileListViewModel, FromRawPath(m_currentDirectory.path()));
 
 	auto* fileListViewWidget = fileListViewWidget_from_binding; //This is done to be able to capture fileListViewWidget in lambda's
 	auto* topBarDirectoryInputField = topBarDirectoryInputField_from_binding;
@@ -220,6 +233,21 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 	{
 		topBarDirectoryInputField->setFocus();
 		topBarDirectoryInputField->selectAll();
+	});
+
+	connect(newDirectoryButton, &QPushButton::pressed, [=](){
+		bool ok = false;
+		const auto nameForNewDir = QInputDialog::getText(this, tr("New Folder"), tr("New folder name"), QLineEdit::Normal, tr("New Folder"), &ok);
+		if(ok){
+			try{
+				FileSystem::Op::CreateDirectory(m_currentDirectory, ToRawPath(nameForNewDir));
+				fileListViewModel->RefreshDirectory(FromRawPath(m_currentDirectory.path()));
+			}
+			catch(const FileSystem::Op::CreateDirectoryException& e){
+				QMessageBox::warning(this, tr("Create new folder failed"), e.what());
+			}
+			
+		}
 	});
 }
 

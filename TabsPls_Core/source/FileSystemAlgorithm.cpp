@@ -1,6 +1,7 @@
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
 
 #include <TabsPlsCore/FileSystem.hpp>
+#include <TabsPlsCore/FileSystemDirectory.hpp>
 
 namespace FileSystem
 {
@@ -24,6 +25,11 @@ namespace FileSystem
 			}
 
 			return path;
+		}
+
+		RawPath CombineDirectoryAndName(const FileSystem::Directory& dir, const FileSystem::RawPath& name)
+		{
+			return FileSystem::Algorithm::StripTrailingPathSeparators(dir.path()) + FileSystem::Separator() + FileSystem::Algorithm::StripLeadingPathSeparators(name);
 		}
 	}
 }

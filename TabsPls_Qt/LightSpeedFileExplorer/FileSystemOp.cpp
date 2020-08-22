@@ -3,6 +3,8 @@
 #include <filesystem>
 
 #include <TabsPlsCore/FileSystem.hpp>
+#include <TabsPlsCore/FileSystemAlgorithm.hpp>
+#include <TabsPlsCore/FileSystemDirectory.hpp>
 
 namespace FileSystem
 {
@@ -37,6 +39,17 @@ namespace FileSystem
 				std::filesystem::remove_all(dest);
 			}
 			catch (const std::filesystem::filesystem_error& e) {}
+		}
+
+		void CreateDirectory(const Directory& parent, const Name& newDirName)
+		{
+			try{
+				const auto newDirPath = FileSystem::Algorithm::CombineDirectoryAndName(parent, newDirName);
+				std::filesystem::create_directory(newDirPath);
+			}
+			catch(const std::filesystem::filesystem_error& e){
+				throw CreateDirectoryException(e.what());
+			}
 		}
 	}
 }

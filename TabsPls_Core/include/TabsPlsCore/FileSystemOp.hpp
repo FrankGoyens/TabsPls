@@ -7,6 +7,8 @@
 
 namespace FileSystem
 {
+	class Directory;
+
 	namespace Op
 	{
 		struct FileSystemOpException : std::exception {
@@ -29,5 +31,11 @@ namespace FileSystem
 		void Rename(const RawPath& source, const RawPath& dest);
 
 		void RemoveAll(const RawPath&);
+
+		struct CreateDirectoryException : FileSystemOpException {
+			CreateDirectoryException(std::string what) : FileSystemOpException(std::move(what)) {}
+		};
+
+		void CreateDirectory(const Directory& parent, const Name& newDirName);
 	}
 }
