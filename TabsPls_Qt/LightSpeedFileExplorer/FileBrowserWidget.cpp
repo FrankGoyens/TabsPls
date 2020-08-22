@@ -11,13 +11,14 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include <TabsPlsCore/FileSystemOp.hpp>
+
 #include "DirectoryInputField.hpp"
 #include "FileListTableView.hpp"
 #include "FileListTableViewWithFilter.hpp"
 #include "FileListViewModel.hpp"
 #include "CurrentDirectoryFileOpQtImpl.hpp"
 #include "FileSystemDefsConversion.hpp"
-#include "TabsPlsCore/FileSystemOp.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::FromName;
