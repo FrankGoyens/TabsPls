@@ -22,18 +22,23 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="53"/>
+        <location filename="FileListTableView.cpp" line="98"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="53"/>
+        <location filename="FileListTableView.cpp" line="98"/>
         <source>Do you want to remove these files? (Cannot be undone!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="215"/>
+        <location filename="FileListTableView.cpp" line="286"/>
         <source>Problem copying</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="FileListTableView.cpp" line="301"/>
+        <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
