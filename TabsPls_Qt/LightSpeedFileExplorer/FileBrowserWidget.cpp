@@ -249,6 +249,10 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir):
 			
 		}
 	});
+
+	connect(&m_fs_watcher, &QFileSystemWatcher::directoryChanged, [=](const QString&) {fileListViewModel->RefreshDirectory(FromRawPath(m_currentDirectory.path())); });
+
+	StartWatchingCurrentDirectory();
 }
 
 const QString FileBrowserWidget::GetCurrentDirectoryName() const
@@ -258,7 +262,21 @@ const QString FileBrowserWidget::GetCurrentDirectoryName() const
 
 void FileBrowserWidget::SetCurrentDirectory(FileSystem::Directory newDir)
 {
+	StopWatchingCurrentDirectory();
+
 	m_currentDirectory = std::move(newDir);
+	StartWatchingCurrentDirectory();
+
 	m_currentDirFileOpImpl->updateCurrentDir(m_currentDirectory);
 	emit currentDirectoryNameChanged(GetCurrentDirectoryName());
+}
+
+void FileBrowserWidget::StartWatchingCurrentDirectory()
+{
+	m_fs_watcher.addPath(FromRawPath(m_currentDirectory.path()));
+}
+
+void FileBrowserWidget::StopWatchingCurrentDirectory()
+{
+	m_fs_watcher.removePath(FromRawPath(m_currentDirectory.path()));
 }
