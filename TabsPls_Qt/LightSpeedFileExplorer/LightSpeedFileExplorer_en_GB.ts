@@ -4,17 +4,17 @@
 <context>
     <name>FileBrowserWidget</name>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="239"/>
+        <location filename="FileBrowserWidget.cpp" line="240"/>
         <source>New Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="239"/>
+        <location filename="FileBrowserWidget.cpp" line="240"/>
         <source>New folder name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="246"/>
+        <location filename="FileBrowserWidget.cpp" line="247"/>
         <source>Create new folder failed</source>
         <translation type="unfinished"></translation>
     </message>

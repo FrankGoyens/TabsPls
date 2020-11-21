@@ -99,7 +99,7 @@ void FileListTableView::mouseMoveEvent(QMouseEvent* event)
 	mimeData->setData("text/uri-list", AggregateSelectionDataAsUriList().toUtf8());
 	drag.setMimeData(mimeData);
 
-	drag.exec(Qt::CopyAction);
+	drag.exec(Qt::MoveAction);
 }
 
 static void AcceptEventIfFormatIsOK(QDragMoveEvent& event)

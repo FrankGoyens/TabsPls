@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <QWidget>
+#include <QFileSystemWatcher>
 
 #include <TabsPlsCore/RobustDirectoryHistoryStore.hpp>
 
@@ -29,6 +30,10 @@ private:
 	FileSystem::Directory m_currentDirectory;
 	RobustDirectoryHistoryStore m_historyStore;
 	std::shared_ptr<CurrentDirectoryFileOpQtImpl> m_currentDirFileOpImpl;
+	QFileSystemWatcher m_fs_watcher;
 
 	void SetCurrentDirectory(FileSystem::Directory);
+
+	void StartWatchingCurrentDirectory();
+	void StopWatchingCurrentDirectory();
 };
