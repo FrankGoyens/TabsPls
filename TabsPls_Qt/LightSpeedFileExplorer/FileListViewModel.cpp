@@ -20,16 +20,24 @@ namespace
             {QObject::tr("Name")}
         }
     };
+
+    struct GetFilesInDirectoryException : std::exception
+    {
+        GetFilesInDirectoryException(const char* message_) : message(message_) {}
+
+        const char* what() const noexcept override { return message.c_str(); }
+        
+        std::string message;
+    };
 }
 
-static auto RetrieveDirectoryContents(const QString& initialDirectory)
+static std::pair<std::vector<FileSystem::FilePath>, std::vector<FileSystem::Directory>> GetFilesInDirectoryWithFSCatch(const FileSystem::Directory& dir)
 {
-    std::vector<FileSystem::FilePath> files;
-    std::vector<FileSystem::Directory> dirs;
+    try {
+        std::vector<FileSystem::FilePath> files;
+        std::vector<FileSystem::Directory> dirs;
 
-    if (auto dir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory)))
-    {
-        for (const auto& entry : FileSystem::GetFilesInDirectory(*dir))
+        for (const auto& entry : FileSystem::GetFilesInDirectory(dir))
         {
             if (auto file = FileSystem::FilePath::FromPath(entry))
             {
@@ -37,12 +45,25 @@ static auto RetrieveDirectoryContents(const QString& initialDirectory)
                 continue;
             }
 
-            if(auto dir = FileSystem::Directory::FromPath(entry))
+            if (auto dir = FileSystem::Directory::FromPath(entry))
                 dirs.emplace_back(*dir);
         }
+
+        return std::make_pair(files, dirs);
     }
+    catch (const std::exception& e) {
+        throw GetFilesInDirectoryException(e.what());
+    }
+
+    return { {}, {} };
+}
+
+static std::pair<std::vector<FileSystem::FilePath>, std::vector<FileSystem::Directory>> RetrieveDirectoryContents(const QString& initialDirectory)
+{
+    if (auto dir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory)))
+        return GetFilesInDirectoryWithFSCatch(*dir);
     
-    return std::make_pair(files, dirs);
+    return { {}, {} };
 }
 
 FileListViewModel::FileListViewModel(QStyle& styleProvider, const QString& initialDirectory):
@@ -114,7 +135,12 @@ Qt::ItemFlags FileListViewModel::flags(const QModelIndex& index) const
 void FileListViewModel::ChangeDirectory(const QString& dir)
 {
     beginResetModel();
-    std::tie(m_fileEntries, m_directoryEntries) = RetrieveDirectoryContents(dir);
+    try {
+        std::tie(m_fileEntries, m_directoryEntries) = RetrieveDirectoryContents(dir);
+    }
+    catch (const GetFilesInDirectoryException& e) {
+        m_error = e.what();
+    }
     FillModelDataCheckingForRoot(dir);
     endResetModel();
 }

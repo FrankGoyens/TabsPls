@@ -268,6 +268,9 @@ static QStringList PerformOpOnFileUris(const std::vector<QUrl>& urls, const Op& 
 		catch (const FileSystem::Op::CopyException& e) {
 			failedCopies << e.message.c_str();
 		}
+		catch (const FileSystem::Op::RenameException& e) {
+			failedCopies << e.message.c_str();
+		}
 	}
 
 	return failedCopies;

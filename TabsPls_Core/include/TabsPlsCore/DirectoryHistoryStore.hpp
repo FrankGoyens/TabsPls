@@ -12,9 +12,10 @@ public:
 	DirectoryHistoryStore() = default;
 	virtual ~DirectoryHistoryStore() = default;
 
+	DirectoryHistoryStore(DirectoryHistoryStore&&) noexcept = default;
 	DirectoryHistoryStore(const DirectoryHistoryStore&) = default;
 
-	DirectoryHistoryStore& operator=(DirectoryHistoryStore);
+	DirectoryHistoryStore& operator=(DirectoryHistoryStore) noexcept;
 
 	void OnNewDirectory(const FileSystem::Directory&);
 
@@ -23,7 +24,7 @@ public:
 
 	const FileSystem::Directory GetCurrent() const;
 
-	friend void swap(DirectoryHistoryStore& first, DirectoryHistoryStore& second);
+	friend void swap(DirectoryHistoryStore& first, DirectoryHistoryStore& second) noexcept;
 private:
 	std::stack<FileSystem::Directory> m_previousDirs;
 	std::stack<FileSystem::Directory> m_nextDirs;
