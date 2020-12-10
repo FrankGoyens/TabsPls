@@ -6,6 +6,14 @@
 class RobustDirectoryHistoryStore
 {
 public:
+	RobustDirectoryHistoryStore() = default;
+	~RobustDirectoryHistoryStore() = default;
+
+	RobustDirectoryHistoryStore(RobustDirectoryHistoryStore&&) noexcept = default;
+	RobustDirectoryHistoryStore(const RobustDirectoryHistoryStore&) = default;
+
+	RobustDirectoryHistoryStore& operator=(RobustDirectoryHistoryStore) noexcept;
+
 	/*! \brief This function still trusts that the given directory still exists*/
 	void OnNewDirectory(const FileSystem::Directory&);
 
@@ -13,6 +21,8 @@ public:
 	void SwitchToNext();
 
 	const FileSystem::Directory GetCurrent() const;
+
+	friend void swap(RobustDirectoryHistoryStore&, RobustDirectoryHistoryStore&) noexcept;
 
 private:
 	DirectoryHistoryStore m_store;

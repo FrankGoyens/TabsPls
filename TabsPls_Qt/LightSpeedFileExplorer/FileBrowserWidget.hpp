@@ -36,4 +36,8 @@ private:
 
 	void StartWatchingCurrentDirectory();
 	void StopWatchingCurrentDirectory();
+
+	template<typename Func>
+	void DisplayDirectoryChangedErrorIfExceptionHappens(Func);
+	void DisplayDirectoryChangedError(const char* message);
 };

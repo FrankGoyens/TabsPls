@@ -4,18 +4,28 @@
 <context>
     <name>FileBrowserWidget</name>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="240"/>
+        <location filename="FileBrowserWidget.cpp" line="284"/>
         <source>New Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="240"/>
+        <location filename="FileBrowserWidget.cpp" line="284"/>
         <source>New folder name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="247"/>
+        <location filename="FileBrowserWidget.cpp" line="291"/>
         <source>Create new folder failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="FileBrowserWidget.cpp" line="338"/>
+        <source>Unknown error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="FileBrowserWidget.cpp" line="344"/>
+        <source>Unable to change directory</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -32,12 +42,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="286"/>
+        <location filename="FileListTableView.cpp" line="289"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="301"/>
+        <location filename="FileListTableView.cpp" line="304"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
