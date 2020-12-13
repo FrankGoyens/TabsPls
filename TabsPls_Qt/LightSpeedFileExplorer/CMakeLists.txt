@@ -22,7 +22,6 @@ set(TS_FILES LightSpeedFileExplorer_en_GB.ts)
 set(LightSpeedFileExplorer_Headers 
   ${TabsPls_Core_Headers}
 
-  TabsPlsCore_defs/pch.h
   TabsPlsCore_defs/FileSystemDefs.hpp
 
   FileSystemDefsConversion.hpp
