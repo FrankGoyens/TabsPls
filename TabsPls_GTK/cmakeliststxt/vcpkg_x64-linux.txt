@@ -1,1 +1,0 @@
-skyr-url:x64-linux
