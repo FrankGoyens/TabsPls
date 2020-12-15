@@ -38,7 +38,7 @@ target_compile_features(TabsPlsTest PUBLIC cxx_std_17)
 
 find_package(GTest)
 if(GTest_FOUND)
-	target_link_libraries(TabsPlsTest gtest)
+	target_link_libraries(TabsPlsTest GTest::gtest)
 endif()
 
 if(UNIX)
