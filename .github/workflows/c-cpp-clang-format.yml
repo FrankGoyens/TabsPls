@@ -1,0 +1,21 @@
+name: C/C++ CI check if clang-format is needed
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Get dependencies from apt
+        run: sudo apt install clang-format-10
+      - uses: actions/checkout@v2
+
+      - name: Run clang format check script
+        run: sh ${{ github.workspace }}/clang_format_check_all.sh
+        working-directory: ${{ github.workspace }}
