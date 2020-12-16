@@ -1,4 +1,3 @@
-#include "pch.h"
 #include <TabsPlsCore/RobustDirectoryHistoryStore.hpp>
 
 RobustDirectoryHistoryStore& RobustDirectoryHistoryStore::operator=(RobustDirectoryHistoryStore other) noexcept

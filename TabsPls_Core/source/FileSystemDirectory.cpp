@@ -1,4 +1,3 @@
-#include "pch.h"
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 
 #include <TabsPlsCore/FileSystemFilePath.hpp>
