@@ -3,15 +3,14 @@
 #include <QLineEdit>
 #include <QString>
 
-class DirectoryInputField : public QLineEdit
-{
-	Q_OBJECT
-public:
-	DirectoryInputField(QString initialDirectory);
+class DirectoryInputField : public QLineEdit {
+    Q_OBJECT
+  public:
+    DirectoryInputField(QString initialDirectory);
 
-signals:
-	void directoryChanged(QString);
+  signals:
+    void directoryChanged(QString);
 
-private:
-	QString m_currentDirectory;
+  private:
+    QString m_currentDirectory;
 };

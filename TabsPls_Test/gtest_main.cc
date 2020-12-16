@@ -27,16 +27,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <cstdio>
 #include "gtest/gtest.h"
+#include <cstdio>
 
 #if GTEST_OS_ESP8266 || GTEST_OS_ESP32
 #if GTEST_OS_ESP8266
 extern "C" {
 #endif
-void setup() {
-  testing::InitGoogleTest();
-}
+void setup() { testing::InitGoogleTest(); }
 
 void loop() { RUN_ALL_TESTS(); }
 
@@ -46,9 +44,9 @@ void loop() { RUN_ALL_TESTS(); }
 
 #else
 
-int main(int argc, char **argv) {
-  printf("Running main() from %s\n", __FILE__);
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int main(int argc, char** argv) {
+    printf("Running main() from %s\n", __FILE__);
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
 #endif

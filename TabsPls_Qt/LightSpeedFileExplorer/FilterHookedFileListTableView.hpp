@@ -6,16 +6,15 @@
 
 class CurrentDirectoryFileOp;
 
-class FilterHookedFileListTableView : public FileListTableView
-{
-	Q_OBJECT
-public:
-	FilterHookedFileListTableView(std::weak_ptr<CurrentDirectoryFileOp>);
+class FilterHookedFileListTableView : public FileListTableView {
+    Q_OBJECT
+  public:
+    FilterHookedFileListTableView(std::weak_ptr<CurrentDirectoryFileOp>);
 
-signals:
-	void focusChangeCharacterReceived(char);
-	void escapePressed();
+  signals:
+    void focusChangeCharacterReceived(char);
+    void escapePressed();
 
-protected:
-	void keyPressEvent(QKeyEvent* event) override;
+  protected:
+    void keyPressEvent(QKeyEvent* event) override;
 };

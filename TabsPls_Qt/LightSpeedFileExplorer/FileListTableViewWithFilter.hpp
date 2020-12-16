@@ -9,18 +9,18 @@ class FileListTableView;
 class FileListViewModel;
 class QLineEdit;
 
-class FileListTableViewWithFilter: public QWidget
-{
-	Q_OBJECT
+class FileListTableViewWithFilter : public QWidget {
+    Q_OBJECT
 
-public:
-	FileListTableViewWithFilter(std::weak_ptr<CurrentDirectoryFileOp>, FileListViewModel& viewModel);
+  public:
+    FileListTableViewWithFilter(std::weak_ptr<CurrentDirectoryFileOp>,
+                                FileListViewModel& viewModel);
 
-	FileListTableView& GetFileListTableView() { return *m_fileListTableView; }
+    FileListTableView& GetFileListTableView() { return *m_fileListTableView; }
 
-	void ClearFilter();
+    void ClearFilter();
 
-private:
-	FileListTableView* m_fileListTableView;
-	QLineEdit* m_filterField;
+  private:
+    FileListTableView* m_fileListTableView;
+    QLineEdit* m_filterField;
 };

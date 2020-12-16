@@ -1,32 +1,30 @@
 #pragma once
 
-#include <string>
 #include <optional>
+#include <string>
 
 #include "FileSystem.hpp"
 
-namespace FileSystem
-{
-	/*! \brief Cannot be constructed unless a valid path was given. So only a check at contruction is needed.*/
-	class FilePath
-	{
-	public:
-		static std::optional<FilePath> FromPath(const FileSystem::RawPath& path);
+namespace FileSystem {
+/*! \brief Cannot be constructed unless a valid path was given. So only a check
+ * at contruction is needed.*/
+class FilePath {
+  public:
+    static std::optional<FilePath> FromPath(const FileSystem::RawPath& path);
 
-		FilePath(const FilePath&) = default;
-		FilePath(FilePath&&) = default;
+    FilePath(const FilePath&) = default;
+    FilePath(FilePath&&) = default;
 
-		FilePath& operator=(FilePath other);
+    FilePath& operator=(FilePath other);
 
-		auto& path() const { return m_path; }
+    auto& path() const { return m_path; }
 
-		friend void swap(FilePath& first, FilePath& second);
-	protected:
-		FilePath(RawPath path) : m_path(std::move(path)) {}
+    friend void swap(FilePath& first, FilePath& second);
 
-	private:
-		FileSystem::RawPath m_path;
-	};
-}
+  protected:
+    FilePath(RawPath path) : m_path(std::move(path)) {}
 
-
+  private:
+    FileSystem::RawPath m_path;
+};
+} // namespace FileSystem
