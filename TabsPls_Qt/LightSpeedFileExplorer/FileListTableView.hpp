@@ -11,34 +11,33 @@ class QLabel;
 
 class CurrentDirectoryFileOp;
 
-class FileListTableView: public QTableView
-{
-	Q_OBJECT
+class FileListTableView : public QTableView {
+    Q_OBJECT
 
-public:
-	FileListTableView(std::weak_ptr<CurrentDirectoryFileOp>);
+  public:
+    FileListTableView(std::weak_ptr<CurrentDirectoryFileOp>);
 
-	static int GetModelRoleForFullPaths();
-	static int GetModelRoleForNames();
+    static int GetModelRoleForFullPaths();
+    static int GetModelRoleForNames();
 
-protected:
-	void mousePressEvent(QMouseEvent*) override;
-	void mouseMoveEvent(QMouseEvent*) override;
-	void dragEnterEvent(QDragEnterEvent*) override;
-	void dragMoveEvent(QDragMoveEvent*) override;
-	void dropEvent(QDropEvent*) override;
+  protected:
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void dragEnterEvent(QDragEnterEvent*) override;
+    void dragMoveEvent(QDragMoveEvent*) override;
+    void dropEvent(QDropEvent*) override;
 
-	void commitData(QWidget* editor) override;
+    void commitData(QWidget* editor) override;
 
-private:
-	QPoint m_dragStartPosition;
-	std::weak_ptr<CurrentDirectoryFileOp> m_currentDirFileOp;
+  private:
+    QPoint m_dragStartPosition;
+    std::weak_ptr<CurrentDirectoryFileOp> m_currentDirFileOp;
 
-	QString AggregateSelectionDataAsUriList() const;
-	QStringList AggregateSelectionDataAsLocalFileList() const;
-	void NotifyModelOfChange(CurrentDirectoryFileOp&);
-	void pasteEvent();
+    QString AggregateSelectionDataAsUriList() const;
+    QStringList AggregateSelectionDataAsLocalFileList() const;
+    void NotifyModelOfChange(CurrentDirectoryFileOp&);
+    void pasteEvent();
 
-	void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);
-	void MoveFileUrisIntoCurrentDir(const std::vector<QUrl>&);
+    void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);
+    void MoveFileUrisIntoCurrentDir(const std::vector<QUrl>&);
 };

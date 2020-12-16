@@ -1,37 +1,38 @@
 #include <QAbstractTableModel>
 
-#include <QString>
 #include <QIcon>
+#include <QString>
 
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
 class QStyle;
 
-class FileListViewModel : public QAbstractTableModel
-{
+class FileListViewModel : public QAbstractTableModel {
     Q_OBJECT
 
-public:
+  public:
     FileListViewModel(QStyle& styleProvider, const QString& initialDirectory);
 
     /*Qt table model implementation*/
-    int rowCount(const QModelIndex & = QModelIndex()) const override;
+    int rowCount(const QModelIndex& = QModelIndex()) const override;
 
-    int columnCount(const QModelIndex & = QModelIndex()) const override
-    {
+    int columnCount(const QModelIndex& = QModelIndex()) const override {
         return 1;
     }
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override;
 
     QVariant data(const QModelIndex& index, int role) const override;
-    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+    bool setData(const QModelIndex& index, const QVariant& value,
+                 int role) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    QHash<int, QByteArray> roleNames() const override
-    {
-        return { {Qt::DisplayRole, "display"}, {Qt::DecorationRole, "icon_decoration"}, {Qt::UserRole, "full_paths" } };
+    QHash<int, QByteArray> roleNames() const override {
+        return {{Qt::DisplayRole, "display"},
+                {Qt::DecorationRole, "icon_decoration"},
+                {Qt::UserRole, "full_paths"}};
     }
 
     /*TabsPls app*/
@@ -40,14 +41,15 @@ public:
     void ChangeDirectory(const QString&);
 
     /*! \brief This will have no effect if the given directory does not exist
-    * 
-    * This should be called instead of 'ChangeDirectory' when the current directory did not change.
-    */
+     *
+     * This should be called instead of 'ChangeDirectory' when the current
+     * directory did not change.
+     */
     void RefreshDirectory(const QString&);
 
     std::optional<std::string> ClaimError();
 
-private:
+  private:
     std::vector<FileSystem::Directory> m_directoryEntries;
     std::vector<FileSystem::FilePath> m_fileEntries;
 

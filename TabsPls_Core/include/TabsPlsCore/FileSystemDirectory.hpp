@@ -1,39 +1,37 @@
 #pragma once
 
-#include <string>
 #include <optional>
+#include <string>
 
 #include "FileSystem.hpp"
 
-namespace FileSystem
-{
-	class FilePath;
+namespace FileSystem {
+class FilePath;
 
-	/*! \brief Cannot be constructed unless a valid path was given. So only a check at contruction is needed.*/
-	class Directory
-	{
-	public:
-		static Directory FromCurrentWorkingDirectory();
-		static std::optional<Directory> FromPath(const FileSystem::RawPath& path);
-		
-		static Directory FromFilePathParent(const FilePath& path);
+/*! \brief Cannot be constructed unless a valid path was given. So only a check
+ * at contruction is needed.*/
+class Directory {
+  public:
+    static Directory FromCurrentWorkingDirectory();
+    static std::optional<Directory> FromPath(const FileSystem::RawPath& path);
 
-		Directory(const Directory&) = default;
-		Directory(Directory&&) = default;
+    static Directory FromFilePathParent(const FilePath& path);
 
-		Directory& operator=(Directory other);
+    Directory(const Directory&) = default;
+    Directory(Directory&&) = default;
 
-		Directory Parent() const;
+    Directory& operator=(Directory other);
 
-		auto& path() const { return m_path; }
+    Directory Parent() const;
 
-		friend void swap(Directory& first, Directory& second);
-	protected:
-		Directory(RawPath path) : m_path(std::move(path)) {}
+    auto& path() const { return m_path; }
 
-	private:
-		FileSystem::RawPath m_path;
-	};
-}
+    friend void swap(Directory& first, Directory& second);
 
+  protected:
+    Directory(RawPath path) : m_path(std::move(path)) {}
 
+  private:
+    FileSystem::RawPath m_path;
+};
+} // namespace FileSystem
