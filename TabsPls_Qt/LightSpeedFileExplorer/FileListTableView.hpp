@@ -37,6 +37,7 @@ class FileListTableView : public QTableView {
     QStringList AggregateSelectionDataAsLocalFileList() const;
     void NotifyModelOfChange(CurrentDirectoryFileOp&);
     void pasteEvent();
+    void PerformMimeDataActionOnIncomingFiles(const QMimeData&, const std::vector<QUrl>&);
 
     void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);
     void MoveFileUrisIntoCurrentDir(const std::vector<QUrl>&);
