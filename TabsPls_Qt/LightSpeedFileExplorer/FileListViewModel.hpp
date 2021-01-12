@@ -17,22 +17,16 @@ class FileListViewModel : public QAbstractTableModel {
     /*Qt table model implementation*/
     int rowCount(const QModelIndex& = QModelIndex()) const override;
 
-    int columnCount(const QModelIndex& = QModelIndex()) const override {
-        return 1;
-    }
+    int columnCount(const QModelIndex& = QModelIndex()) const override { return 1; }
 
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     QVariant data(const QModelIndex& index, int role) const override;
-    bool setData(const QModelIndex& index, const QVariant& value,
-                 int role) override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
     QHash<int, QByteArray> roleNames() const override {
-        return {{Qt::DisplayRole, "display"},
-                {Qt::DecorationRole, "icon_decoration"},
-                {Qt::UserRole, "full_paths"}};
+        return {{Qt::DisplayRole, "display"}, {Qt::DecorationRole, "icon_decoration"}, {Qt::UserRole, "full_paths"}};
     }
 
     /*TabsPls app*/

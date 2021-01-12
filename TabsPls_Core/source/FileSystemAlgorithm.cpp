@@ -23,10 +23,8 @@ RawPath StripLeadingPathSeparators(RawPath path) {
     return path;
 }
 
-RawPath CombineDirectoryAndName(const FileSystem::Directory& dir,
-                                const FileSystem::RawPath& name) {
-    return FileSystem::Algorithm::StripTrailingPathSeparators(dir.path()) +
-           FileSystem::Separator() +
+RawPath CombineDirectoryAndName(const FileSystem::Directory& dir, const FileSystem::RawPath& name) {
+    return FileSystem::Algorithm::StripTrailingPathSeparators(dir.path()) + FileSystem::Separator() +
            FileSystem::Algorithm::StripLeadingPathSeparators(name);
 }
 } // namespace Algorithm

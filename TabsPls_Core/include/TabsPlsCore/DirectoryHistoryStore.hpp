@@ -23,8 +23,7 @@ class DirectoryHistoryStore {
 
     const FileSystem::Directory GetCurrent() const;
 
-    friend void swap(DirectoryHistoryStore& first,
-                     DirectoryHistoryStore& second) noexcept;
+    friend void swap(DirectoryHistoryStore& first, DirectoryHistoryStore& second) noexcept;
 
   private:
     std::stack<FileSystem::Directory> m_previousDirs;

@@ -38,10 +38,8 @@ static int DecodeWinApiDropEffect(QByteArray& bytes) {
     return dropEffect;
 }
 
-static void SetDropEffect(QMimeData& mimeData,
-                          int dropEffect /* 2 for cut and 5 for copy*/) {
-    mimeData.setData("Preferred DropEffect",
-                     EncodeWinApiDropEffect(dropEffect));
+static void SetDropEffect(QMimeData& mimeData, int dropEffect /* 2 for cut and 5 for copy*/) {
+    mimeData.setData("Preferred DropEffect", EncodeWinApiDropEffect(dropEffect));
     // TODO also add linux support,
     // on KDE at least the mimetype is application/x-kde-cutselection
     // nautilus is a bit more strange, this stores the following in text/plain
@@ -61,48 +59,35 @@ static void SetUriListOnClipboard(const QString& data, bool copy = true) {
     clipboard->setMimeData(mimeData);
 }
 
-static void SetUriListOnClipboardForCopy(const QString& data) {
-    SetUriListOnClipboard(data, true);
-}
+static void SetUriListOnClipboardForCopy(const QString& data) { SetUriListOnClipboard(data, true); }
 
-static void SetUriListOnClipboardForCut(const QString& data) {
-    SetUriListOnClipboard(data, false);
-}
+static void SetUriListOnClipboardForCut(const QString& data) { SetUriListOnClipboard(data, false); }
 
-FileListTableView::FileListTableView(
-    std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp)
+FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp)
     : m_currentDirFileOp(std::move(currentDirFileOp)) {
     verticalHeader()->hide();
     setShowGrid(false);
     setAcceptDrops(true);
 
-    const auto* cutUrisToClipboardShortcut =
-        new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_X), this);
-    connect(cutUrisToClipboardShortcut, &QShortcut::activated, [this]() {
-        return SetUriListOnClipboardForCut(AggregateSelectionDataAsUriList());
-    });
+    const auto* cutUrisToClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_X), this);
+    connect(cutUrisToClipboardShortcut, &QShortcut::activated,
+            [this]() { return SetUriListOnClipboardForCut(AggregateSelectionDataAsUriList()); });
 
-    const auto* copyUrisToClipboardShortcut =
-        new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
-    connect(copyUrisToClipboardShortcut, &QShortcut::activated, [this]() {
-        return SetUriListOnClipboardForCopy(AggregateSelectionDataAsUriList());
-    });
+    const auto* copyUrisToClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+    connect(copyUrisToClipboardShortcut, &QShortcut::activated,
+            [this]() { return SetUriListOnClipboardForCopy(AggregateSelectionDataAsUriList()); });
 
-    const auto* pasteUrisFromClipboardShortcut =
-        new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
-    connect(pasteUrisFromClipboardShortcut, &QShortcut::activated,
-            [this]() { pasteEvent(); });
+    const auto* pasteUrisFromClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
+    connect(pasteUrisFromClipboardShortcut, &QShortcut::activated, [this]() { pasteEvent(); });
 
-    const auto* deleteItemShortcut =
-        new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    const auto* deleteItemShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
     connect(deleteItemShortcut, &QShortcut::activated, [this]() {
         const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
         if (!liveCurrentDirFileOp)
             return;
 
-        const auto response = QMessageBox::question(
-            this, tr("Delete file"),
-            tr("Do you want to remove these files? (Cannot be undone!)"));
+        const auto response = QMessageBox::question(this, tr("Delete file"),
+                                                    tr("Do you want to remove these files? (Cannot be undone!)"));
         if (response == QMessageBox::StandardButton::Yes) {
             for (const auto& entry : AggregateSelectionDataAsLocalFileList())
                 FileSystem::Op::RemoveAll(ToRawPath(entry));
@@ -110,8 +95,7 @@ FileListTableView::FileListTableView(
         }
     });
 
-    setEditTriggers(QAbstractItemView::SelectedClicked |
-                    QAbstractItemView::EditKeyPressed);
+    setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
 
     horizontalHeader()->setStretchLastSection(true);
 }
@@ -133,15 +117,13 @@ void FileListTableView::mouseMoveEvent(QMouseEvent* event) {
         return;
     }
 
-    if ((event->pos() - m_dragStartPosition).manhattanLength() <
-        QApplication::startDragDistance())
+    if ((event->pos() - m_dragStartPosition).manhattanLength() < QApplication::startDragDistance())
         return;
 
     QDrag drag(this);
     QMimeData* mimeData = new QMimeData;
 
-    mimeData->setData("text/uri-list",
-                      AggregateSelectionDataAsUriList().toUtf8());
+    mimeData->setData("text/uri-list", AggregateSelectionDataAsUriList().toUtf8());
     drag.setMimeData(mimeData);
 
     drag.exec(Qt::MoveAction);
@@ -152,22 +134,15 @@ static void AcceptEventIfFormatIsOK(QDragMoveEvent& event) {
         event.acceptProposedAction();
 }
 
-void FileListTableView::dragEnterEvent(QDragEnterEvent* event) {
-    AcceptEventIfFormatIsOK(*event);
-}
+void FileListTableView::dragEnterEvent(QDragEnterEvent* event) { AcceptEventIfFormatIsOK(*event); }
 
-void FileListTableView::dragMoveEvent(QDragMoveEvent* event) {
-    AcceptEventIfFormatIsOK(*event);
-}
+void FileListTableView::dragMoveEvent(QDragMoveEvent* event) { AcceptEventIfFormatIsOK(*event); }
 
-static bool IsValidFileUrl(const QUrl& url) {
-    return url.isValid() && url.scheme() == "file";
-}
+static bool IsValidFileUrl(const QUrl& url) { return url.isValid() && url.scheme() == "file"; }
 
 static std::vector<QUrl> DecodeFileUris(const QString& data) {
     std::vector<QUrl> uris;
-    for (const auto& uri :
-         data.split(QRegExp("[\r\n]"), QString::SkipEmptyParts)) {
+    for (const auto& uri : data.split(QRegExp("[\r\n]"), QString::SkipEmptyParts)) {
         const QUrl url(uri);
         if (!IsValidFileUrl(url))
             continue;
@@ -179,8 +154,7 @@ static std::vector<QUrl> DecodeFileUris(const QString& data) {
 
 void FileListTableView::dropEvent(QDropEvent* event) {
     if (event->mimeData()->hasFormat("text/uri-list")) {
-        const auto urls =
-            DecodeFileUris(event->mimeData()->data("text/uri-list"));
+        const auto urls = DecodeFileUris(event->mimeData()->data("text/uri-list"));
         CopyFileUrisIntoCurrentDir(urls);
     }
 }
@@ -215,11 +189,9 @@ QStringList FileListTableView::AggregateSelectionDataAsLocalFileList() const {
     return dataAsList;
 }
 
-void FileListTableView::NotifyModelOfChange(
-    CurrentDirectoryFileOp& liveCurrentDirFileOp) {
+void FileListTableView::NotifyModelOfChange(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
     if (auto* fileListViewModel = dynamic_cast<FileListViewModel*>(model()))
-        fileListViewModel->RefreshDirectory(
-            FromRawPath(liveCurrentDirFileOp.GetCurrentDir().path()));
+        fileListViewModel->RefreshDirectory(FromRawPath(liveCurrentDirFileOp.GetCurrentDir().path()));
 }
 
 static std::vector<QUrl> ReadUrlsFromClipboard(const QClipboard& clipboard) {
@@ -247,9 +219,7 @@ void FileListTableView::pasteEvent() {
     return CopyFileUrisIntoCurrentDir(urls);
 }
 
-template <typename Op>
-static QStringList PerformOpOnFileUris(const std::vector<QUrl>& urls,
-                                       const Op& op) {
+template <typename Op> static QStringList PerformOpOnFileUris(const std::vector<QUrl>& urls, const Op& op) {
     QStringList failedCopies;
 
     for (const auto& url : urls) {
@@ -265,38 +235,32 @@ static QStringList PerformOpOnFileUris(const std::vector<QUrl>& urls,
     return failedCopies;
 }
 
-void FileListTableView::CopyFileUrisIntoCurrentDir(
-    const std::vector<QUrl>& urls) {
+void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls) {
     const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
     if (!liveCurrentDirFileOp)
         return;
 
-    const QStringList failedCopies = PerformOpOnFileUris(
-        urls, [liveCurrentDirFileOp](const auto& from, const auto& to) {
+    const QStringList failedCopies =
+        PerformOpOnFileUris(urls, [liveCurrentDirFileOp](const auto& from, const auto& to) {
             liveCurrentDirFileOp->CopyRecursive(from, to);
         });
 
     if (!failedCopies.empty())
-        QMessageBox::warning(this, tr("Problem copying"),
-                             failedCopies.join('\n'));
+        QMessageBox::warning(this, tr("Problem copying"), failedCopies.join('\n'));
 
     NotifyModelOfChange(*liveCurrentDirFileOp);
 }
 
-void FileListTableView::MoveFileUrisIntoCurrentDir(
-    const std::vector<QUrl>& urls) {
+void FileListTableView::MoveFileUrisIntoCurrentDir(const std::vector<QUrl>& urls) {
     const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
     if (!liveCurrentDirFileOp)
         return;
 
     const QStringList failedCopies = PerformOpOnFileUris(
-        urls, [liveCurrentDirFileOp](const auto& from, const auto& to) {
-            liveCurrentDirFileOp->Move(from, to);
-        });
+        urls, [liveCurrentDirFileOp](const auto& from, const auto& to) { liveCurrentDirFileOp->Move(from, to); });
 
     if (!failedCopies.empty())
-        QMessageBox::warning(this, tr("Problem moving"),
-                             failedCopies.join('\n'));
+        QMessageBox::warning(this, tr("Problem moving"), failedCopies.join('\n'));
 
     NotifyModelOfChange(*liveCurrentDirFileOp);
 }

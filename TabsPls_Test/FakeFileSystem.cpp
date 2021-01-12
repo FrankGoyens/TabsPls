@@ -15,17 +15,12 @@
 
 namespace {
 struct FileSystemNode {
-    FileSystemNode(FileSystem::Name nodeName_)
-        : nodeName(std::move(nodeName_)) {}
+    FileSystemNode(FileSystem::Name nodeName_) : nodeName(std::move(nodeName_)) {}
 
     FileSystemNode(const FileSystemNode& other)
-        : nodeName(other.nodeName), files(other.files),
-          parentNode(other.parentNode) {
-        std::transform(
-            other.childNodes.begin(), other.childNodes.end(),
-            std::back_inserter(childNodes), [](const auto& childNodePtr) {
-                return std::make_shared<FileSystemNode>(*childNodePtr);
-            });
+        : nodeName(other.nodeName), files(other.files), parentNode(other.parentNode) {
+        std::transform(other.childNodes.begin(), other.childNodes.end(), std::back_inserter(childNodes),
+                       [](const auto& childNodePtr) { return std::make_shared<FileSystemNode>(*childNodePtr); });
     }
 
     FileSystemNode(FileSystemNode&& other) = default;
@@ -51,18 +46,14 @@ struct FileSystemNode {
 };
 
 template <typename ContainerT>
-typename ContainerT::const_iterator
-FindChildNode(const ContainerT& childSharedPtrs,
-              const FileSystem::Name& childName) {
+typename ContainerT::const_iterator FindChildNode(const ContainerT& childSharedPtrs,
+                                                  const FileSystem::Name& childName) {
     return std::find_if(childSharedPtrs.begin(), childSharedPtrs.end(),
-                        [&](const auto& childNode) {
-                            return childNode->nodeName == childName;
-                        });
+                        [&](const auto& childNode) { return childNode->nodeName == childName; });
 }
 
-void CreateOrUpdateNodeStructure(
-    const std::shared_ptr<FileSystemNode>& parentNode,
-    const std::vector<FileSystem::Name>& absoluteComponents) {
+void CreateOrUpdateNodeStructure(const std::shared_ptr<FileSystemNode>& parentNode,
+                                 const std::vector<FileSystem::Name>& absoluteComponents) {
     std::shared_ptr<FileSystemNode> currentParent = parentNode;
     for (const auto& component : absoluteComponents) {
         const auto it = FindChildNode(currentParent->childNodes, component);
@@ -72,8 +63,7 @@ void CreateOrUpdateNodeStructure(
             continue;
         }
 
-        currentParent->childNodes.push_back(
-            std::make_shared<FileSystemNode>(component));
+        currentParent->childNodes.push_back(std::make_shared<FileSystemNode>(component));
         currentParent->childNodes.back()->parentNode = currentParent;
         currentParent = currentParent->childNodes.back();
     }
@@ -95,8 +85,7 @@ class FakeFileSystemImpl {
         UpdateRootNodeStructure(absoluteComponents);
     }
 
-    void AddFile(const std::vector<FileSystem::Name>& parentAbsoluteComponents,
-                 const FileSystem::Name& fileName) {
+    void AddFile(const std::vector<FileSystem::Name>& parentAbsoluteComponents, const FileSystem::Name& fileName) {
         if (parentAbsoluteComponents.empty())
             return;
 
@@ -108,18 +97,14 @@ class FakeFileSystemImpl {
                                    "because the new tail does not exist");
     }
 
-    void
-    DeleteDirectory(const std::vector<FileSystem::Name>& absoluteComponents) {
+    void DeleteDirectory(const std::vector<FileSystem::Name>& absoluteComponents) {
         if (absoluteComponents.empty())
             return;
 
         if (absoluteComponents.size() == 1) {
             rootNodes.erase(
                 std::remove_if(rootNodes.begin(), rootNodes.end(),
-                               [&](const auto& rootNode) {
-                                   return absoluteComponents.front() ==
-                                          rootNode->nodeName;
-                               }),
+                               [&](const auto& rootNode) { return absoluteComponents.front() == rootNode->nodeName; }),
                 rootNodes.end());
         } else if (const auto node = Lookup(absoluteComponents)) {
             DeleteNonRootNode(*node);
@@ -127,9 +112,8 @@ class FakeFileSystemImpl {
     }
 
     void DeleteNode(const FileSystemNode& node) {
-        const auto it = std::find_if(
-            rootNodes.begin(), rootNodes.end(),
-            [&](const auto& rootNode) { return &node == rootNode.get(); });
+        const auto it = std::find_if(rootNodes.begin(), rootNodes.end(),
+                                     [&](const auto& rootNode) { return &node == rootNode.get(); });
 
         if (it != rootNodes.end()) {
             rootNodes.erase(it);
@@ -139,31 +123,24 @@ class FakeFileSystemImpl {
         DeleteNonRootNode(node);
     }
 
-    void
-    DeleteFile(const std::vector<FileSystem::Name>& parentAbsoluteComponents,
-               const FileSystem::Name& fileName) {
+    void DeleteFile(const std::vector<FileSystem::Name>& parentAbsoluteComponents, const FileSystem::Name& fileName) {
         if (const auto node = Lookup(parentAbsoluteComponents)) {
-            node->files.erase(
-                std::remove(node->files.begin(), node->files.end(), fileName),
-                node->files.end());
+            node->files.erase(std::remove(node->files.begin(), node->files.end(), fileName), node->files.end());
         }
     }
 
-    std::shared_ptr<FileSystemNode>
-    Lookup(const std::vector<FileSystem::Name>& parentAbsoluteComponents) {
+    std::shared_ptr<FileSystemNode> Lookup(const std::vector<FileSystem::Name>& parentAbsoluteComponents) {
         if (parentAbsoluteComponents.empty())
             return nullptr;
 
-        const auto rootIt = std::find_if(
-            rootNodes.begin(), rootNodes.end(), [&](const auto& rootNode) {
-                return rootNode->nodeName == parentAbsoluteComponents.front();
-            });
+        const auto rootIt = std::find_if(rootNodes.begin(), rootNodes.end(), [&](const auto& rootNode) {
+            return rootNode->nodeName == parentAbsoluteComponents.front();
+        });
         if (rootIt == rootNodes.end())
             return nullptr;
 
         std::shared_ptr<FileSystemNode> currentParent = *rootIt;
-        for (auto it = parentAbsoluteComponents.begin() + 1;
-             it != parentAbsoluteComponents.end(); ++it) {
+        for (auto it = parentAbsoluteComponents.begin() + 1; it != parentAbsoluteComponents.end(); ++it) {
             const auto childIt = FindChildNode(currentParent->childNodes, *it);
             if (childIt == currentParent->childNodes.end())
                 return nullptr;
@@ -177,34 +154,24 @@ class FakeFileSystemImpl {
 
     std::vector<std::shared_ptr<FileSystemNode>> rootNodes;
 
-    void UpdateRootNodeStructure(
-        const std::vector<FileSystem::Name>& absoluteComponents) {
-        const auto rootIt = std::find_if(
-            rootNodes.begin(), rootNodes.end(), [&](const auto& rootNode) {
-                return rootNode->nodeName == absoluteComponents.front();
-            });
+    void UpdateRootNodeStructure(const std::vector<FileSystem::Name>& absoluteComponents) {
+        const auto rootIt = std::find_if(rootNodes.begin(), rootNodes.end(), [&](const auto& rootNode) {
+            return rootNode->nodeName == absoluteComponents.front();
+        });
 
         if (rootIt == rootNodes.end()) {
-            const auto newRootNode =
-                std::make_shared<FileSystemNode>(absoluteComponents.front());
+            const auto newRootNode = std::make_shared<FileSystemNode>(absoluteComponents.front());
             rootNodes.push_back(newRootNode);
-            CreateOrUpdateNodeStructure(
-                newRootNode,
-                {absoluteComponents.begin() + 1, absoluteComponents.end()});
+            CreateOrUpdateNodeStructure(newRootNode, {absoluteComponents.begin() + 1, absoluteComponents.end()});
         } else
-            CreateOrUpdateNodeStructure(
-                *rootIt,
-                {absoluteComponents.begin() + 1, absoluteComponents.end()});
+            CreateOrUpdateNodeStructure(*rootIt, {absoluteComponents.begin() + 1, absoluteComponents.end()});
     }
 
     void DeleteNonRootNode(const FileSystemNode& node) {
         if (const auto parentNode = node.parentNode.lock()) {
             parentNode->childNodes.erase(
-                std::remove_if(parentNode->childNodes.begin(),
-                               parentNode->childNodes.end(),
-                               [&](const auto& childNode) {
-                                   return childNode.get() == &node;
-                               }),
+                std::remove_if(parentNode->childNodes.begin(), parentNode->childNodes.end(),
+                               [&](const auto& childNode) { return childNode.get() == &node; }),
                 parentNode->childNodes.end());
         }
     }
@@ -226,8 +193,7 @@ static auto SplitUsingSeparator(FileSystem::RawPath path) {
     return components;
 }
 
-static FileSystem::RawPath
-MergeUsingSeparator(const std::vector<FileSystem::Name>& components) {
+static FileSystem::RawPath MergeUsingSeparator(const std::vector<FileSystem::Name>& components) {
     if (components.empty())
         return "";
 
@@ -241,8 +207,7 @@ MergeUsingSeparator(const std::vector<FileSystem::Name>& components) {
 }
 
 static auto SplitParentDirAndFilename(const FileSystem::FilePath& file) {
-    const auto parentDir =
-        FileSystem::Directory::FromFilePathParent(file).path();
+    const auto parentDir = FileSystem::Directory::FromFilePathParent(file).path();
     const auto filename = FileSystem::GetFilename(file);
 
     return std::make_pair(parentDir, filename);
@@ -251,19 +216,16 @@ static auto SplitParentDirAndFilename(const FileSystem::FilePath& file) {
 namespace FakeFileSystem {
 void Cleanup() { FakeFileSystemImpl::Instance().Clear(); }
 
-void AddDirectory(
-    const std::initializer_list<FileSystem::Name>& absoluteComponents) {
+void AddDirectory(const std::initializer_list<FileSystem::Name>& absoluteComponents) {
     FakeFileSystemImpl::Instance().AddDirectory(absoluteComponents);
 }
 
-void AddFile(
-    const std::initializer_list<FileSystem::Name>& parentAbsoluteComponents,
-    const FileSystem::Name& fileName) {
+void AddFile(const std::initializer_list<FileSystem::Name>& parentAbsoluteComponents,
+             const FileSystem::Name& fileName) {
     FakeFileSystemImpl::Instance().AddFile(parentAbsoluteComponents, fileName);
 }
 
-FileSystem::RawPath
-MergeUsingSeparator(const std::vector<FileSystem::Name>& components) {
+FileSystem::RawPath MergeUsingSeparator(const std::vector<FileSystem::Name>& components) {
     return ::MergeUsingSeparator(components);
 }
 } // namespace FakeFileSystem
@@ -279,17 +241,14 @@ FileSystem::Name Separator() {
 }
 
 bool IsDirectory(const RawPath& dir) {
-    return FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(dir)) !=
-           nullptr;
+    return FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(dir)) != nullptr;
 }
 
 bool IsRegularFile(const RawPath& path) {
     const auto components = SplitUsingSeparator(path);
-    if (auto parentDir =
-            FakeFileSystemImpl::Instance().Lookup(std::vector<FileSystem::Name>(
-                components.begin(), components.end() - 1))) {
-        const auto it = std::find(parentDir->files.begin(),
-                                  parentDir->files.end(), components.back());
+    if (auto parentDir = FakeFileSystemImpl::Instance().Lookup(
+            std::vector<FileSystem::Name>(components.begin(), components.end() - 1))) {
+        const auto it = std::find(parentDir->files.begin(), parentDir->files.end(), components.back());
         return it != parentDir->files.end();
     }
     return false;
@@ -326,27 +285,20 @@ Name _getRootName(const RawPath& path) {
 }
 
 RawPath GetWorkingDirectory() {
-    return std::filesystem::current_path()
-        .string(); // not really worthwile to fake at this point
+    return std::filesystem::current_path().string(); // not really worthwile to fake at this point
 }
 
 RawPathVector GetFilesInCurrentDirectory() {
-    return _getFilesInDirectory(
-        GetWorkingDirectory()); // not really worthwile to fake at this point
+    return _getFilesInDirectory(GetWorkingDirectory()); // not really worthwile to fake at this point
 }
 
-RawPathVector GetFilesInDirectory(const Directory& dir) {
-    return _getFilesInDirectory(dir.path());
-}
+RawPathVector GetFilesInDirectory(const Directory& dir) { return _getFilesInDirectory(dir.path()); }
 
 RawPathVector _getFilesInDirectory(const RawPath& dir) {
-    if (const auto node =
-            FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(dir))) {
+    if (const auto node = FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(dir))) {
         auto entries = node->files;
-        std::transform(node->childNodes.begin(), node->childNodes.end(),
-                       std::back_inserter(entries), [](const auto& childNode) {
-                           return childNode->nodeName;
-                       });
+        std::transform(node->childNodes.begin(), node->childNodes.end(), std::back_inserter(entries),
+                       [](const auto& childNode) { return childNode->nodeName; });
         return entries;
     }
 
@@ -366,11 +318,9 @@ namespace Op {
 static void RenameFile(const FilePath& sourceFile, const RawPath& dest) {
     const auto destSplit = SplitUsingSeparator(dest);
 
-    FakeFileSystemImpl::Instance().AddFile(
-        {destSplit.begin(), destSplit.end() - 1}, destSplit.back());
+    FakeFileSystemImpl::Instance().AddFile({destSplit.begin(), destSplit.end() - 1}, destSplit.back());
     auto [sourceParent, sourceFilename] = SplitParentDirAndFilename(sourceFile);
-    FakeFileSystemImpl::Instance().DeleteFile(SplitUsingSeparator(sourceParent),
-                                              sourceFilename);
+    FakeFileSystemImpl::Instance().DeleteFile(SplitUsingSeparator(sourceParent), sourceFilename);
 }
 
 static void RenameDir(const FileSystemNode& sourceNode, const RawPath& dest) {
@@ -378,21 +328,17 @@ static void RenameDir(const FileSystemNode& sourceNode, const RawPath& dest) {
 
     FakeFileSystemImpl::Instance().DeleteNode(sourceNode);
     FakeFileSystemImpl::Instance().AddDirectory(destSplit);
-    if (const auto destNode =
-            FakeFileSystemImpl::Instance().Lookup(destSplit)) {
+    if (const auto destNode = FakeFileSystemImpl::Instance().Lookup(destSplit)) {
         const auto destName = destNode->nodeName;
         *destNode = sourceNode;
         destNode->nodeName = destName;
     } else
-        throw std::logic_error(
-            "Rename Error: A newly created structure somehow failed because "
-            "the new tail does not exist");
+        throw std::logic_error("Rename Error: A newly created structure somehow failed because "
+                               "the new tail does not exist");
 }
 
-static void RenameWhereDestDoesNotExist(const RawPath& source,
-                                        const RawPath& dest) {
-    if (const auto sourceNode =
-            FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(source)))
+static void RenameWhereDestDoesNotExist(const RawPath& source, const RawPath& dest) {
+    if (const auto sourceNode = FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(source)))
         RenameDir(*sourceNode, dest);
     else if (const auto sourceFile = FileSystem::FilePath::FromPath(source))
         RenameFile(*sourceFile, dest);
@@ -422,16 +368,14 @@ void Rename(const RawPath& source, const RawPath& dest) {
 static void CopyFile(const FilePath& sourceFile, const RawPath& dest) {
     const auto destSplit = SplitUsingSeparator(dest);
 
-    FakeFileSystemImpl::Instance().AddFile(
-        {destSplit.begin(), destSplit.end() - 1}, destSplit.back());
+    FakeFileSystemImpl::Instance().AddFile({destSplit.begin(), destSplit.end() - 1}, destSplit.back());
 }
 
 static void CopyDir(const FileSystemNode& sourceNode, const RawPath& dest) {
     const auto destSplit = SplitUsingSeparator(dest);
 
     FakeFileSystemImpl::Instance().AddDirectory(destSplit);
-    if (const auto destNode =
-            FakeFileSystemImpl::Instance().Lookup(destSplit)) {
+    if (const auto destNode = FakeFileSystemImpl::Instance().Lookup(destSplit)) {
         const auto destParentNode = destNode->parentNode;
         const auto destName = destNode->nodeName;
         *destNode = sourceNode;
@@ -442,10 +386,8 @@ static void CopyDir(const FileSystemNode& sourceNode, const RawPath& dest) {
                                "failed because the new tail does not exist");
 }
 
-static void CopyWhereDestDoesNotExist(const RawPath& source,
-                                      const RawPath& dest) {
-    if (const auto sourceNode =
-            FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(source)))
+static void CopyWhereDestDoesNotExist(const RawPath& source, const RawPath& dest) {
+    if (const auto sourceNode = FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(source)))
         CopyDir(*sourceNode, dest);
     else if (const auto sourceFile = FileSystem::FilePath::FromPath(source))
         CopyFile(*sourceFile, dest);
@@ -453,8 +395,7 @@ static void CopyWhereDestDoesNotExist(const RawPath& source,
         throw CopyException("The source has an unknown type.");
 }
 
-static void CopyExistingSourceRecursive(const RawPath& source,
-                                        const RawPath& dest) {
+static void CopyExistingSourceRecursive(const RawPath& source, const RawPath& dest) {
     if (IsRegularFile(dest) || IsDirectory(dest)) {
         throw CopyException("The destination already exists.");
     } else {
@@ -476,8 +417,7 @@ static void RemoveDir(const RawPath& path) {
 
 static void RemoveFile(const FilePath& file) {
     auto [parent, name] = SplitParentDirAndFilename(file);
-    FakeFileSystemImpl::Instance().DeleteFile(SplitUsingSeparator(parent),
-                                              name);
+    FakeFileSystemImpl::Instance().DeleteFile(SplitUsingSeparator(parent), name);
 }
 
 void RemoveAll(const RawPath& path) {
@@ -488,8 +428,7 @@ void RemoveAll(const RawPath& path) {
 }
 
 void CreateDirectory(const Directory& parent, const Name& name) {
-    const auto path =
-        FileSystem::Algorithm::CombineDirectoryAndName(parent, name);
+    const auto path = FileSystem::Algorithm::CombineDirectoryAndName(parent, name);
 
     FakeFileSystemImpl::Instance().AddDirectory(SplitUsingSeparator(path));
 }

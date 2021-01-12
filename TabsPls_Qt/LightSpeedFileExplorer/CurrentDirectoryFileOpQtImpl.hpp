@@ -5,8 +5,7 @@
 #include <TabsPlsCore/CurrentDirectoryFileOp.hpp>
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 
-class CurrentDirectoryFileOpQtImpl : public QObject,
-                                     public CurrentDirectoryFileOp {
+class CurrentDirectoryFileOpQtImpl : public QObject, public CurrentDirectoryFileOp {
     Q_OBJECT
   public:
     CurrentDirectoryFileOpQtImpl(FileSystem::Directory currentDir);

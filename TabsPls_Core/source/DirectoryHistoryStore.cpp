@@ -1,7 +1,6 @@
 #include <TabsPlsCore/DirectoryHistoryStore.hpp>
 
-DirectoryHistoryStore&
-DirectoryHistoryStore::operator=(DirectoryHistoryStore other) noexcept {
+DirectoryHistoryStore& DirectoryHistoryStore::operator=(DirectoryHistoryStore other) noexcept {
     swap(*this, other);
     return *this;
 }
@@ -34,8 +33,7 @@ const FileSystem::Directory DirectoryHistoryStore::GetCurrent() const {
     return m_previousDirs.top();
 }
 
-void swap(DirectoryHistoryStore& first,
-          DirectoryHistoryStore& second) noexcept {
+void swap(DirectoryHistoryStore& first, DirectoryHistoryStore& second) noexcept {
     using std::swap;
     swap(first.m_previousDirs, second.m_previousDirs);
     swap(first.m_nextDirs, second.m_nextDirs);

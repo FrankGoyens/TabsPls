@@ -13,8 +13,7 @@ class FileListTableViewWithFilter : public QWidget {
     Q_OBJECT
 
   public:
-    FileListTableViewWithFilter(std::weak_ptr<CurrentDirectoryFileOp>,
-                                FileListViewModel& viewModel);
+    FileListTableViewWithFilter(std::weak_ptr<CurrentDirectoryFileOp>, FileListViewModel& viewModel);
 
     FileListTableView& GetFileListTableView() { return *m_fileListTableView; }
 

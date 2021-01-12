@@ -10,8 +10,7 @@ namespace FileSystem {
 namespace Op {
 void CopyRecursive(const RawPath& source, const RawPath& dest) {
     try {
-        std::filesystem::copy(source, dest,
-                              std::filesystem::copy_options::recursive);
+        std::filesystem::copy(source, dest, std::filesystem::copy_options::recursive);
     } catch (const std::filesystem::filesystem_error& e) {
         throw CopyException{e.what()};
     }
@@ -37,8 +36,7 @@ void RemoveAll(const RawPath& dest) {
 
 void CreateDirectory(const Directory& parent, const Name& newDirName) {
     try {
-        const auto newDirPath =
-            FileSystem::Algorithm::CombineDirectoryAndName(parent, newDirName);
+        const auto newDirPath = FileSystem::Algorithm::CombineDirectoryAndName(parent, newDirName);
         std::filesystem::create_directory(newDirPath);
     } catch (const std::filesystem::filesystem_error& e) {
         throw CreateDirectoryException(e.what());
