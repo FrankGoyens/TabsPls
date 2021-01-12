@@ -3,9 +3,7 @@
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
 namespace FileSystem {
-Directory Directory::FromCurrentWorkingDirectory() {
-    return Directory(FileSystem::GetWorkingDirectory());
-}
+Directory Directory::FromCurrentWorkingDirectory() { return Directory(FileSystem::GetWorkingDirectory()); }
 
 std::optional<Directory> Directory::FromPath(const FileSystem::RawPath& path) {
     if (!IsDirectory(path))
@@ -24,9 +22,7 @@ Directory& Directory::operator=(Directory other) {
     return *this;
 }
 
-Directory Directory::Parent() const {
-    return Directory(FileSystem::GetParent(*this));
-}
+Directory Directory::Parent() const { return Directory(FileSystem::GetParent(*this)); }
 
 void swap(Directory& first, Directory& second) {
     using std::swap;

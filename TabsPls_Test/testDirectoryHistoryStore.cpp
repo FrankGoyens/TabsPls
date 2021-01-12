@@ -20,8 +20,8 @@ TEST_F(DirectoryHistoryStoreTest, NewDirectoryBecomesCurrentDirectory) {
     FakeFileSystem::AddDirectory({"C:", "users"});
 
     DirectoryHistoryStore givenStore;
-    const auto givenFirstDirectory = FileSystem::Directory::FromPath(
-        FakeFileSystem::MergeUsingSeparator({"C:", "users"}));
+    const auto givenFirstDirectory =
+        FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({"C:", "users"}));
     givenStore.OnNewDirectory(*givenFirstDirectory);
 
     ASSERT_EQ(givenFirstDirectory->path(), givenStore.GetCurrent().path());
@@ -33,12 +33,12 @@ TEST_F(DirectoryHistoryStoreTest, SwitchToPrevious) {
 
     DirectoryHistoryStore givenStore;
 
-    const auto givenFirstDirectory = FileSystem::Directory::FromPath(
-        FakeFileSystem::MergeUsingSeparator({"C:", "users"}));
+    const auto givenFirstDirectory =
+        FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({"C:", "users"}));
     givenStore.OnNewDirectory(*givenFirstDirectory);
 
-    const auto givenSecondDirectory = FileSystem::Directory::FromPath(
-        FakeFileSystem::MergeUsingSeparator({"C:", "users", "jeff"}));
+    const auto givenSecondDirectory =
+        FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({"C:", "users", "jeff"}));
     givenStore.OnNewDirectory(*givenSecondDirectory);
 
     ASSERT_EQ(givenSecondDirectory->path(), givenStore.GetCurrent().path());
@@ -53,12 +53,12 @@ TEST_F(DirectoryHistoryStoreTest, SwitchToNext) {
 
     DirectoryHistoryStore givenStore;
 
-    const auto givenFirstDirectory = FileSystem::Directory::FromPath(
-        FakeFileSystem::MergeUsingSeparator({"C:", "users"}));
+    const auto givenFirstDirectory =
+        FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({"C:", "users"}));
     givenStore.OnNewDirectory(*givenFirstDirectory);
 
-    const auto givenSecondDirectory = FileSystem::Directory::FromPath(
-        FakeFileSystem::MergeUsingSeparator({"C:", "users", "jeff"}));
+    const auto givenSecondDirectory =
+        FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({"C:", "users", "jeff"}));
     givenStore.OnNewDirectory(*givenSecondDirectory);
 
     givenStore.SwitchToPrevious();

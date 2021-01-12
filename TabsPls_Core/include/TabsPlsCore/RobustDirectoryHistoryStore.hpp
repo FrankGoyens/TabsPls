@@ -9,12 +9,10 @@ class RobustDirectoryHistoryStore {
     RobustDirectoryHistoryStore() = default;
     ~RobustDirectoryHistoryStore() = default;
 
-    RobustDirectoryHistoryStore(RobustDirectoryHistoryStore&&) noexcept =
-        default;
+    RobustDirectoryHistoryStore(RobustDirectoryHistoryStore&&) noexcept = default;
     RobustDirectoryHistoryStore(const RobustDirectoryHistoryStore&) = default;
 
-    RobustDirectoryHistoryStore&
-    operator=(RobustDirectoryHistoryStore) noexcept;
+    RobustDirectoryHistoryStore& operator=(RobustDirectoryHistoryStore) noexcept;
 
     /*! \brief This function still trusts that the given directory still
      * exists*/
@@ -25,8 +23,7 @@ class RobustDirectoryHistoryStore {
 
     const FileSystem::Directory GetCurrent() const;
 
-    friend void swap(RobustDirectoryHistoryStore&,
-                     RobustDirectoryHistoryStore&) noexcept;
+    friend void swap(RobustDirectoryHistoryStore&, RobustDirectoryHistoryStore&) noexcept;
 
   private:
     DirectoryHistoryStore m_store;

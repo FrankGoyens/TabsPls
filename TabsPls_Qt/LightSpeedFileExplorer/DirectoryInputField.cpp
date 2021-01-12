@@ -10,8 +10,7 @@
 
 using FileSystem::StringConversion::ToRawPath;
 
-DirectoryInputField::DirectoryInputField(QString initialDirectory)
-    : m_currentDirectory(std::move(initialDirectory)) {
+DirectoryInputField::DirectoryInputField(QString initialDirectory) : m_currentDirectory(std::move(initialDirectory)) {
     if (!FileSystem::IsDirectory(ToRawPath(m_currentDirectory)))
         throw std::invalid_argument("The given directory is not valid");
 

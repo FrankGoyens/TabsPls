@@ -7,12 +7,8 @@ namespace FakeFileSystem {
  * test teardown*/
 void Cleanup();
 
-void AddDirectory(
-    const std::initializer_list<FileSystem::Name>& absoluteComponents);
-void AddFile(
-    const std::initializer_list<FileSystem::Name>& parentAbsoluteComponents,
-    const FileSystem::Name& fileName);
+void AddDirectory(const std::initializer_list<FileSystem::Name>& absoluteComponents);
+void AddFile(const std::initializer_list<FileSystem::Name>& parentAbsoluteComponents, const FileSystem::Name& fileName);
 
-FileSystem::RawPath
-MergeUsingSeparator(const std::vector<FileSystem::Name>& components);
+FileSystem::RawPath MergeUsingSeparator(const std::vector<FileSystem::Name>& components);
 } // namespace FakeFileSystem

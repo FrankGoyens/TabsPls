@@ -19,9 +19,7 @@ class FileBrowserWidget : public QWidget {
     FileBrowserWidget(FileSystem::Directory initialDir);
 
     const QString GetCurrentDirectoryName() const;
-    const FileSystem::Directory& GetCurrentDirectory() const {
-        return m_currentDirectory;
-    }
+    const FileSystem::Directory& GetCurrentDirectory() const { return m_currentDirectory; }
 
   signals:
     void currentDirectoryNameChanged(const QString&);
@@ -37,7 +35,6 @@ class FileBrowserWidget : public QWidget {
     void StartWatchingCurrentDirectory();
     void StopWatchingCurrentDirectory();
 
-    template <typename Func>
-    void DisplayDirectoryChangedErrorIfExceptionHappens(Func);
+    template <typename Func> void DisplayDirectoryChangedErrorIfExceptionHappens(Func);
     void DisplayDirectoryChangedError(const char* message);
 };

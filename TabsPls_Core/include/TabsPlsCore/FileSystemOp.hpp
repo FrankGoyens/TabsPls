@@ -23,8 +23,7 @@ struct CopyException : FileSystemOpException {
 void CopyRecursive(const RawPath& source, const RawPath& dest);
 
 struct RenameException : FileSystemOpException {
-    RenameException(std::string what)
-        : FileSystemOpException(std::move(what)) {}
+    RenameException(std::string what) : FileSystemOpException(std::move(what)) {}
 };
 
 void Rename(const RawPath& source, const RawPath& dest);
@@ -32,8 +31,7 @@ void Rename(const RawPath& source, const RawPath& dest);
 void RemoveAll(const RawPath&);
 
 struct CreateDirectoryException : FileSystemOpException {
-    CreateDirectoryException(std::string what)
-        : FileSystemOpException(std::move(what)) {}
+    CreateDirectoryException(std::string what) : FileSystemOpException(std::move(what)) {}
 };
 
 void CreateDirectory(const Directory& parent, const Name& newDirName);

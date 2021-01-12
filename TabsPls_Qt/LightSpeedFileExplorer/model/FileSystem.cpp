@@ -35,9 +35,7 @@ RawPath RemoveFilename(const FilePath& filePath) {
     return std::filesystem::path(filePath.path()).remove_filename().wstring();
 }
 
-Name GetFilename(const FilePath& filePath) {
-    return std::filesystem::path(filePath.path()).filename().wstring();
-}
+Name GetFilename(const FilePath& filePath) { return std::filesystem::path(filePath.path()).filename().wstring(); }
 
 Name GetDirectoryname(const Directory& dir) {
     const std::filesystem::path dirPath(dir.path());
@@ -46,25 +44,15 @@ Name GetDirectoryname(const Directory& dir) {
     return dirPath.lexically_relative(parentDirPath).wstring();
 }
 
-Name _getRootPath(const RawPath& path) {
-    return std::filesystem::path(path).root_path().wstring();
-}
+Name _getRootPath(const RawPath& path) { return std::filesystem::path(path).root_path().wstring(); }
 
-Name _getRootName(const RawPath& path) {
-    return std::filesystem::path(path).root_name().wstring();
-}
+Name _getRootName(const RawPath& path) { return std::filesystem::path(path).root_name().wstring(); }
 
-RawPath GetWorkingDirectory() {
-    return std::filesystem::current_path().wstring();
-}
+RawPath GetWorkingDirectory() { return std::filesystem::current_path().wstring(); }
 
-RawPathVector GetFilesInCurrentDirectory() {
-    return _getFilesInDirectory(GetWorkingDirectory());
-}
+RawPathVector GetFilesInCurrentDirectory() { return _getFilesInDirectory(GetWorkingDirectory()); }
 
-RawPathVector GetFilesInDirectory(const Directory& dir) {
-    return _getFilesInDirectory(dir.path());
-}
+RawPathVector GetFilesInDirectory(const Directory& dir) { return _getFilesInDirectory(dir.path()); }
 
 RawPathVector _getFilesInDirectory(const RawPath& dir) {
     RawPathVector files;
