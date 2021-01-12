@@ -4,28 +4,28 @@
 <context>
     <name>FileBrowserWidget</name>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="307"/>
-        <location filename="FileBrowserWidget.cpp" line="308"/>
+        <location filename="FileBrowserWidget.cpp" line="263"/>
+        <location filename="FileBrowserWidget.cpp" line="264"/>
         <source>New Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="307"/>
+        <location filename="FileBrowserWidget.cpp" line="263"/>
         <source>New folder name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="316"/>
+        <location filename="FileBrowserWidget.cpp" line="270"/>
         <source>Create new folder failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="361"/>
+        <location filename="FileBrowserWidget.cpp" line="309"/>
         <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="366"/>
+        <location filename="FileBrowserWidget.cpp" line="314"/>
         <source>Unable to change directory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -33,22 +33,22 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="104"/>
+        <location filename="FileListTableView.cpp" line="92"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="105"/>
+        <location filename="FileListTableView.cpp" line="93"/>
         <source>Do you want to remove these files? (Cannot be undone!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="280"/>
+        <location filename="FileListTableView.cpp" line="258"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="298"/>
+        <location filename="FileListTableView.cpp" line="272"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
@@ -64,7 +64,7 @@
 <context>
     <name>TabsPlsMainWindow</name>
     <message>
-        <location filename="TabsPlsMainWindow.cpp" line="30"/>
+        <location filename="TabsPlsMainWindow.cpp" line="28"/>
         <source>Light Speed File Explorer</source>
         <translation type="unfinished"></translation>
     </message>

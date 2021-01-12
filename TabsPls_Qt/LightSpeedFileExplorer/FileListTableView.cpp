@@ -38,6 +38,9 @@ static int DecodeWinApiDropEffect(QByteArray& bytes) {
     return dropEffect;
 }
 
+static constexpr int DROP_EFFECT_CUT = 2;
+static constexpr int DROP_EFFECT_COPY = 5;
+
 static void SetDropEffect(QMimeData& mimeData, int dropEffect /* 2 for cut and 5 for copy*/) {
     mimeData.setData("Preferred DropEffect", EncodeWinApiDropEffect(dropEffect));
     // TODO also add linux support,
@@ -54,7 +57,7 @@ static void SetUriListOnClipboard(const QString& data, bool copy = true) {
     auto* clipboard = QApplication::clipboard();
     auto* mimeData = new QMimeData;
     mimeData->setData("text/uri-list", data.toUtf8());
-    SetDropEffect(*mimeData, copy ? 5 : 2);
+    SetDropEffect(*mimeData, copy ? DROP_EFFECT_COPY : DROP_EFFECT_CUT);
 
     clipboard->setMimeData(mimeData);
 }
@@ -126,12 +129,14 @@ void FileListTableView::mouseMoveEvent(QMouseEvent* event) {
     mimeData->setData("text/uri-list", AggregateSelectionDataAsUriList().toUtf8());
     drag.setMimeData(mimeData);
 
-    drag.exec(Qt::MoveAction);
+    drag.exec(Qt::CopyAction | Qt::MoveAction);
 }
 
 static void AcceptEventIfFormatIsOK(QDragMoveEvent& event) {
-    if (event.mimeData()->hasFormat("text/uri-list"))
-        event.acceptProposedAction();
+    if (event.mimeData()->hasFormat("text/uri-list")) {
+        event.setDropAction(Qt::DropAction::MoveAction);
+        event.accept();
+    }
 }
 
 void FileListTableView::dragEnterEvent(QDragEnterEvent* event) { AcceptEventIfFormatIsOK(*event); }
@@ -155,7 +160,7 @@ static std::vector<QUrl> DecodeFileUris(const QString& data) {
 void FileListTableView::dropEvent(QDropEvent* event) {
     if (event->mimeData()->hasFormat("text/uri-list")) {
         const auto urls = DecodeFileUris(event->mimeData()->data("text/uri-list"));
-        CopyFileUrisIntoCurrentDir(urls);
+        MoveFileUrisIntoCurrentDir(urls);
     }
 }
 
@@ -207,14 +212,18 @@ void FileListTableView::pasteEvent() {
     auto* mimeData = clipboard->mimeData();
     const auto urls = ReadUrlsFromClipboard(*clipboard);
 
+    PerformMimeDataActionOnIncomingFiles(*mimeData, urls);
+}
+
+void FileListTableView::PerformMimeDataActionOnIncomingFiles(const QMimeData& mimeData, const std::vector<QUrl>& urls) {
     if (urls.empty())
         return;
 
-    if (!mimeData->hasFormat("Preferred DropEffect"))
+    if (!mimeData.hasFormat("Preferred DropEffect"))
         return CopyFileUrisIntoCurrentDir(urls);
 
-    auto data = mimeData->data("Preferred DropEffect");
-    if (DecodeWinApiDropEffect(data) == 2)
+    auto data = mimeData.data("Preferred DropEffect");
+    if (DecodeWinApiDropEffect(data) == DROP_EFFECT_CUT)
         return MoveFileUrisIntoCurrentDir(urls);
     return CopyFileUrisIntoCurrentDir(urls);
 }
