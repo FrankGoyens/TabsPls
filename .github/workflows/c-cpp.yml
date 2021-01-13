@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Get dependencies from apt
-        run: sudo apt install qt5-default qttools5-dev libx11-dev libx11-xcb-dev libglu1-mesa-dev libxi-dev libxext-dev googletest libgtest-dev flex bison
+        run: sudo apt update && sudo apt install qt5-default qttools5-dev libx11-dev libx11-xcb-dev libglu1-mesa-dev libxi-dev libxext-dev googletest libgtest-dev flex bison
       - uses: actions/checkout@v2
 
       - name: Run CMake with Ninja
