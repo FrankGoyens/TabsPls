@@ -1,0 +1,30 @@
+name: C/C++ Without Python CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Get dependencies from apt
+        run: sudo apt update && sudo apt install qt5-default qttools5-dev libx11-dev libx11-xcb-dev libglu1-mesa-dev libxi-dev libxext-dev googletest libgtest-dev flex bison
+      - uses: actions/checkout@v2
+
+      - name: Run CMake with Ninja
+        uses: lukka/run-cmake@v2
+        id: runcmake
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeListsTxtPath: '${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/CMakeLists.txt'
+          buildWithCMakeArgs: '-- -v'
+          cmakeAppendedArgs: '-DUSE_PYTHON_COMPONENT=OFF'
+
+      - name: dir
+        run: find $RUNNER_WORKSPACE
+        shell: bash
