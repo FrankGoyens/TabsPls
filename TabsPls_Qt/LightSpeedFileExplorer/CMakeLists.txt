@@ -66,6 +66,17 @@ target_include_directories(LightSpeedFileExplorer
   ../../TabsPls_Core/include
   TabsPlsCore_defs)
 
+#Conditionally link agains the Python component
+add_subdirectory(../../TabsPls_Python TabsPls_Python)
+set(USE_PYTHON_COMPONENT "Use Python for more platform independant features, and to have user extension endpoints" CACHE BOOL ON)
+if(Python3_FOUND AND USE_PYTHON_COMPONENT)
+  message(STATUS "TabsPls Python component will be used")
+  target_link_libraries(LightSpeedFileExplorer PRIVATE TabsPls_Python)
+else()
+  message(STATUS "TabsPls Python component will NOT be used")
+endif()
+
+#Link against required Qt component
 target_link_libraries(LightSpeedFileExplorer
   PRIVATE Qt5::Widgets)
 
