@@ -25,7 +25,7 @@ Dependencies:
 
 Building:
 1. Navigate to the folder where you want to build
-2. In this folder execute `cmake <source_folder>`. **Note for vcpkg users**: If you installed Qt using vcpkg add the argument `-DCMAKE_PREFIX_PATH=<vcpkg_path>/installed/<build-triplet>.
+2. In this folder execute `cmake <source_folder>`. **Note for vcpkg users**: If you installed Qt using vcpkg add the argument `-DCMAKE_PREFIX_PATH=<vcpkg_path>/installed/<build-triplet>`.
 3. Execute `cmake --build . --config Release` (do not forget the dot)
 4. Done!
 
