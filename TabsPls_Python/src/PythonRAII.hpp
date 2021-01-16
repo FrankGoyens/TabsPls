@@ -10,7 +10,11 @@ struct AcquiredPyInstance {
 };
 
 struct AcquiredPyObject {
-    AcquiredPyObject(PyObject* obj_) : obj(obj_) {}
-    ~AcquiredPyObject() { Py_DECREF(obj); }
+    AcquiredPyObject(PyObject* obj_ = nullptr) : obj(obj_) {}
+    ~AcquiredPyObject() {
+        if (obj)
+            Py_DECREF(obj);
+    }
+    operator bool() { return obj != nullptr; }
     PyObject* obj;
 };
