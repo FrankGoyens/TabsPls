@@ -1,4 +1,4 @@
-#include <TabsPls_Python/Send2Trash.hpp>
+#include <TabsPlsCore/Send2Trash.hpp>
 
 #include <algorithm>
 #include <sstream>
@@ -7,6 +7,46 @@
 
 namespace TabsPlsPython {
 namespace Send2Trash {
+
+bool TabsPlsPython::Send2Trash::ComponentIsAvailable() { return true; }
+
+namespace {
+
+struct AcquiredSend2TrashModule {
+    AcquiredSend2TrashModule() {
+        AcquiredPyObject send2TrashModuleName = PyUnicode_FromString("send2trash");
+        module = PyImport_Import(send2TrashModuleName.obj);
+
+        if (module == nullptr)
+            throw ModuleNotFoundException("The Python environment could not load module 'send2trash'. Or the function "
+                                          "'send2trash.send2trash' could not be found.");
+    }
+
+    PyObject* module = nullptr;
+};
+
+} // namespace
+static PyObject* GetSend2TrashModule() {
+    static AcquiredSend2TrashModule acquiredModule;
+    return acquiredModule.module;
+}
+
+namespace {
+struct AcquiredSend2TrashFunction {
+    AcquiredSend2TrashFunction() {
+        function = PyObject_GetAttrString(GetSend2TrashModule(), "send2trash");
+
+        if (function == nullptr)
+            throw ModuleNotFoundException("The function 'send2trash.send2trash' could not be found.");
+    }
+    PyObject* function = nullptr;
+};
+} // namespace
+
+static PyObject* GetSend2TrashFunction() {
+    static AcquiredSend2TrashFunction acquiredFunction;
+    return acquiredFunction.function;
+}
 
 static std::string RetreiveMessageFromPyObjects(const AcquiredPyObject& exceptionType,
                                                 const AcquiredPyObject& exceptionMessage) {
@@ -25,59 +65,34 @@ static std::optional<std::string> RetrieveMessageIfExceptionOcurred() {
     return {};
 }
 
-static PyObject* LoadSend2TrashFunction(const AcquiredPyObject& send2TrashModuleName) {
-    auto* send2TrashModule = PyImport_Import(send2TrashModuleName.obj);
-
-    if (send2TrashModule == nullptr)
-        throw ModuleNotFoundException("The Python environment could not load module 'send2trash'. Or the function "
-                                      "'send2trash.send2trash' could not be found.");
-
-    auto* send2TrashFunction = PyObject_GetAttrString(send2TrashModule, "send2trash");
-
-    if (send2TrashFunction == nullptr)
-        throw ModuleNotFoundException("The function 'send2trash.send2trash' could not be found.");
-
-    return send2TrashFunction;
-}
-
-static std::optional<std::string> CallSend2TrashFunction(PyObject* send2TrashFunction, const char* item) {
-    AcquiredPyObject args = PyTuple_Pack(1, PyUnicode_FromString(item));
-    AcquiredPyObject result = PyObject_CallObject(send2TrashFunction, args.obj);
+static std::optional<std::string> CallSend2TrashFunction(const char* item) {
+    AcquiredPyObject itemString = PyUnicode_FromString(item);
+    AcquiredPyObject args = PyTuple_Pack(1, itemString.obj);
+    AcquiredPyObject result = PyObject_CallObject(GetSend2TrashFunction(), args.obj);
 
     return RetrieveMessageIfExceptionOcurred();
-}
-
-// \brief Returns an error string when an error ocurred
-static std::optional<std::string> SendToTrashFromInitializedPy(const char* item) {
-    AcquiredPyObject send2TrashModuleName = PyUnicode_FromString("send2trash");
-
-    auto* send2TrashFunction = LoadSend2TrashFunction(send2TrashModuleName);
-
-    return CallSend2TrashFunction(send2TrashFunction, item);
 }
 
 // \brief Returns an error string when an error ocurred
 static AggregatedResult SendMultipleToTrashFromInitializedPy(std::vector<std::string> items) {
     AcquiredPyObject send2TrashModuleName = PyUnicode_FromString("send2trash");
 
-    auto* send2TrashFunction = LoadSend2TrashFunction(send2TrashModuleName);
-
     AggregatedResult result;
-    std::transform(items.begin(), items.end(), std::back_inserter(result.failedItems), [&](const auto& item) {
-        return std::make_pair(item, Result{CallSend2TrashFunction(send2TrashFunction, item.c_str())});
+     std::transform(items.begin(), items.end(), std::back_inserter(result.itemResults), [&](const auto& item) {
+        return std::make_pair(item, Result{CallSend2TrashFunction(item.c_str())});
     });
     return result;
 }
 
 Result SendToTrash(const char* item) {
-    AcquiredPyInstance _;
-    if (auto error = SendToTrashFromInitializedPy(item))
+    InitializePyInstance();
+    if (auto error = CallSend2TrashFunction({item}))
         return {*error};
     return {};
 }
 
 AggregatedResult SendToTrash(std::vector<std::string> items) {
-    AcquiredPyInstance _;
+    InitializePyInstance();
     return SendMultipleToTrashFromInitializedPy(items);
 }
 } // namespace Send2Trash

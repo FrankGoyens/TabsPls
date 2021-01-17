@@ -74,6 +74,9 @@ if(Python3_FOUND AND USE_PYTHON_COMPONENT)
   target_link_libraries(LightSpeedFileExplorer PRIVATE TabsPls_Python)
 else()
   message(STATUS "TabsPls Python component will NOT be used")
+
+  #Stub the components that would otherwise be implemented by the Python components
+  target_sources(LightSpeedFileExplorer PRIVATE Send2Trash_stub.cpp)
 endif()
 
 #Link against required Qt component

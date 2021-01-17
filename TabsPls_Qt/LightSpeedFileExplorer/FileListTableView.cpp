@@ -15,7 +15,9 @@
 
 #include <TabsPlsCore/CurrentDirectoryFileOp.hpp>
 #include <TabsPlsCore/FileSystemOp.hpp>
+#include <TabsPlsCore/Send2Trash.hpp>
 
+#include "ExplicitStub.hpp"
 #include "FileListViewModel.hpp"
 #include "FileSystemDefsConversion.hpp"
 
@@ -83,19 +85,22 @@ FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> curre
     const auto* pasteUrisFromClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
     connect(pasteUrisFromClipboardShortcut, &QShortcut::activated, [this]() { pasteEvent(); });
 
-    const auto* deleteItemShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    const auto* recycleItemShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    connect(recycleItemShortcut, &QShortcut::activated, [this]() {
+        const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
+        if (!liveCurrentDirFileOp)
+            return;
+
+        AskRecycleSelectedFiles(*liveCurrentDirFileOp);
+    });
+
+    const auto* deleteItemShortcut = new QShortcut(QKeySequence(Qt::Key_Shift + Qt::Key_Delete), this);
     connect(deleteItemShortcut, &QShortcut::activated, [this]() {
         const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
         if (!liveCurrentDirFileOp)
             return;
 
-        const auto response = QMessageBox::question(this, tr("Delete file"),
-                                                    tr("Do you want to remove these files? (Cannot be undone!)"));
-        if (response == QMessageBox::StandardButton::Yes) {
-            for (const auto& entry : AggregateSelectionDataAsLocalFileList())
-                FileSystem::Op::RemoveAll(ToRawPath(entry));
-            NotifyModelOfChange(*liveCurrentDirFileOp);
-        }
+        AskPermanentlyDeleteSelectedFiles(*liveCurrentDirFileOp);
     });
 
     setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
@@ -226,6 +231,73 @@ void FileListTableView::PerformMimeDataActionOnIncomingFiles(const QMimeData& mi
     if (DecodeWinApiDropEffect(data) == DROP_EFFECT_CUT)
         return MoveFileUrisIntoCurrentDir(urls);
     return CopyFileUrisIntoCurrentDir(urls);
+}
+
+static void DisplayRecycleFailures(QWidget& parent, TabsPlsPython::Send2Trash::AggregatedResult result) {
+    result.itemResults.erase(std::remove_if(result.itemResults.begin(), result.itemResults.end(),
+                                            [](const auto& failedItem) { return !failedItem.second.error; }),
+                             result.itemResults.end());
+
+    std::vector<QString> errors;
+    std::transform(result.itemResults.begin(), result.itemResults.end(), std::back_inserter(errors),
+                   [](const auto& errorItem) {
+                       return QString::fromStdString(errorItem.first + std::string(": ") + *errorItem.second.error);
+                   });
+
+    if (!errors.empty()) {
+        QString warningMessage = QObject::tr("The following items could not be recycled:\n");
+        for (auto it = errors.begin(); it != errors.end() - 1; ++it) {
+            warningMessage += *it + "\n";
+        }
+        warningMessage += errors.back();
+        QMessageBox::warning(&parent, QObject::tr("Recycle item"), warningMessage);
+    }
+}
+
+template <typename F> static auto DoWithRecycleExceptionHandling(QWidget& parent, F func) {
+    try {
+        return func();
+    } catch (const TabsPlsPython::Send2Trash::ModuleNotFoundException&) {
+        QMessageBox::critical(&parent, QObject::tr("Recycle item"),
+                              QObject::tr("The send2trash module could not be found, ") +
+                                  QObject::tr("please reinstall this program."));
+    } catch (const TabsPlsPython::Send2Trash::Exception&) {
+        QMessageBox::critical(&parent, QObject::tr("Recycle item"), QObject::tr("Unknown eror"));
+    } catch (const ExplicitStubException&) {
+        // The component is supposedly available, but we're still somehow calling the stubbed implementation. But
+        // let's not bother the user with this information
+        QMessageBox::critical(&parent, QObject::tr("Recycle item"), QObject::tr("Unknown error"));
+    }
+}
+
+void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
+    if (!TabsPlsPython::Send2Trash::ComponentIsAvailable())
+        return AskPermanentlyDeleteSelectedFiles(liveCurrentDirFileOp);
+
+    const auto response = QMessageBox::question(this, tr("Recycle item"), tr("Do you want to recycle these items?"));
+    if (response == QMessageBox::StandardButton::Yes) {
+        auto entries = AggregateSelectionDataAsLocalFileList();
+        std::vector<std::string> entries_std_string;
+        std::transform(entries.begin(), entries.end(), std::back_inserter(entries_std_string),
+                       [](const auto& qstring) { return qstring.toStdString(); });
+
+        DoWithRecycleExceptionHandling(*this, [&]() {
+            auto result = TabsPlsPython::Send2Trash::SendToTrash(entries_std_string);
+            DisplayRecycleFailures(*this, result);
+        });
+
+        NotifyModelOfChange(liveCurrentDirFileOp);
+    }
+}
+
+void FileListTableView::AskPermanentlyDeleteSelectedFiles(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
+    const auto response =
+        QMessageBox::question(this, tr("Delete file"), tr("Do you want to remove these files? (Cannot be undone!)"));
+    if (response == QMessageBox::StandardButton::Yes) {
+        for (const auto& entry : AggregateSelectionDataAsLocalFileList())
+            FileSystem::Op::RemoveAll(ToRawPath(entry));
+        NotifyModelOfChange(liveCurrentDirFileOp);
+    }
 }
 
 template <typename Op> static QStringList PerformOpOnFileUris(const std::vector<QUrl>& urls, const Op& op) {
