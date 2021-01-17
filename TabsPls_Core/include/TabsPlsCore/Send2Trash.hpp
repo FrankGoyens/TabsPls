@@ -1,14 +1,16 @@
 #pragma once
 
-#include <stdexcept>
-#include <vector>
-#include <string>
 #include <optional>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace TabsPlsPython {
 // This is an interface to the 'Send2Trash' Python module. This can be used for sending files and folders to the trash
 // on multiple platforms.
 namespace Send2Trash {
+bool ComponentIsAvailable();
+
 struct Exception : std::exception {
     Exception(std::string message_) : message(std::move(message_)) {}
     const char* what() const noexcept override { return message.c_str(); };
@@ -26,7 +28,7 @@ struct Result {
 Result SendToTrash(const char* item);
 
 struct AggregatedResult {
-    std::vector<std::pair<std::string, Result>> failedItems;
+    std::vector<std::pair<std::string, Result>> itemResults;
 };
 AggregatedResult SendToTrash(std::vector<std::string> items);
 } // namespace Send2Trash

@@ -38,6 +38,8 @@ class FileListTableView : public QTableView {
     void NotifyModelOfChange(CurrentDirectoryFileOp&);
     void pasteEvent();
     void PerformMimeDataActionOnIncomingFiles(const QMimeData&, const std::vector<QUrl>&);
+    void AskRecycleSelectedFiles(CurrentDirectoryFileOp&);
+    void AskPermanentlyDeleteSelectedFiles(CurrentDirectoryFileOp&);
 
     void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);
     void MoveFileUrisIntoCurrentDir(const std::vector<QUrl>&);
