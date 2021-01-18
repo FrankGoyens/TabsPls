@@ -8,7 +8,7 @@
 namespace TabsPlsPython {
 namespace Send2Trash {
 
-bool TabsPlsPython::Send2Trash::ComponentIsAvailable() { return true; }
+bool ComponentIsAvailable() { return true; }
 
 namespace {
 
