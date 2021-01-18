@@ -2,13 +2,13 @@
 
 #include <Python.h>
 
-//Don't use this directly, always use InitializeProcessWidePy
+// Don't use this directly, always use InitializeProcessWidePy
 struct AcquiredPyInstance {
     AcquiredPyInstance() { Py_Initialize(); }
     ~AcquiredPyInstance() { Py_Finalize(); }
 };
 
-//Initializes Python, subsequent calls are no-op
+// Initializes Python, subsequent calls are no-op
 void InitializePyInstance() { static AcquiredPyInstance _; }
 
 struct AcquiredPyObject {
