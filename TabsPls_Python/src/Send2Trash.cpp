@@ -78,7 +78,7 @@ static AggregatedResult SendMultipleToTrashFromInitializedPy(std::vector<std::st
     AcquiredPyObject send2TrashModuleName = PyUnicode_FromString("send2trash");
 
     AggregatedResult result;
-     std::transform(items.begin(), items.end(), std::back_inserter(result.itemResults), [&](const auto& item) {
+    std::transform(items.begin(), items.end(), std::back_inserter(result.itemResults), [&](const auto& item) {
         return std::make_pair(item, Result{CallSend2TrashFunction(item.c_str())});
     });
     return result;
