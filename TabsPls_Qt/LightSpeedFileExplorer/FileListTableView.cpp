@@ -274,9 +274,12 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
     if (!TabsPlsPython::Send2Trash::ComponentIsAvailable())
         return AskPermanentlyDeleteSelectedFiles(liveCurrentDirFileOp);
 
+    auto entries = AggregateSelectionDataAsLocalFileList();
+    if (entries.empty())
+        return;
+
     const auto response = QMessageBox::question(this, tr("Recycle item"), tr("Do you want to recycle these items?"));
     if (response == QMessageBox::StandardButton::Yes) {
-        auto entries = AggregateSelectionDataAsLocalFileList();
         std::vector<std::string> entries_std_string;
         std::transform(entries.begin(), entries.end(), std::back_inserter(entries_std_string),
                        [](const auto& qstring) { return qstring.toStdString(); });
@@ -291,10 +294,14 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
 }
 
 void FileListTableView::AskPermanentlyDeleteSelectedFiles(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
+    auto entries = AggregateSelectionDataAsLocalFileList();
+    if (entries.empty())
+        return;
+
     const auto response =
         QMessageBox::question(this, tr("Delete file"), tr("Do you want to remove these files? (Cannot be undone!)"));
     if (response == QMessageBox::StandardButton::Yes) {
-        for (const auto& entry : AggregateSelectionDataAsLocalFileList())
+        for (const auto& entry : entries)
             FileSystem::Op::RemoveAll(ToRawPath(entry));
         NotifyModelOfChange(liveCurrentDirFileOp);
     }

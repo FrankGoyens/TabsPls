@@ -33,44 +33,38 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="277"/>
+        <location filename="FileListTableView.cpp" line="281"/>
         <source>Recycle item</source>
-        <oldsource>Recycle file</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="277"/>
+        <location filename="FileListTableView.cpp" line="281"/>
         <source>Do you want to recycle these items?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="295"/>
+        <location filename="FileListTableView.cpp" line="302"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="295"/>
+        <location filename="FileListTableView.cpp" line="302"/>
         <source>Do you want to remove these files? (Cannot be undone!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="330"/>
+        <location filename="FileListTableView.cpp" line="337"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="344"/>
+        <location filename="FileListTableView.cpp" line="351"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <location filename="FileListViewModel.cpp" line="16"/>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="FileListTableView.cpp" line="248"/>
         <source>The following items could not be recycled:
@@ -103,6 +97,11 @@
     <message>
         <location filename="FileListTableView.cpp" line="269"/>
         <source>Unknown error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="FileListViewModel.cpp" line="16"/>
+        <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
