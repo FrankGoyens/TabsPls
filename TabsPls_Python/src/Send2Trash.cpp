@@ -86,7 +86,7 @@ static AggregatedResult SendMultipleToTrashFromInitializedPy(std::vector<std::st
 
 Result SendToTrash(const char* item) {
     InitializePyInstance();
-    if (auto error = CallSend2TrashFunction({item}))
+    if (auto error = CallSend2TrashFunction(item))
         return {*error};
     return {};
 }
