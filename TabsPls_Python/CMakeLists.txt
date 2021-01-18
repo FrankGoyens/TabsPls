@@ -17,7 +17,7 @@ PUBLIC
 PRIVATE 
   ../TabsPls_Core/include
 )
-target_link_libraries(TabsPls_Python PRIVATE Python3::Module)
+target_link_libraries(TabsPls_Python PRIVATE Python3::Python Python3::Module)
 
 set(Python3_FOUND ${Python3_FOUND} PARENT_SCOPE) #expose this to the parent so that it can optionally be linked
 
