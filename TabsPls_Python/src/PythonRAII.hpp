@@ -1,6 +1,8 @@
 #pragma once
 
+extern "C" {
 #include <Python.h>
+}
 
 // Don't use this directly, always use InitializeProcessWidePy
 struct AcquiredPyInstance {
