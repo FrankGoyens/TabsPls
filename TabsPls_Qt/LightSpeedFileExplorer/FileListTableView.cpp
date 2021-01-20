@@ -6,12 +6,14 @@
 #include <QClipboard>
 #include <QDebug>
 #include <QDrag>
+#include <QFutureWatcher>
 #include <QHeaderView>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QShortcut>
+#include <QtConcurrent/QtConcurrentRun>
 
 #include <TabsPlsCore/CurrentDirectoryFileOp.hpp>
 #include <TabsPlsCore/FileSystemOp.hpp>
@@ -20,6 +22,7 @@
 #include "ExplicitStub.hpp"
 #include "FileListViewModel.hpp"
 #include "FileSystemDefsConversion.hpp"
+#include "FutureWatchDialog.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
@@ -42,6 +45,8 @@ static int DecodeWinApiDropEffect(QByteArray& bytes) {
 
 static constexpr int DROP_EFFECT_CUT = 2;
 static constexpr int DROP_EFFECT_COPY = 5;
+
+static bool workerThreadBusy = false;
 
 static void SetDropEffect(QMimeData& mimeData, int dropEffect /* 2 for cut and 5 for copy*/) {
     mimeData.setData("Preferred DropEffect", EncodeWinApiDropEffect(dropEffect));
@@ -268,9 +273,14 @@ template <typename F> static auto DoWithRecycleExceptionHandling(QWidget& parent
         // let's not bother the user with this information
         QMessageBox::critical(&parent, QObject::tr("Recycle item"), QObject::tr("Unknown error"));
     }
+
+    throw std::logic_error("Everything should be handled at this point");
 }
 
 void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
+    if (workerThreadBusy)
+        return; // We're not ready to handle mutliple workers yet
+
     if (!TabsPlsPython::Send2Trash::ComponentIsAvailable())
         return AskPermanentlyDeleteSelectedFiles(liveCurrentDirFileOp);
 
@@ -284,12 +294,22 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
         std::transform(entries.begin(), entries.end(), std::back_inserter(entries_std_string),
                        [](const auto& qstring) { return qstring.toStdString(); });
 
-        DoWithRecycleExceptionHandling(*this, [&]() {
-            auto result = TabsPlsPython::Send2Trash::SendToTrash(entries_std_string);
-            DisplayRecycleFailures(*this, result);
+        auto future = QtConcurrent::run([&]() {
+            return DoWithRecycleExceptionHandling(
+                *this, [&]() { return TabsPlsPython::Send2Trash::SendToTrash(entries_std_string); });
         });
 
-        NotifyModelOfChange(liveCurrentDirFileOp);
+        auto* futureWatchDialog = new FutureWatchDialog(this, tr("Recycle item"));
+
+        workerThreadBusy = true;
+        connect(futureWatchDialog, &FutureWatchDialog::accepted, [&, future] {
+            DisplayRecycleFailures(*this, future.result());
+            workerThreadBusy = false;
+        });
+
+        futureWatchDialog->SetFuture(future);
+
+        futureWatchDialog->show();
     }
 }
 
