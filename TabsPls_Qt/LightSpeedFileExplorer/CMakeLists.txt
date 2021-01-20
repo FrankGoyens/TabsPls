@@ -34,6 +34,7 @@ set(LightSpeedFileExplorer_Headers
   FilterHookedLineEdit.hpp
   CurrentDirectoryFileOpQtImpl.hpp
   FileBrowserWidget.hpp
+  FutureWatchDialog.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -52,6 +53,7 @@ set(LightSpeedFileExplorer_Sources
   CurrentDirectoryFileOpQtImpl.cpp
   FileSystemOp.cpp
   FileBrowserWidget.cpp
+  FutureWatchDialog.cpp
 )
 
 add_executable(LightSpeedFileExplorer

@@ -33,32 +33,33 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="281"/>
+        <location filename="FileListTableView.cpp" line="291"/>
+        <location filename="FileListTableView.cpp" line="302"/>
         <source>Recycle item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="281"/>
+        <location filename="FileListTableView.cpp" line="291"/>
         <source>Do you want to recycle these items?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="302"/>
+        <location filename="FileListTableView.cpp" line="322"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="302"/>
+        <location filename="FileListTableView.cpp" line="322"/>
         <source>Do you want to remove these files? (Cannot be undone!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="337"/>
+        <location filename="FileListTableView.cpp" line="357"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="351"/>
+        <location filename="FileListTableView.cpp" line="371"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
@@ -66,36 +67,36 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="FileListTableView.cpp" line="248"/>
+        <location filename="FileListTableView.cpp" line="253"/>
         <source>The following items could not be recycled:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="253"/>
-        <location filename="FileListTableView.cpp" line="261"/>
-        <location filename="FileListTableView.cpp" line="265"/>
-        <location filename="FileListTableView.cpp" line="269"/>
+        <location filename="FileListTableView.cpp" line="258"/>
+        <location filename="FileListTableView.cpp" line="266"/>
+        <location filename="FileListTableView.cpp" line="270"/>
+        <location filename="FileListTableView.cpp" line="274"/>
         <source>Recycle item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="262"/>
+        <location filename="FileListTableView.cpp" line="267"/>
         <source>The send2trash module could not be found, </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="263"/>
+        <location filename="FileListTableView.cpp" line="268"/>
         <source>please reinstall this program.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="265"/>
+        <location filename="FileListTableView.cpp" line="270"/>
         <source>Unknown eror</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="269"/>
+        <location filename="FileListTableView.cpp" line="274"/>
         <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
