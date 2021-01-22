@@ -33,33 +33,33 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="291"/>
-        <location filename="FileListTableView.cpp" line="302"/>
+        <location filename="FileListTableView.cpp" line="279"/>
+        <location filename="FileListTableView.cpp" line="285"/>
         <source>Recycle item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="291"/>
+        <location filename="FileListTableView.cpp" line="279"/>
         <source>Do you want to recycle these items?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="322"/>
+        <location filename="FileListTableView.cpp" line="326"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="322"/>
+        <location filename="FileListTableView.cpp" line="326"/>
         <source>Do you want to remove these files? (Cannot be undone!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="357"/>
+        <location filename="FileListTableView.cpp" line="361"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="371"/>
+        <location filename="FileListTableView.cpp" line="375"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
@@ -67,42 +67,42 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="FileListTableView.cpp" line="253"/>
+        <location filename="FileListTableView.cpp" line="259"/>
         <source>The following items could not be recycled:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="258"/>
-        <location filename="FileListTableView.cpp" line="266"/>
-        <location filename="FileListTableView.cpp" line="270"/>
-        <location filename="FileListTableView.cpp" line="274"/>
+        <location filename="FileListTableView.cpp" line="264"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="19"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="22"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="26"/>
         <source>Recycle item</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="FileListTableView.cpp" line="267"/>
-        <source>The send2trash module could not be found, </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="FileListTableView.cpp" line="268"/>
-        <source>please reinstall this program.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="FileListTableView.cpp" line="270"/>
-        <source>Unknown eror</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="FileListTableView.cpp" line="274"/>
-        <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="FileListViewModel.cpp" line="16"/>
         <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="19"/>
+        <source>The send2trash module could not be found, </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="20"/>
+        <source>please reinstall this program.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="22"/>
+        <source>Unknown eror</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="26"/>
+        <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

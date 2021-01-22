@@ -23,6 +23,8 @@
 #include "FileListViewModel.hpp"
 #include "FileSystemDefsConversion.hpp"
 #include "FutureWatchDialog.hpp"
+#include "QObjectProgressReport.hpp"
+#include "QObjectRecycleExceptionHandler.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
@@ -182,6 +184,10 @@ void FileListTableView::commitData(QWidget* editor) {
             QMessageBox::warning(editor, "Rename", error->c_str());
 }
 
+void FileListTableView::ShowCriticalWorkerError(QString title, QString message) {
+    QMessageBox::critical(this, title, message);
+}
+
 QString FileListTableView::AggregateSelectionDataAsUriList() const {
     const auto selectedLocalFiles = AggregateSelectionDataAsLocalFileList();
     QStringList dataAsList;
@@ -259,24 +265,6 @@ static void DisplayRecycleFailures(QWidget& parent, TabsPlsPython::Send2Trash::A
     }
 }
 
-template <typename F> static auto DoWithRecycleExceptionHandling(QWidget& parent, F func) {
-    try {
-        return func();
-    } catch (const TabsPlsPython::Send2Trash::ModuleNotFoundException&) {
-        QMessageBox::critical(&parent, QObject::tr("Recycle item"),
-                              QObject::tr("The send2trash module could not be found, ") +
-                                  QObject::tr("please reinstall this program."));
-    } catch (const TabsPlsPython::Send2Trash::Exception&) {
-        QMessageBox::critical(&parent, QObject::tr("Recycle item"), QObject::tr("Unknown eror"));
-    } catch (const ExplicitStubException&) {
-        // The component is supposedly available, but we're still somehow calling the stubbed implementation. But
-        // let's not bother the user with this information
-        QMessageBox::critical(&parent, QObject::tr("Recycle item"), QObject::tr("Unknown error"));
-    }
-
-    throw std::logic_error("Everything should be handled at this point");
-}
-
 void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
     if (workerThreadBusy)
         return; // We're not ready to handle mutliple workers yet
@@ -294,13 +282,18 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
         std::transform(entries.begin(), entries.end(), std::back_inserter(entries_std_string),
                        [](const auto& qstring) { return qstring.toStdString(); });
 
-        auto future = QtConcurrent::run([&]() {
-            return DoWithRecycleExceptionHandling(*this, [&]() {
-                return TabsPlsPython::Send2Trash::SendToTrash(entries_std_string, std::shared_ptr<ProgressReport>());
-            });
-        });
-
         auto* futureWatchDialog = new FutureWatchDialog(this, tr("Recycle item"));
+
+        auto future = QtConcurrent::run([&]() {
+            QObjectRecycleExceptionHandler errorHandler;
+            ConnectRecyclingErrorSignals(errorHandler);
+            return errorHandler.DoWithRecycleExceptionHandling<TabsPlsPython::Send2Trash::AggregatedResult>(
+                [futureWatchDialog, entries_std_string]() {
+                    const auto progressReporter = std::make_shared<QObjectProgressReport>();
+                    futureWatchDialog->ConnectProgressReporterFromAnotherThread(progressReporter);
+                    return TabsPlsPython::Send2Trash::SendToTrash(entries_std_string, progressReporter);
+                });
+        });
 
         workerThreadBusy = true;
         connect(futureWatchDialog, &FutureWatchDialog::accepted, [&, future] {
@@ -312,6 +305,16 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
 
         futureWatchDialog->show();
     }
+}
+
+void FileListTableView::ConnectRecyclingErrorSignals(const QObjectRecycleExceptionHandler& recycleErrorHandler) {
+
+    connect(&recycleErrorHandler, &QObjectRecycleExceptionHandler::ModuleNotFound, this,
+            &FileListTableView::ShowCriticalWorkerError, Qt::ConnectionType::QueuedConnection);
+    connect(&recycleErrorHandler, &QObjectRecycleExceptionHandler::GenericError, this,
+            &FileListTableView::ShowCriticalWorkerError, Qt::ConnectionType::QueuedConnection);
+    connect(&recycleErrorHandler, &QObjectRecycleExceptionHandler::ExplicitStubError, this,
+            &FileListTableView::ShowCriticalWorkerError, Qt::ConnectionType::QueuedConnection);
 }
 
 void FileListTableView::AskPermanentlyDeleteSelectedFiles(CurrentDirectoryFileOp& liveCurrentDirFileOp) {

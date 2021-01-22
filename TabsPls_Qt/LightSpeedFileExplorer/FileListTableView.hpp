@@ -10,6 +10,7 @@ class QDropEvent;
 class QLabel;
 
 class CurrentDirectoryFileOp;
+class QObjectRecycleExceptionHandler;
 
 class FileListTableView : public QTableView {
     Q_OBJECT
@@ -29,6 +30,9 @@ class FileListTableView : public QTableView {
 
     void commitData(QWidget* editor) override;
 
+  private slots:
+    void ShowCriticalWorkerError(QString title, QString message);
+
   private:
     QPoint m_dragStartPosition;
     std::weak_ptr<CurrentDirectoryFileOp> m_currentDirFileOp;
@@ -39,6 +43,7 @@ class FileListTableView : public QTableView {
     void pasteEvent();
     void PerformMimeDataActionOnIncomingFiles(const QMimeData&, const std::vector<QUrl>&);
     void AskRecycleSelectedFiles(CurrentDirectoryFileOp&);
+    void ConnectRecyclingErrorSignals(const QObjectRecycleExceptionHandler&);
     void AskPermanentlyDeleteSelectedFiles(CurrentDirectoryFileOp&);
 
     void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);
