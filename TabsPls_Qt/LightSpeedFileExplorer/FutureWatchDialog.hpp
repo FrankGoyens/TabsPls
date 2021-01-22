@@ -7,6 +7,8 @@
 
 #include <TabsPlsCore/Send2Trash.hpp>
 
+class QObjectProgressReport;
+
 class FutureWatchDialog : public QDialog {
     Q_OBJECT
 
@@ -16,6 +18,10 @@ class FutureWatchDialog : public QDialog {
     void SetFuture(const QFuture<TabsPlsPython::Send2Trash::AggregatedResult>&);
     TabsPlsPython::Send2Trash::AggregatedResult Result() const;
 
+    void ConnectProgressReporterFromAnotherThread(std::shared_ptr<QObjectProgressReport>);
+
   private:
     QFutureWatcher<TabsPlsPython::Send2Trash::AggregatedResult> m_watcher;
+    std::shared_ptr<QObjectProgressReport> m_progressReport = nullptr;
+    QProgressBar* m_progressBar = nullptr;
 };
