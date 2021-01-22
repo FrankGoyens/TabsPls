@@ -1,9 +1,12 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+struct ProgressReport;
 
 namespace TabsPlsPython {
 // This is an interface to the 'Send2Trash' Python module. This can be used for sending files and folders to the trash
@@ -30,6 +33,6 @@ Result SendToTrash(const char* item);
 struct AggregatedResult {
     std::vector<std::pair<std::string, Result>> itemResults;
 };
-AggregatedResult SendToTrash(std::vector<std::string> items);
+AggregatedResult SendToTrash(const std::vector<std::string>& items, const std::weak_ptr<ProgressReport>&);
 } // namespace Send2Trash
 } // namespace TabsPlsPython

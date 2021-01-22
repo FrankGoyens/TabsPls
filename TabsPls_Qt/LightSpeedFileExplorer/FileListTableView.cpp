@@ -295,8 +295,9 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
                        [](const auto& qstring) { return qstring.toStdString(); });
 
         auto future = QtConcurrent::run([&]() {
-            return DoWithRecycleExceptionHandling(
-                *this, [&]() { return TabsPlsPython::Send2Trash::SendToTrash(entries_std_string); });
+            return DoWithRecycleExceptionHandling(*this, [&]() {
+                return TabsPlsPython::Send2Trash::SendToTrash(entries_std_string, std::shared_ptr<ProgressReport>());
+            });
         });
 
         auto* futureWatchDialog = new FutureWatchDialog(this, tr("Recycle item"));
