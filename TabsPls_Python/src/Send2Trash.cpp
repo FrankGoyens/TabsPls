@@ -1,5 +1,7 @@
 #include <TabsPlsCore/Send2Trash.hpp>
 
+#include <TabsPlsCore/ProgressReport.hpp>
+
 #include <algorithm>
 #include <sstream>
 
@@ -73,12 +75,21 @@ static std::optional<std::string> CallSend2TrashFunction(const char* item) {
     return RetrieveMessageIfExceptionOcurred();
 }
 
+template <typename ProgressWithValue> static void UpdateProgress(ProgressWithValue& progressWithValue) {
+    if (const auto liveProgress = progressWithValue.first.lock())
+        liveProgress->UpdateValue(++progressWithValue.second);
+}
+
 // \brief Returns an error string when an error ocurred
-static AggregatedResult SendMultipleToTrashFromInitializedPy(std::vector<std::string> items) {
+static AggregatedResult SendMultipleToTrashFromInitializedPy(const std::vector<std::string>& items,
+                                                             const std::weak_ptr<ProgressReport>& progressReport) {
     AcquiredPyObject send2TrashModuleName = PyUnicode_FromString("send2trash");
+
+    auto progressWithValue = std::make_pair(progressReport, 0);
 
     AggregatedResult result;
     std::transform(items.begin(), items.end(), std::back_inserter(result.itemResults), [&](const auto& item) {
+        UpdateProgress(progressWithValue);
         return std::make_pair(item, Result{CallSend2TrashFunction(item.c_str())});
     });
     return result;
@@ -91,9 +102,19 @@ Result SendToTrash(const char* item) {
     return {};
 }
 
-AggregatedResult SendToTrash(std::vector<std::string> items) {
+static void StartProgress(const std::vector<std::string>& items, const std::weak_ptr<ProgressReport>& progressReport) {
+    if (auto liveProgressReport = progressReport.lock()) {
+        liveProgressReport->SetMinimum(0);
+        liveProgressReport->SetMaximum(items.size());
+        liveProgressReport->UpdateValue(0);
+    }
+}
+
+AggregatedResult SendToTrash(const std::vector<std::string>& items,
+                             const std::weak_ptr<ProgressReport>& progressReport) {
     InitializePyInstance();
-    return SendMultipleToTrashFromInitializedPy(items);
+    StartProgress(items, progressReport);
+    return SendMultipleToTrashFromInitializedPy(items, progressReport);
 }
 } // namespace Send2Trash
 } // namespace TabsPlsPython

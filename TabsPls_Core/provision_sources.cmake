@@ -11,6 +11,7 @@ macro(ProvisionCoreSources prefix)
         ${prefix}/include/TabsPlsCore/CurrentDirectoryFileOp.hpp
 	    ${prefix}/include/TabsPlsCore/FileSystemAlgorithm.hpp
 	    ${prefix}/include/TabsPlsCore/Send2Trash.hpp
+	    ${prefix}/include/TabsPlsCore/ProgressReport.hpp
     )
 
     set(TabsPls_Core_Sources
