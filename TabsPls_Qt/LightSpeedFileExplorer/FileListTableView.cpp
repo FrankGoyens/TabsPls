@@ -101,7 +101,7 @@ FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> curre
         AskRecycleSelectedFiles(*liveCurrentDirFileOp);
     });
 
-    const auto* deleteItemShortcut = new QShortcut(QKeySequence(Qt::Key_Shift + Qt::Key_Delete), this);
+    const auto* deleteItemShortcut = new QShortcut(Qt::SHIFT + Qt::Key_Delete, this);
     connect(deleteItemShortcut, &QShortcut::activated, [this]() {
         const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
         if (!liveCurrentDirFileOp)
