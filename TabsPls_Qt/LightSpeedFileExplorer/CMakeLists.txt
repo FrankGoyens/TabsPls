@@ -37,6 +37,10 @@ set(LightSpeedFileExplorer_Headers
   FutureWatchDialog.hpp
   QObjectProgressReport.hpp
   QObjectRecycleExceptionHandler.hpp
+  VoidFutureWatchDialog.hpp
+  RecycleFutureWatchDialog.hpp
+  FutureWatchDialogWithProgressBar.hpp
+  QStringListFutureWatchDialog.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -55,8 +59,11 @@ set(LightSpeedFileExplorer_Sources
   CurrentDirectoryFileOpQtImpl.cpp
   FileSystemOp.cpp
   FileBrowserWidget.cpp
-  FutureWatchDialog.cpp
   QObjectProgressReport.cpp
+  VoidFutureWatchDialog.cpp
+  RecycleFutureWatchDialog.cpp
+  FutureWatchDialogWithProgressBar.cpp
+  QStringListFutureWatchDialog.cpp
 )
 
 add_executable(LightSpeedFileExplorer

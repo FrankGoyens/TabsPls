@@ -1,27 +1,28 @@
 #pragma once
 
-#include <QDialog>
+#include <memory>
+
 #include <QFutureWatcher>
-#include <QProgressBar>
-#include <QVBoxLayout>
 
-#include <TabsPlsCore/Send2Trash.hpp>
-
-class QObjectProgressReport;
-
-class FutureWatchDialog : public QDialog {
-    Q_OBJECT
-
+template <typename ResultT> class FutureWatchDialog {
   public:
-    FutureWatchDialog(QWidget* parent, const QString& title);
+    void SetFuture(const QFuture<ResultT>&);
+    ResultT Result();
 
-    void SetFuture(const QFuture<TabsPlsPython::Send2Trash::AggregatedResult>&);
-    TabsPlsPython::Send2Trash::AggregatedResult Result() const;
-
-    void ConnectProgressReporterFromAnotherThread(std::shared_ptr<QObjectProgressReport>);
+    template <typename Func> void ConnectFunctionToFutureFinish(Func);
 
   private:
-    QFutureWatcher<TabsPlsPython::Send2Trash::AggregatedResult> m_watcher;
-    std::shared_ptr<QObjectProgressReport> m_progressReport = nullptr;
-    QProgressBar* m_progressBar = nullptr;
+    QFutureWatcher<ResultT> m_watcher;
 };
+
+template <typename ResultT> inline void FutureWatchDialog<ResultT>::SetFuture(const QFuture<ResultT>& future) {
+    m_watcher.setFuture(future);
+}
+
+template <typename ResultT> inline ResultT FutureWatchDialog<ResultT>::Result() { return m_watcher.future().result(); }
+
+template <typename ResultT>
+template <typename Func>
+inline void FutureWatchDialog<ResultT>::ConnectFunctionToFutureFinish(Func function) {
+    QObject::connect(&m_watcher, &QFutureWatcher<ResultT>::finished, function);
+}
