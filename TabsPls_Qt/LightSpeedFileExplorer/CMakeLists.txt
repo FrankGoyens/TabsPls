@@ -41,6 +41,7 @@ set(LightSpeedFileExplorer_Headers
   RecycleFutureWatchDialog.hpp
   FutureWatchDialogWithProgressBar.hpp
   QStringListFutureWatchDialog.hpp
+  ShowIsReadySignaler.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -64,6 +65,7 @@ set(LightSpeedFileExplorer_Sources
   RecycleFutureWatchDialog.cpp
   FutureWatchDialogWithProgressBar.cpp
   QStringListFutureWatchDialog.cpp
+  ShowIsReadySignaler.cpp
 )
 
 add_executable(LightSpeedFileExplorer

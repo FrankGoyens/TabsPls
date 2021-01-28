@@ -11,6 +11,8 @@ template <typename ResultT> class FutureWatchDialog {
 
     template <typename Func> void ConnectFunctionToFutureFinish(Func);
 
+    const QFutureWatcher<ResultT>& GetWatcher() const { return m_watcher; }
+
   private:
     QFutureWatcher<ResultT> m_watcher;
 };

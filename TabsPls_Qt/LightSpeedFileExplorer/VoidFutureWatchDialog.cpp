@@ -1,9 +1,12 @@
 #include "VoidFutureWatchDialog.hpp"
 
 #include <QProgressBar>
+#include <QShowEvent>
 #include <QVBoxLayout>
 
 #include "FutureWatchDialogWithProgressBar.hpp"
+
+#include <iostream>
 
 VoidFutureWatchDialog::VoidFutureWatchDialog(QWidget* parent, const QString& title) : QDialog(parent) {
     setWindowTitle(title);

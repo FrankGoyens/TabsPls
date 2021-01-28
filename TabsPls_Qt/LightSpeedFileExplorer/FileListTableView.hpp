@@ -39,13 +39,15 @@ class FileListTableView : public QTableView {
 
     QString AggregateSelectionDataAsUriList() const;
     QStringList AggregateSelectionDataAsLocalFileList() const;
-    void NotifyModelOfChange(CurrentDirectoryFileOp&);
+    void NotifyModelOfChange();
     void pasteEvent();
     void PerformMimeDataActionOnIncomingFiles(const QMimeData&, const std::vector<QUrl>&);
     void AskRecycleSelectedFiles(CurrentDirectoryFileOp&);
     void ConnectRecyclingErrorSignals(const QObjectRecycleExceptionHandler&);
-    void AskPermanentlyDeleteSelectedFiles(CurrentDirectoryFileOp&);
+    void AskPermanentlyDeleteSelectedFiles();
 
     void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);
     void MoveFileUrisIntoCurrentDir(const std::vector<QUrl>&);
+
+    void CompleteFileOp(const QString& opName, const QStringList& result);
 };

@@ -33,44 +33,44 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="281"/>
-        <location filename="FileListTableView.cpp" line="287"/>
+        <location filename="FileListTableView.cpp" line="291"/>
+        <location filename="FileListTableView.cpp" line="297"/>
         <source>Recycle item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="281"/>
+        <location filename="FileListTableView.cpp" line="291"/>
         <source>Do you want to recycle these items?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="329"/>
-        <location filename="FileListTableView.cpp" line="331"/>
+        <location filename="FileListTableView.cpp" line="357"/>
+        <location filename="FileListTableView.cpp" line="359"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="329"/>
+        <location filename="FileListTableView.cpp" line="357"/>
         <source>Do you want to remove these files? (Cannot be undone!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="391"/>
+        <location filename="FileListTableView.cpp" line="421"/>
         <source>Copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="404"/>
+        <location filename="FileListTableView.cpp" line="425"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="417"/>
+        <location filename="FileListTableView.cpp" line="455"/>
         <source>Moving</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="430"/>
+        <location filename="FileListTableView.cpp" line="459"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
@@ -78,13 +78,13 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="FileListTableView.cpp" line="261"/>
+        <location filename="FileListTableView.cpp" line="258"/>
         <source>The following items could not be recycled:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="266"/>
+        <location filename="FileListTableView.cpp" line="263"/>
         <location filename="QObjectRecycleExceptionHandler.hpp" line="19"/>
         <location filename="QObjectRecycleExceptionHandler.hpp" line="22"/>
         <location filename="QObjectRecycleExceptionHandler.hpp" line="26"/>
