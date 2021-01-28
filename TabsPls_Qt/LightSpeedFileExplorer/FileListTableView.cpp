@@ -13,6 +13,7 @@
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QShortcut>
+#include <QTimer>
 #include <QtConcurrent/QtConcurrentRun>
 
 #include <TabsPlsCore/CurrentDirectoryFileOp.hpp>
@@ -26,6 +27,7 @@
 #include "QObjectRecycleExceptionHandler.hpp"
 #include "QStringListFutureWatchDialog.hpp"
 #include "RecycleFutureWatchDialog.hpp"
+#include "ShowIsReadySignaler.hpp"
 #include "VoidFutureWatchDialog.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
@@ -104,13 +106,7 @@ FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> curre
     });
 
     const auto* deleteItemShortcut = new QShortcut(Qt::SHIFT + Qt::Key_Delete, this);
-    connect(deleteItemShortcut, &QShortcut::activated, [this]() {
-        const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
-        if (!liveCurrentDirFileOp)
-            return;
-
-        AskPermanentlyDeleteSelectedFiles(*liveCurrentDirFileOp);
-    });
+    connect(deleteItemShortcut, &QShortcut::activated, [this]() { AskPermanentlyDeleteSelectedFiles(); });
 
     setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
 
@@ -212,9 +208,10 @@ QStringList FileListTableView::AggregateSelectionDataAsLocalFileList() const {
     return dataAsList;
 }
 
-void FileListTableView::NotifyModelOfChange(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
+void FileListTableView::NotifyModelOfChange() {
     if (auto* fileListViewModel = dynamic_cast<FileListViewModel*>(model()))
-        fileListViewModel->RefreshDirectory(FromRawPath(liveCurrentDirFileOp.GetCurrentDir().path()));
+        if (const auto liveCurrentDirFileOp = m_currentDirFileOp.lock())
+            fileListViewModel->RefreshDirectory(FromRawPath(liveCurrentDirFileOp->GetCurrentDir().path()));
 }
 
 static std::vector<QUrl> ReadUrlsFromClipboard(const QClipboard& clipboard) {
@@ -267,12 +264,25 @@ static void DisplayRecycleFailures(QWidget& parent, TabsPlsPython::Send2Trash::A
     }
 }
 
+template <typename Watcher>
+static std::shared_ptr<QObjectProgressReport> ProvisionWatcherWithProgressReporter(Watcher& watcher) {
+    const auto progressReporter = std::make_shared<QObjectProgressReport>();
+    watcher.ConnectProgressReporterFromAnotherThread(progressReporter);
+    return progressReporter;
+}
+
+static ShowIsReadySignaler* InstallReadySignaler(QDialog& watcher) {
+    auto* showIsReadySignaler = new ShowIsReadySignaler();
+    watcher.installEventFilter(showIsReadySignaler);
+    return showIsReadySignaler;
+}
+
 void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
     if (workerThreadBusy)
-        return; // We're not ready to handle mutliple workers yet
+        return;
 
     if (!TabsPlsPython::Send2Trash::ComponentIsAvailable())
-        return AskPermanentlyDeleteSelectedFiles(liveCurrentDirFileOp);
+        return AskPermanentlyDeleteSelectedFiles();
 
     auto entries = AggregateSelectionDataAsLocalFileList();
     if (entries.empty())
@@ -286,25 +296,27 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
 
         auto* futureWatchDialog = new RecycleFutureWatchDialog(this, tr("Recycle item"));
 
-        auto future = QtConcurrent::run([&] {
-            QObjectRecycleExceptionHandler errorHandler;
-            ConnectRecyclingErrorSignals(errorHandler);
-            return errorHandler.DoWithRecycleExceptionHandling<TabsPlsPython::Send2Trash::AggregatedResult>(
-                [futureWatchDialog, entries_std_string]() {
-                    const auto progressReporter = std::make_shared<QObjectProgressReport>();
-                    futureWatchDialog->ConnectProgressReporterFromAnotherThread(progressReporter);
-                    return TabsPlsPython::Send2Trash::SendToTrash(entries_std_string, progressReporter);
-                });
-        });
-
         workerThreadBusy = true;
-        connect(futureWatchDialog, &RecycleFutureWatchDialog::accepted, [&, future] {
-            DisplayRecycleFailures(*this, future.result());
+        connect(futureWatchDialog, &RecycleFutureWatchDialog::accepted, [this, futureWatchDialog] {
+            DisplayRecycleFailures(*this, futureWatchDialog->Result());
             workerThreadBusy = false;
-            NotifyModelOfChange(liveCurrentDirFileOp);
+            NotifyModelOfChange();
         });
+        connect(futureWatchDialog, &RecycleFutureWatchDialog::accepted, futureWatchDialog, &QObject::deleteLater);
 
-        futureWatchDialog->SetFuture(future);
+        auto* showReadySignaler = InstallReadySignaler(*futureWatchDialog);
+        connect(showReadySignaler, &ShowIsReadySignaler::ShowIsReady, [&] {
+            auto future = QtConcurrent::run([&] {
+                QObjectRecycleExceptionHandler errorHandler;
+                ConnectRecyclingErrorSignals(errorHandler);
+                return errorHandler.DoWithRecycleExceptionHandling<TabsPlsPython::Send2Trash::AggregatedResult>(
+                    [futureWatchDialog, entries_std_string]() {
+                        return TabsPlsPython::Send2Trash::SendToTrash(
+                            entries_std_string, ProvisionWatcherWithProgressReporter(*futureWatchDialog));
+                    });
+            });
+            futureWatchDialog->SetFuture(future);
+        });
 
         futureWatchDialog->show();
     }
@@ -320,7 +332,23 @@ void FileListTableView::ConnectRecyclingErrorSignals(const QObjectRecycleExcepti
             &FileListTableView::ShowCriticalWorkerError, Qt::ConnectionType::QueuedConnection);
 }
 
-void FileListTableView::AskPermanentlyDeleteSelectedFiles(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
+template <typename Data>
+static void StartProgressReport(const Data& data, const std::weak_ptr<ProgressReport>& progressReport) {
+    if (const auto liveProgressReport = progressReport.lock()) {
+        liveProgressReport->SetMinimum(0);
+        liveProgressReport->SetMaximum(data.size());
+    }
+}
+
+static void UpdateProgress(const std::weak_ptr<ProgressReport>& progressReport, int& progress) {
+    if (const auto liveProgressReport = progressReport.lock())
+        liveProgressReport->UpdateValue(++progress);
+}
+
+void FileListTableView::AskPermanentlyDeleteSelectedFiles() {
+    if (workerThreadBusy)
+        return;
+
     auto entries = AggregateSelectionDataAsLocalFileList();
     if (entries.empty())
         return;
@@ -330,28 +358,29 @@ void FileListTableView::AskPermanentlyDeleteSelectedFiles(CurrentDirectoryFileOp
     if (response == QMessageBox::StandardButton::Yes) {
         auto* futureWatchDialog = new VoidFutureWatchDialog(this, tr("Delete file"));
 
-        const auto future = QtConcurrent::run([entries, futureWatchDialog] {
-            const auto progressReport = std::make_shared<QObjectProgressReport>();
-            futureWatchDialog->ConnectProgressReporterFromAnotherThread(progressReport);
-
-            progressReport->SetMinimum(0);
-            progressReport->SetMaximum(entries.size());
-
-            int progress = 0;
-
-            for (const auto& entry : entries) {
-                FileSystem::Op::RemoveAll(ToRawPath(entry));
-                progressReport->UpdateValue(++progress);
-            }
-        });
-
         workerThreadBusy = true;
-        connect(futureWatchDialog, &RecycleFutureWatchDialog::accepted, [&] {
+        connect(futureWatchDialog, &QDialog::accepted, [&] {
             workerThreadBusy = false;
-            NotifyModelOfChange(liveCurrentDirFileOp);
+            NotifyModelOfChange();
+        });
+        connect(futureWatchDialog, &QDialog::accepted, futureWatchDialog, &QObject::deleteLater);
+
+        const auto* readySignaler = InstallReadySignaler(*futureWatchDialog);
+        connect(readySignaler, &ShowIsReadySignaler::ShowIsReady, [=] {
+            const auto future = QtConcurrent::run([entries, futureWatchDialog] {
+                const auto progressReport = ProvisionWatcherWithProgressReporter(*futureWatchDialog);
+                StartProgressReport(entries, progressReport);
+
+                int progress = 0;
+
+                for (const auto& entry : entries) {
+                    FileSystem::Op::RemoveAll(ToRawPath(entry));
+                    UpdateProgress(progressReport, progress);
+                }
+            });
+            futureWatchDialog->SetFuture(future);
         });
 
-        futureWatchDialog->SetFuture(future);
         futureWatchDialog->show();
     }
 }
@@ -361,18 +390,14 @@ static QStringList PerformOpOnFileUris(const std::vector<QUrl>& urls,
                                        const std::weak_ptr<ProgressReport>& progressReport, const Op& op) {
     QStringList failedCopies;
 
-    if (const auto liveProgressReport = progressReport.lock()) {
-        liveProgressReport->SetMinimum(0);
-        liveProgressReport->SetMaximum(urls.size());
-    }
+    StartProgressReport(urls, progressReport);
 
     int progress = 0;
 
     for (const auto& url : urls) {
         try {
             op(ToRawPath(url.toLocalFile()), ToRawPath(url.fileName()));
-            if (const auto liveProgressReport = progressReport.lock())
-                liveProgressReport->UpdateValue(++progress);
+            UpdateProgress(progressReport, progress);
         } catch (const FileSystem::Op::CopyException& e) {
             failedCopies << e.message.c_str();
         } catch (const FileSystem::Op::RenameException& e) {
@@ -382,55 +407,75 @@ static QStringList PerformOpOnFileUris(const std::vector<QUrl>& urls,
 
     return failedCopies;
 }
-
 void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls) {
+    if (workerThreadBusy)
+        return;
+
+    if (urls.empty())
+        return;
+
     const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
     if (!liveCurrentDirFileOp)
         return;
 
     auto* futureWatcher = new QStringListFutureWatchDialog(this, tr("Copying"));
 
-    auto future = QtConcurrent::run([urls, liveCurrentDirFileOp, futureWatcher] {
-        const auto progressReporter = std::make_shared<QObjectProgressReport>();
-        futureWatcher->ConnectProgressReporterFromAnotherThread(progressReporter);
-        return PerformOpOnFileUris(urls, progressReporter, [liveCurrentDirFileOp](const auto& from, const auto& to) {
-            liveCurrentDirFileOp->CopyRecursive(from, to);
+    workerThreadBusy = true;
+    connect(futureWatcher, &QDialog::accepted, [this, futureWatcher] {
+        CompleteFileOp(tr("Problem copying"), futureWatcher->Result());
+        workerThreadBusy = false;
+    });
+    connect(futureWatcher, &QDialog::accepted, futureWatcher, &QObject::deleteLater);
+
+    auto* showReadySignaler = InstallReadySignaler(*futureWatcher);
+    connect(showReadySignaler, &ShowIsReadySignaler::ShowIsReady, [&] {
+        auto future = QtConcurrent::run([urls, liveCurrentDirFileOp, futureWatcher] {
+            return PerformOpOnFileUris(urls, ProvisionWatcherWithProgressReporter(*futureWatcher),
+                                       [liveCurrentDirFileOp](const auto& from, const auto& to) {
+                                           liveCurrentDirFileOp->CopyRecursive(from, to);
+                                       });
         });
+        futureWatcher->SetFuture(future);
     });
 
-    connect(futureWatcher, &QDialog::accepted, [this, future, liveCurrentDirFileOp] {
-        const auto failedCopies = future.result();
-        if (!failedCopies.empty())
-            QMessageBox::warning(this, tr("Problem copying"), failedCopies.join('\n'));
-        NotifyModelOfChange(*liveCurrentDirFileOp);
-    });
-
-    futureWatcher->SetFuture(future);
     futureWatcher->show();
 }
 
 void FileListTableView::MoveFileUrisIntoCurrentDir(const std::vector<QUrl>& urls) {
+    if (workerThreadBusy)
+        return;
+
+    if (urls.empty())
+        return;
+
     const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
     if (!liveCurrentDirFileOp)
         return;
 
     auto* futureWatcher = new QStringListFutureWatchDialog(this, tr("Moving"));
 
-    auto future = QtConcurrent::run([urls, liveCurrentDirFileOp, futureWatcher] {
-        const auto progressReporter = std::make_shared<QObjectProgressReport>();
-        futureWatcher->ConnectProgressReporterFromAnotherThread(progressReporter);
-        return PerformOpOnFileUris(urls, progressReporter, [liveCurrentDirFileOp](const auto& from, const auto& to) {
-            liveCurrentDirFileOp->Move(from, to);
+    workerThreadBusy = true;
+    connect(futureWatcher, &QDialog::accepted, [this, futureWatcher] {
+        CompleteFileOp(tr("Problem moving"), futureWatcher->Result());
+        workerThreadBusy = false;
+    });
+    connect(futureWatcher, &QDialog::accepted, futureWatcher, &QObject::deleteLater);
+
+    auto* showReadySignaler = InstallReadySignaler(*futureWatcher);
+    connect(showReadySignaler, &ShowIsReadySignaler::ShowIsReady, [&] {
+        auto future = QtConcurrent::run([urls, liveCurrentDirFileOp, futureWatcher] {
+            return PerformOpOnFileUris(
+                urls, ProvisionWatcherWithProgressReporter(*futureWatcher),
+                [liveCurrentDirFileOp](const auto& from, const auto& to) { liveCurrentDirFileOp->Move(from, to); });
         });
+        futureWatcher->SetFuture(future);
     });
 
-    connect(futureWatcher, &QDialog::accepted, [this, future, liveCurrentDirFileOp] {
-        const auto failedCopies = future.result();
-        if (!failedCopies.empty())
-            QMessageBox::warning(this, tr("Problem moving"), failedCopies.join('\n'));
-        NotifyModelOfChange(*liveCurrentDirFileOp);
-    });
-
-    futureWatcher->SetFuture(future);
     futureWatcher->show();
+}
+
+void FileListTableView::CompleteFileOp(const QString& opName, const QStringList& result) {
+    if (!result.empty())
+        QMessageBox::warning(this, opName, result.join('\n'));
+    NotifyModelOfChange();
 }
