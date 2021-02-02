@@ -407,33 +407,23 @@ static QStringList PerformOpOnFileUris(const std::vector<QUrl>& urls,
 
     return failedCopies;
 }
-void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls) {
-    if (workerThreadBusy)
-        return;
 
-    if (urls.empty())
-        return;
-
-    const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
-    if (!liveCurrentDirFileOp)
-        return;
-
-    auto* futureWatcher = new QStringListFutureWatchDialog(this, tr("Copying"));
+template <typename OpFunction>
+void FileListTableView::DoFileOpWhileShowingProgress(const std::vector<QUrl>& urls, const QString& duringOpTitle,
+                                                     const QString& opDoneWithErrortitle, OpFunction opFunction) {
+    auto* futureWatcher = new QStringListFutureWatchDialog(this, duringOpTitle);
 
     workerThreadBusy = true;
-    connect(futureWatcher, &QDialog::accepted, [this, futureWatcher] {
-        CompleteFileOp(tr("Problem copying"), futureWatcher->Result());
+    connect(futureWatcher, &QDialog::accepted, [this, futureWatcher, opDoneWithErrortitle] {
+        CompleteFileOp(opDoneWithErrortitle, futureWatcher->Result());
         workerThreadBusy = false;
     });
     connect(futureWatcher, &QDialog::accepted, futureWatcher, &QObject::deleteLater);
 
     auto* showReadySignaler = InstallReadySignaler(*futureWatcher);
     connect(showReadySignaler, &ShowIsReadySignaler::ShowIsReady, [&] {
-        auto future = QtConcurrent::run([urls, liveCurrentDirFileOp, futureWatcher] {
-            return PerformOpOnFileUris(urls, ProvisionWatcherWithProgressReporter(*futureWatcher),
-                                       [liveCurrentDirFileOp](const auto& from, const auto& to) {
-                                           liveCurrentDirFileOp->CopyRecursive(from, to);
-                                       });
+        auto future = QtConcurrent::run([urls, futureWatcher, opFunction] {
+            return PerformOpOnFileUris(urls, ProvisionWatcherWithProgressReporter(*futureWatcher), opFunction);
         });
         futureWatcher->SetFuture(future);
     });
@@ -441,37 +431,44 @@ void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls
     futureWatcher->show();
 }
 
-void FileListTableView::MoveFileUrisIntoCurrentDir(const std::vector<QUrl>& urls) {
+std::optional<std::shared_ptr<CurrentDirectoryFileOp>>
+FileListTableView::ValidateFileOpPrecondition(const std::vector<QUrl>& urls) {
     if (workerThreadBusy)
-        return;
+        return {};
 
     if (urls.empty())
+        return {};
+
+    if (const auto liveCurrentDirFileOp = m_currentDirFileOp.lock())
+        return liveCurrentDirFileOp;
+
+    return {};
+}
+
+void FileListTableView::CopyFileUrisIntoCurrentDir(const std::vector<QUrl>& urls) {
+    const auto precondition = ValidateFileOpPrecondition(urls);
+
+    if (!precondition)
         return;
 
-    const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
-    if (!liveCurrentDirFileOp)
+    auto liveCurrentDirFileOp = *precondition;
+
+    DoFileOpWhileShowingProgress(
+        urls, tr("Copying"), tr("Problem copying"),
+        [liveCurrentDirFileOp](const auto& from, const auto& to) { liveCurrentDirFileOp->CopyRecursive(from, to); });
+}
+
+void FileListTableView::MoveFileUrisIntoCurrentDir(const std::vector<QUrl>& urls) {
+    const auto precondition = ValidateFileOpPrecondition(urls);
+
+    if (!precondition)
         return;
 
-    auto* futureWatcher = new QStringListFutureWatchDialog(this, tr("Moving"));
+    auto liveCurrentDirFileOp = *precondition;
 
-    workerThreadBusy = true;
-    connect(futureWatcher, &QDialog::accepted, [this, futureWatcher] {
-        CompleteFileOp(tr("Problem moving"), futureWatcher->Result());
-        workerThreadBusy = false;
-    });
-    connect(futureWatcher, &QDialog::accepted, futureWatcher, &QObject::deleteLater);
-
-    auto* showReadySignaler = InstallReadySignaler(*futureWatcher);
-    connect(showReadySignaler, &ShowIsReadySignaler::ShowIsReady, [&] {
-        auto future = QtConcurrent::run([urls, liveCurrentDirFileOp, futureWatcher] {
-            return PerformOpOnFileUris(
-                urls, ProvisionWatcherWithProgressReporter(*futureWatcher),
-                [liveCurrentDirFileOp](const auto& from, const auto& to) { liveCurrentDirFileOp->Move(from, to); });
-        });
-        futureWatcher->SetFuture(future);
-    });
-
-    futureWatcher->show();
+    DoFileOpWhileShowingProgress(
+        urls, tr("Moving"), tr("Problem moving"),
+        [liveCurrentDirFileOp](const auto& from, const auto& to) { liveCurrentDirFileOp->Move(from, to); });
 }
 
 void FileListTableView::CompleteFileOp(const QString& opName, const QStringList& result) {

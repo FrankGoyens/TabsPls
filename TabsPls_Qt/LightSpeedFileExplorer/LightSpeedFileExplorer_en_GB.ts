@@ -55,22 +55,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="421"/>
+        <location filename="FileListTableView.cpp" line="457"/>
         <source>Copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="425"/>
+        <location filename="FileListTableView.cpp" line="457"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="455"/>
+        <location filename="FileListTableView.cpp" line="470"/>
         <source>Moving</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="459"/>
+        <location filename="FileListTableView.cpp" line="470"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
