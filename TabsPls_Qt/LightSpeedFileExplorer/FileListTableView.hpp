@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include <QTableView>
 
@@ -48,6 +49,12 @@ class FileListTableView : public QTableView {
 
     void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);
     void MoveFileUrisIntoCurrentDir(const std::vector<QUrl>&);
+
+    template <typename OpFunction>
+    void DoFileOpWhileShowingProgress(const std::vector<QUrl>& urls, const QString& duringOpTitle,
+                                      const QString& opDoneWithErrortitle, OpFunction opFunction);
+
+    std::optional<std::shared_ptr<CurrentDirectoryFileOp>> ValidateFileOpPrecondition(const std::vector<QUrl>&);
 
     void CompleteFileOp(const QString& opName, const QStringList& result);
 };
