@@ -216,6 +216,9 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
             DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedClosure(*dir); });
     });
 
+    connect(topBarDirectoryInputField, &DirectoryInputField::directoryChanged,
+            &fileListViewWidget->GetFileListTableView(), qOverload<>(&QWidget::setFocus));
+
     const auto backActionClosure =
         CreateHistoryActionClosure(m_historyStore, *fileListViewWidget, *fileListViewModel, *topBarDirectoryInputField,
                                    setCurrentDirectoryMemberCall, HistoryBackVariant());
@@ -237,7 +240,8 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
                                               *topBarDirectoryInputField, setCurrentDirectoryMemberCall);
 
     connect(&fileListViewWidget->GetFileListTableView(), &QTableView::activated, [=](const QModelIndex& index) {
-        const auto itemString = fileListViewModel->data(index, Qt::UserRole);
+        const auto itemString =
+            fileListViewModel->data(index, fileListViewWidget->GetFileListTableView().GetModelRoleForFullPaths());
 
         if (itemString == "..")
             DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedByGoingToParentClosure(); });
