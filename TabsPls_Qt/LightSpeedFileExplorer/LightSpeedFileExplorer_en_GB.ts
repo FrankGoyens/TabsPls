@@ -33,44 +33,44 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="291"/>
-        <location filename="FileListTableView.cpp" line="297"/>
+        <location filename="FileListTableView.cpp" line="292"/>
+        <location filename="FileListTableView.cpp" line="298"/>
         <source>Recycle item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="291"/>
+        <location filename="FileListTableView.cpp" line="292"/>
         <source>Do you want to recycle these items?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="357"/>
-        <location filename="FileListTableView.cpp" line="359"/>
+        <location filename="FileListTableView.cpp" line="358"/>
+        <location filename="FileListTableView.cpp" line="360"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="357"/>
+        <location filename="FileListTableView.cpp" line="358"/>
         <source>Do you want to remove these files? (Cannot be undone!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="457"/>
+        <location filename="FileListTableView.cpp" line="458"/>
         <source>Copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="457"/>
+        <location filename="FileListTableView.cpp" line="458"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="470"/>
+        <location filename="FileListTableView.cpp" line="471"/>
         <source>Moving</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="470"/>
+        <location filename="FileListTableView.cpp" line="471"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>

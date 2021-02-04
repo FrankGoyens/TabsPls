@@ -274,6 +274,7 @@ static std::shared_ptr<QObjectProgressReport> ProvisionWatcherWithProgressReport
 static ShowIsReadySignaler* InstallReadySignaler(QDialog& watcher) {
     auto* showIsReadySignaler = new ShowIsReadySignaler();
     watcher.installEventFilter(showIsReadySignaler);
+    QObject::connect(&watcher, &QObject::destroyed, showIsReadySignaler, &QObject::deleteLater);
     return showIsReadySignaler;
 }
 
