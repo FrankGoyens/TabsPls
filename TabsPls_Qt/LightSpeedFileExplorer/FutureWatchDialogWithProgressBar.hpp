@@ -2,7 +2,6 @@
 
 #include <utility>
 
-class QObject;
 class QProgressBar;
 class QVBoxLayout;
 class QObjectProgressReport;
