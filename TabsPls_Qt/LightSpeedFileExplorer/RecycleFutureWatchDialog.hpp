@@ -1,15 +1,13 @@
 #pragma once
 
 #include <QDialog>
-#include <QFutureWatcher>
-#include <QProgressBar>
-#include <QVBoxLayout>
 
 #include <TabsPlsCore/Send2Trash.hpp>
 
 #include "FutureWatchDialog.hpp"
 
 class QObjectProgressReport;
+class QProgressBar;
 
 class RecycleFutureWatchDialog : public QDialog, public FutureWatchDialog<TabsPlsPython::Send2Trash::AggregatedResult> {
     Q_OBJECT
