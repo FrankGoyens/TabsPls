@@ -177,7 +177,7 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::weak_ptr<Current
 
     auto* fileListViewActiveFilterLabel = new QLabel();
 
-    auto* rootLayout = new QVBoxLayout();
+    auto* rootLayout = new QVBoxLayout(&fileBrowserWidget);
     rootLayout->addWidget(topBarWidget);
     rootLayout->addWidget(fileListViewWidget);
     rootLayout->addWidget(fileListViewActiveFilterLabel);
@@ -193,7 +193,7 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
 
     m_currentDirFileOpImpl = std::make_shared<CurrentDirectoryFileOpQtImpl>(m_currentDirectory);
 
-    auto* fileListViewModel = new FileListViewModel(*style(), FromRawPath(m_currentDirectory.path()));
+    auto* fileListViewModel = new FileListViewModel(this, *style(), FromRawPath(m_currentDirectory.path()));
 
     const auto [fileListViewWidget_from_binding, topBarDirectoryInputField_from_binding, backButton, forwardButton,
                 newDirectoryButton] =
