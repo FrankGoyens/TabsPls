@@ -12,7 +12,7 @@ class FileListViewModel : public QAbstractTableModel {
     Q_OBJECT
 
   public:
-    FileListViewModel(QStyle& styleProvider, const QString& initialDirectory);
+    FileListViewModel(QObject* parent, QStyle& styleProvider, const QString& initialDirectory);
 
     /*Qt table model implementation*/
     int rowCount(const QModelIndex& = QModelIndex()) const override;

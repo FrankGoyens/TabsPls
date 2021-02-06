@@ -56,8 +56,8 @@ RetrieveDirectoryContents(const QString& initialDirectory) {
     return {{}, {}};
 }
 
-FileListViewModel::FileListViewModel(QStyle& styleProvider, const QString& initialDirectory)
-    : m_styleProvider(styleProvider) {
+FileListViewModel::FileListViewModel(QObject* parent, QStyle& styleProvider, const QString& initialDirectory)
+    : QAbstractTableModel(parent), m_styleProvider(styleProvider) {
     std::tie(m_fileEntries, m_directoryEntries) = RetrieveDirectoryContents(initialDirectory);
     FillModelDataCheckingForRoot(initialDirectory);
 }
