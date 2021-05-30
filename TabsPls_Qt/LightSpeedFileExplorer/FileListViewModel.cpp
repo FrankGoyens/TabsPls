@@ -13,7 +13,7 @@ using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
 
 namespace {
-const std::vector<QString> mockupTableHeaders = {{{QObject::tr("Name")}}};
+const std::vector<QString> tableHeaders = {QObject::tr("Name"), QObject::tr("Size"), QObject::tr("Date modified")};
 
 struct GetFilesInDirectoryException : std::exception {
     GetFilesInDirectoryException(const char* message_) : message(message_) {}
@@ -67,15 +67,32 @@ QVariant FileListViewModel::data(const QModelIndex& index, int role) const {
     case Qt::EditRole:
     // fallthrough
     case Qt::DisplayRole:
-        return m_display[index.row()];
+        if (const auto& displayColumn = GetDisplayDataForColumn(index.column())) {
+            return displayColumn->get()[index.row()];
+        }
+        return "";
     case Qt::UserRole:
         return m_fullPaths[index.row()];
     case Qt::DecorationRole:
-        return m_icons[index.row()];
+        if (index.column() == 0)
+            return m_icons[index.row()];
     default:
         break;
     }
 
+    return {};
+}
+
+std::optional<std::reference_wrapper<const std::vector<QString>>>
+FileListViewModel::GetDisplayDataForColumn(int column) const {
+    switch (column) {
+    case 0:
+        return m_displayName;
+    case 1:
+        return m_displaySize;
+    case 3:
+        return m_displayDateModified;
+    }
     return {};
 }
 
@@ -169,16 +186,24 @@ void FileListViewModel::FillModelDataCheckingForRoot(const QString& dir) {
     FillModelData();
 
     if (!DirIsRoot(dir)) {
-        m_display.insert(m_display.begin(), "..");
+        m_displayName.insert(m_displayName.begin(), "..");
+        m_displaySize.insert(m_displaySize.begin(), "");
+        m_displayDateModified.insert(m_displayDateModified.begin(), "");
         m_fullPaths.insert(m_fullPaths.begin(), "..");
         m_icons.insert(m_icons.begin(), m_styleProvider.standardIcon(QStyle::SP_DirIcon));
     }
 }
 
 void FileListViewModel::FillModelData() {
-    m_display = CombineAllEntriesIntoNameVec(m_fileEntries, m_directoryEntries);
-    m_fullPaths = CombineAllEntriesIntoFullPathsVec(m_fileEntries, m_directoryEntries);
+    m_displayName = CombineAllEntriesIntoNameVec(m_fileEntries, m_directoryEntries);
+    m_displaySize = std::vector<QString>(m_displayName.size(), "");
+    m_displayDateModified = std::vector<QString>(m_displayName.size(), "");
 
+    m_fullPaths = CombineAllEntriesIntoFullPathsVec(m_fileEntries, m_directoryEntries);
+    FillIcons();
+}
+
+void FileListViewModel::FillIcons() {
     const auto dirIcon = m_styleProvider.standardIcon(QStyle::SP_DirIcon);
     const auto fileIcon = m_styleProvider.standardIcon(QStyle::SP_FileIcon);
 
@@ -195,15 +220,15 @@ void FileListViewModel::FillModelData() {
     });
 }
 
-int FileListViewModel::rowCount(const QModelIndex&) const { return static_cast<int>(m_display.size()); }
+int FileListViewModel::rowCount(const QModelIndex&) const { return static_cast<int>(m_displayName.size()); }
 
 QVariant FileListViewModel::headerData(int section, Qt::Orientation, int role) const {
-    if (static_cast<unsigned>(section) >= mockupTableHeaders.size())
+    if (static_cast<unsigned>(section) >= tableHeaders.size())
         return {};
 
     switch (role) {
     case Qt::DisplayRole:
-        return mockupTableHeaders[section];
+        return tableHeaders[section];
     default:
         break;
     }
