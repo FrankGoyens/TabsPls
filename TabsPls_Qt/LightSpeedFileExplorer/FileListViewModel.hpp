@@ -17,7 +17,7 @@ class FileListViewModel : public QAbstractTableModel {
     /*Qt table model implementation*/
     int rowCount(const QModelIndex& = QModelIndex()) const override;
 
-    int columnCount(const QModelIndex& = QModelIndex()) const override { return 1; }
+    int columnCount(const QModelIndex& = QModelIndex()) const override { return 3; }
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
@@ -47,7 +47,9 @@ class FileListViewModel : public QAbstractTableModel {
     std::vector<FileSystem::Directory> m_directoryEntries;
     std::vector<FileSystem::FilePath> m_fileEntries;
 
-    std::vector<QString> m_display;
+    std::vector<QString> m_displayName;
+    std::vector<QString> m_displaySize;
+    std::vector<QString> m_displayDateModified;
     std::vector<QString> m_fullPaths;
     std::vector<QIcon> m_icons;
 
@@ -57,4 +59,7 @@ class FileListViewModel : public QAbstractTableModel {
 
     void FillModelDataCheckingForRoot(const QString& dir);
     void FillModelData();
+    void FillIcons();
+
+    std::optional<std::reference_wrapper<const std::vector<QString>>> GetDisplayDataForColumn(int column) const;
 };

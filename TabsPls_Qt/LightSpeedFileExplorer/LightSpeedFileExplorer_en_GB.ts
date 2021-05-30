@@ -97,6 +97,16 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="FileListViewModel.cpp" line="16"/>
+        <source>Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="FileListViewModel.cpp" line="16"/>
+        <source>Date modified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="QObjectRecycleExceptionHandler.hpp" line="19"/>
         <source>The send2trash module could not be found, </source>
         <translation type="unfinished"></translation>
