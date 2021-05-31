@@ -28,4 +28,6 @@ RawPathVector GetFilesInDirectory(const Directory& dir);
 RawPathVector _getFilesInDirectory(const RawPath& dir);
 
 RawPath GetParent(const Directory& dir);
+
+std::uintmax_t GetFileSize(const FilePath&);
 } // namespace FileSystem
