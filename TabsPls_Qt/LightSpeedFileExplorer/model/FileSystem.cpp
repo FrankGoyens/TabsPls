@@ -67,4 +67,6 @@ RawPath GetParent(const Directory& dir) {
 
     return dirPath.parent_path().wstring();
 }
+
+std::uintmax_t GetFileSize(const FilePath& file) { return std::filesystem::file_size(file.path()); }
 } // namespace FileSystem

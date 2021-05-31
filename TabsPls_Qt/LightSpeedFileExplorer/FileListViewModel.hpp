@@ -43,9 +43,14 @@ class FileListViewModel : public QAbstractTableModel {
 
     std::optional<std::string> ClaimError();
 
+    struct FileEntry {
+        FileSystem::FilePath filePath;
+        std::uintmax_t size;
+    };
+
   private:
     std::vector<FileSystem::Directory> m_directoryEntries;
-    std::vector<FileSystem::FilePath> m_fileEntries;
+    std::vector<FileEntry> m_fileEntries;
 
     std::vector<QString> m_displayName;
     std::vector<QString> m_displaySize;

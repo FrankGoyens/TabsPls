@@ -1,5 +1,7 @@
 #include "FileListViewModel.hpp"
 
+#include <sstream>
+
 #include <QStyle>
 
 #include <TabsPlsCore/FileSystem.hpp>
@@ -24,7 +26,15 @@ struct GetFilesInDirectoryException : std::exception {
 };
 } // namespace
 
-static std::pair<std::vector<FileSystem::FilePath>, std::vector<FileSystem::Directory>>
+static auto GetSizesForFiles(const std::vector<FileSystem::FilePath>& files) {
+    std::vector<FileListViewModel::FileEntry> filesWithSizes;
+    std::transform(files.begin(), files.end(), std::back_inserter(filesWithSizes), [](const auto& file) {
+        return FileListViewModel::FileEntry{file, FileSystem::GetFileSize(file)};
+    });
+    return filesWithSizes;
+}
+
+static std::pair<std::vector<FileListViewModel::FileEntry>, std::vector<FileSystem::Directory>>
 GetFilesInDirectoryWithFSCatch(const FileSystem::Directory& dir) {
     try {
         std::vector<FileSystem::FilePath> files;
@@ -40,7 +50,7 @@ GetFilesInDirectoryWithFSCatch(const FileSystem::Directory& dir) {
                 dirs.emplace_back(*dir);
         }
 
-        return std::make_pair(files, dirs);
+        return std::make_pair(GetSizesForFiles(files), dirs);
     } catch (const std::exception& e) {
         throw GetFilesInDirectoryException(e.what());
     }
@@ -48,7 +58,7 @@ GetFilesInDirectoryWithFSCatch(const FileSystem::Directory& dir) {
     return {{}, {}};
 }
 
-static std::pair<std::vector<FileSystem::FilePath>, std::vector<FileSystem::Directory>>
+static std::pair<std::vector<FileListViewModel::FileEntry>, std::vector<FileSystem::Directory>>
 RetrieveDirectoryContents(const QString& initialDirectory) {
     if (auto dir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory)))
         return GetFilesInDirectoryWithFSCatch(*dir);
@@ -65,7 +75,6 @@ FileListViewModel::FileListViewModel(QObject* parent, QStyle& styleProvider, con
 QVariant FileListViewModel::data(const QModelIndex& index, int role) const {
     switch (role) {
     case Qt::EditRole:
-    // fallthrough
     case Qt::DisplayRole:
         if (const auto& displayColumn = GetDisplayDataForColumn(index.column())) {
             return displayColumn->get()[index.row()];
@@ -142,6 +151,8 @@ void FileListViewModel::ChangeDirectory(const QString& dir) {
     beginResetModel();
     try {
         std::tie(m_fileEntries, m_directoryEntries) = RetrieveDirectoryContents(dir);
+        m_displaySize.clear();
+        m_displayDateModified.clear();
     } catch (const GetFilesInDirectoryException& e) {
         m_error = e.what();
     }
@@ -194,12 +205,29 @@ void FileListViewModel::FillModelDataCheckingForRoot(const QString& dir) {
     }
 }
 
+static auto FilePathsFromEntries(const std::vector<FileListViewModel::FileEntry>& entries) {
+    std::vector<FileSystem::FilePath> paths;
+    std::transform(entries.begin(), entries.end(), std::back_inserter(paths),
+                   [](const auto& entry) { return entry.filePath; });
+    return paths;
+}
+
+static QString FormatSize(std::uintmax_t bytes) {
+    const auto bytesString = std::to_string(bytes);
+    return QString::fromStdString(bytesString);
+}
+
 void FileListViewModel::FillModelData() {
-    m_displayName = CombineAllEntriesIntoNameVec(m_fileEntries, m_directoryEntries);
-    m_displaySize = std::vector<QString>(m_displayName.size(), "");
+    m_displayName = CombineAllEntriesIntoNameVec(FilePathsFromEntries(m_fileEntries), m_directoryEntries);
+
+    std::transform(m_fileEntries.begin(), m_fileEntries.end(), std::back_inserter(m_displaySize),
+                   [](const auto& entry) { return FormatSize(entry.size); });
+    const std::vector<QString> directoryDummySizes(m_directoryEntries.size(), "");
+    m_displaySize.insert(m_displaySize.end(), directoryDummySizes.begin(), directoryDummySizes.end());
+
     m_displayDateModified = std::vector<QString>(m_displayName.size(), "");
 
-    m_fullPaths = CombineAllEntriesIntoFullPathsVec(m_fileEntries, m_directoryEntries);
+    m_fullPaths = CombineAllEntriesIntoFullPathsVec(FilePathsFromEntries(m_fileEntries), m_directoryEntries);
     FillIcons();
 }
 
