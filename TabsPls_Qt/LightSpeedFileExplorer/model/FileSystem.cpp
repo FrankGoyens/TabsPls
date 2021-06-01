@@ -69,4 +69,16 @@ RawPath GetParent(const Directory& dir) {
 }
 
 std::uintmax_t GetFileSize(const FilePath& file) { return std::filesystem::file_size(file.path()); }
+
+// https://stackoverflow.com/questions/61030383/how-to-convert-stdfilesystemfile-time-type-to-time-t
+template <typename TimePoint> static std::time_t to_time_t(TimePoint tp) {
+    auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(tp - TimePoint::clock::now() +
+                                                                                  std::chrono::system_clock::now());
+    return std::chrono::system_clock::to_time_t(sctp);
+}
+
+std::time_t GetLastWriteTime(const FilePath& file) {
+    const auto fileTime = std::filesystem::last_write_time(file.path());
+    return to_time_t(fileTime);
+}
 } // namespace FileSystem

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <vector>
 
 #include <FileSystemDefs.hpp>
@@ -30,4 +31,5 @@ RawPathVector _getFilesInDirectory(const RawPath& dir);
 RawPath GetParent(const Directory& dir);
 
 std::uintmax_t GetFileSize(const FilePath&);
+std::time_t GetLastWriteTime(const FilePath&);
 } // namespace FileSystem
