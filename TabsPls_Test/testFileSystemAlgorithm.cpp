@@ -38,4 +38,18 @@ TEST(FileSystemAlgorithmTest, StripLeadingPathSeparators) {
     EXPECT_EQ(FileSystem::Algorithm::StripLeadingPathSeparators(givenPath),
               FakeFileSystem::MergeUsingSeparator({"C", "Users", "..", "Users", ".", "Jeff"}));
 }
+
+constexpr char* arbitraryDateString = "Mon Feb 15 16:17:18 2021";
+
+static std::time_t MakeArbitraryDate() {
+    struct tm tm;
+    std::istringstream iss(arbitraryDateString);
+    iss >> std::get_time(&tm, "%a %b %d %H:%M:%S %Y");
+    return mktime(&tm);
+}
+
+TEST(FileSystemAlgorithmTest, FormatAsFileTimestamp) {
+    const auto givenTimestamp = MakeArbitraryDate();
+    EXPECT_EQ(arbitraryDateString, FileSystem::Algorithm::FormatAsFileTimestamp(givenTimestamp));
+}
 } // namespace FileSystemAlgorithmTests
