@@ -39,34 +39,49 @@ std::string FormatAsFileTimestamp(const std::time_t& timestamp) {
     return oss.str();
 }
 
-ScaledFileSize ScaleSizeToLargestPossibleUnit(uintmax_t bytes) {
-    if (bytes == 0)
-        return {0.f, "B"};
-
-    constexpr char* sizeUnits[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
-
-    int unitIndex = 0;
-
+static std::pair<uintmax_t, int> CalcSizeInLargestPossibleUnit(uintmax_t bytes) {
     auto sizeInLargestPossibleUnit = bytes;
+    int unitIndex = 0;
 
     while (sizeInLargestPossibleUnit >= 1024 && unitIndex < 9) {
         ++unitIndex;
 
         sizeInLargestPossibleUnit /= 1024;
     }
+    return {sizeInLargestPossibleUnit, unitIndex};
+}
+
+static bool MantissaIsNeeded(uintmax_t bytes, double bytesInLargestPossibleUnit) {
+    return bytes > 1024 && bytesInLargestPossibleUnit != bytes;
+}
+
+static float CombineSizeAndMantissa(uintmax_t bytes, double bytesInLargestPossibleUnit,
+                                    uintmax_t sizeInLargestPossibleUnit, double mantissa) {
+    std::ostringstream oss;
+    oss << sizeInLargestPossibleUnit;
+    if (MantissaIsNeeded(bytes, bytesInLargestPossibleUnit)) {
+        const auto mantissaString = std::to_string(mantissa);
+        if (mantissaString.size() > 1)
+            oss << std::string(mantissaString.begin() + 1, mantissaString.end());
+    }
+
+    return std::stof(oss.str());
+}
+
+ScaledFileSize ScaleSizeToLargestPossibleUnit(uintmax_t bytes) {
+    if (bytes == 0)
+        return {0.f, "B"};
+
+    constexpr char* sizeUnits[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+
+    auto [sizeInLargestPossibleUnit, unitIndex] = CalcSizeInLargestPossibleUnit(bytes);
 
     const auto bytesInSingleLargestUnit = std::pow(1024, unitIndex);
     const auto bytesInLargestPossibleUnit = bytesInSingleLargestUnit * sizeInLargestPossibleUnit;
     const auto mantissa = (bytes - bytesInLargestPossibleUnit) / bytesInSingleLargestUnit;
 
-    std::ostringstream oss;
-    oss << sizeInLargestPossibleUnit;
-    if (bytes > 1024 && bytesInLargestPossibleUnit != bytes) {
-        const auto mantissaString = std::to_string(mantissa);
-        if (mantissaString.size() > 1)
-            oss << std::string(mantissaString.begin() + 1, mantissaString.end());
-    }
-    return {std::stof(oss.str()), sizeUnits[unitIndex]};
+    return {CombineSizeAndMantissa(bytes, bytesInLargestPossibleUnit, sizeInLargestPossibleUnit, mantissa),
+            sizeUnits[unitIndex]};
 }
 
 std::string Format(ScaledFileSize scaledSize, std::optional<int> mantissaLength) {
