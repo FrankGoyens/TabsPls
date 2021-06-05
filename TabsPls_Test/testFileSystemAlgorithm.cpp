@@ -52,4 +52,85 @@ TEST(FileSystemAlgorithmTest, FormatAsFileTimestamp) {
     const auto givenTimestamp = MakeArbitraryDate();
     EXPECT_EQ(arbitraryDateString, FileSystem::Algorithm::FormatAsFileTimestamp(givenTimestamp));
 }
+
+TEST(FileSystemAlgorithmTest, ScaleSizeToLargestPossibleUnit) {
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{1.f, "B"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(1ULL));
+
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{1.f, "kB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{1.f, "MB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(1024ULL * 1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{1.f, "GB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(1024ULL * 1024ULL * 1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{1.f, "TB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(1024ULL * 1024ULL * 1024ULL * 1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{1.f, "PB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{1.f, "EB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL *
+                                                                    1024ULL));
+
+    // Zetta bytes and onward are simply too big to store in uintmax_t
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{0.f, "B"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL *
+                                                                    1024ULL * 1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{0.f, "B"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL *
+                                                                    1024ULL * 1024ULL * 1024ULL));
+}
+
+TEST(FileSystemAlgorithmTest, ScaleSizeToLargestPossibleUnitTimes5) {
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.f, "B"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.f, "kB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.f, "MB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL * 1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.f, "GB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL * 1024ULL * 1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.f, "TB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL * 1024ULL * 1024ULL * 1024ULL));
+    EXPECT_EQ(
+        (FileSystem::Algorithm::ScaledFileSize{5.f, "PB"}),
+        FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.f, "EB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL * 1024ULL * 1024ULL * 1024ULL *
+                                                                    1024ULL * 1024ULL));
+
+    // Zetta bytes and onward is simply too big to store in uintmax_t
+}
+
+//! \brief Meant to have the same mantissa for every unit by incrementing the 'power'
+static uintmax_t MakeMantissa(int power, int lowerEnd) {
+    return static_cast<uintmax_t>(std::pow(1024ULL, power) * lowerEnd);
+}
+
+TEST(FileSystemAlgorithmTest, ScaleSizeToLargestPossibleUnitWithMantissa) {
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.132812f, "kB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL + MakeMantissa(0, 136)));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.132812f, "MB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL * 1024ULL + MakeMantissa(1, 136)));
+    EXPECT_EQ(
+        (FileSystem::Algorithm::ScaledFileSize{5.132812f, "GB"}),
+        FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL * 1024ULL * 1024ULL + MakeMantissa(2, 136)));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.132812f, "TB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(5 * 1024ULL * 1024ULL * 1024ULL * 1024ULL +
+                                                                    MakeMantissa(3, 136)));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.132812f, "PB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(
+                  5 * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL + MakeMantissa(4, 136)));
+    EXPECT_EQ((FileSystem::Algorithm::ScaledFileSize{5.132812f, "EB"}),
+              FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(
+                  5 * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL + MakeMantissa(5, 136)));
+
+    // Zetta bytes and onward is simply too big to store in uintmax_t
+}
+
+TEST(FileSystemAlgorithmTest, FormatScaledFileSize) {
+    const FileSystem::Algorithm::ScaledFileSize givenScaledSize{5.132812f, "kB"};
+    EXPECT_EQ("5.132812 kB", FileSystem::Algorithm::Format(givenScaledSize, {}));
+    EXPECT_EQ("5.1 kB", FileSystem::Algorithm::Format(givenScaledSize, 1));
+    EXPECT_EQ("5 kB", FileSystem::Algorithm::Format(givenScaledSize, 0));
+}
 } // namespace FileSystemAlgorithmTests
