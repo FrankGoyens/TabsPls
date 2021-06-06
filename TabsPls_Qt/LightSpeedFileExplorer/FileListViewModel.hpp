@@ -13,6 +13,7 @@ class FileListViewModel : public QAbstractTableModel {
 
   public:
     FileListViewModel(QObject* parent, QStyle& styleProvider, const QString& initialDirectory);
+    ~FileListViewModel() noexcept = default;
 
     /*Qt table model implementation*/
     int rowCount(const QModelIndex& = QModelIndex()) const override;
@@ -45,6 +46,7 @@ class FileListViewModel : public QAbstractTableModel {
 
     struct FileEntry {
         FileSystem::FilePath filePath;
+        std::time_t lastModificationDate;
         std::uintmax_t size;
     };
 

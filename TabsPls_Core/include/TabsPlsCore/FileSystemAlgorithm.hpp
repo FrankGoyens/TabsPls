@@ -2,6 +2,7 @@
 
 #include <ctime>
 #include <optional>
+#include <variant>
 
 #include <FileSystemDefs.hpp>
 
@@ -15,7 +16,7 @@ RawPath CombineDirectoryAndName(const FileSystem::Directory&, const FileSystem::
 std::string FormatAsFileTimestamp(const std::time_t&);
 
 struct ScaledFileSize {
-    float value = 0.f;
+    std::variant<int, float> value = 0.f;
     const char* unit;
 
     //! \brief Floating point comparison is done with Epsilon
