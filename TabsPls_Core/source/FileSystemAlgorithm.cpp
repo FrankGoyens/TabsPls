@@ -55,24 +55,24 @@ static bool MantissaIsNeeded(uintmax_t bytes, double bytesInLargestPossibleUnit)
     return bytes > 1024 && bytesInLargestPossibleUnit != bytes;
 }
 
-static float CombineSizeAndMantissa(uintmax_t bytes, double bytesInLargestPossibleUnit,
-                                    uintmax_t sizeInLargestPossibleUnit, double mantissa) {
+static std::variant<int, float> CombineSizeAndMantissa(uintmax_t bytes, double bytesInLargestPossibleUnit,
+                                                       uintmax_t sizeInLargestPossibleUnit, double mantissa) {
     std::ostringstream oss;
     oss << sizeInLargestPossibleUnit;
     if (MantissaIsNeeded(bytes, bytesInLargestPossibleUnit)) {
         const auto mantissaString = std::to_string(mantissa);
         if (mantissaString.size() > 1)
             oss << std::string(mantissaString.begin() + 1, mantissaString.end());
+        return std::stof(oss.str());
     }
-
-    return std::stof(oss.str());
+    return std::stoi(oss.str());
 }
 
 ScaledFileSize ScaleSizeToLargestPossibleUnit(uintmax_t bytes) {
     if (bytes == 0)
-        return {0.f, "B"};
+        return {0, "B"};
 
-    constexpr char* sizeUnits[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+    const char* sizeUnits[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 
     auto [sizeInLargestPossibleUnit, unitIndex] = CalcSizeInLargestPossibleUnit(bytes);
 
@@ -86,16 +86,26 @@ ScaledFileSize ScaleSizeToLargestPossibleUnit(uintmax_t bytes) {
 
 std::string Format(ScaledFileSize scaledSize, std::optional<int> mantissaLength) {
     std::ostringstream oss;
-    if (mantissaLength)
+    if (mantissaLength && std::holds_alternative<float>(scaledSize.value))
         oss << std::setprecision(*mantissaLength + 1);
-    else
-        oss << std::fixed;
-    oss << scaledSize.value << " " << scaledSize.unit;
+
+    oss << std::fixed;
+    std::visit([&oss](const auto& value) { oss << value; }, scaledSize.value);
+    oss << " " << scaledSize.unit;
     return oss.str();
 }
 
 bool ScaledFileSize::operator==(const FileSystem::Algorithm::ScaledFileSize& other) const {
-    return std::abs(value - other.value) < std::numeric_limits<float>::epsilon() && strcmp(unit, other.unit) == 0;
+    if (value.index() != other.value.index())
+        return false;
+
+    if (strcmp(unit, other.unit) != 0)
+        return false;
+
+    if (std::holds_alternative<float>(value))
+        return std::abs(std::get<float>(value) - std::get<float>(other.value)) < std::numeric_limits<float>::epsilon();
+    else
+        return std::get<int>(value) == std::get<int>(other.value);
 }
 
 } // namespace Algorithm

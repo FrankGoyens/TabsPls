@@ -29,7 +29,7 @@ struct GetFilesInDirectoryException : std::exception {
 static auto GetSizesForFiles(const std::vector<FileSystem::FilePath>& files) {
     std::vector<FileListViewModel::FileEntry> filesWithSizes;
     std::transform(files.begin(), files.end(), std::back_inserter(filesWithSizes), [](const auto& file) {
-        return FileListViewModel::FileEntry{file, FileSystem::GetFileSize(file)};
+        return FileListViewModel::FileEntry{file, FileSystem::GetLastWriteTime(file), FileSystem::GetFileSize(file)};
     });
     return filesWithSizes;
 }
@@ -213,8 +213,8 @@ static auto FilePathsFromEntries(const std::vector<FileListViewModel::FileEntry>
 }
 
 static QString FormatSize(std::uintmax_t bytes) {
-    const auto bytesString = std::to_string(bytes);
-    return QString::fromStdString(bytesString);
+    return QString::fromStdString(
+        FileSystem::Algorithm::Format(FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(bytes), 0));
 }
 
 void FileListViewModel::FillModelData() {
