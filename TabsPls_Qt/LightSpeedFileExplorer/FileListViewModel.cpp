@@ -99,7 +99,7 @@ FileListViewModel::GetDisplayDataForColumn(int column) const {
         return m_displayName;
     case 1:
         return m_displaySize;
-    case 3:
+    case 2:
         return m_displayDateModified;
     }
     return {};
@@ -217,15 +217,23 @@ static QString FormatSize(std::uintmax_t bytes) {
         FileSystem::Algorithm::Format(FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(bytes), 0));
 }
 
+static QString FormatSize(std::time_t timestamp) {
+    return QString::fromStdString(FileSystem::Algorithm::FormatAsFileTimestamp(timestamp));
+}
+
 void FileListViewModel::FillModelData() {
     m_displayName = CombineAllEntriesIntoNameVec(FilePathsFromEntries(m_fileEntries), m_directoryEntries);
 
     std::transform(m_fileEntries.begin(), m_fileEntries.end(), std::back_inserter(m_displaySize),
                    [](const auto& entry) { return FormatSize(entry.size); });
-    const std::vector<QString> directoryDummySizes(m_directoryEntries.size(), "");
-    m_displaySize.insert(m_displaySize.end(), directoryDummySizes.begin(), directoryDummySizes.end());
 
-    m_displayDateModified = std::vector<QString>(m_displayName.size(), "");
+    const std::vector<QString> dummyStrings(m_directoryEntries.size(), "");
+    m_displaySize.insert(m_displaySize.end(), dummyStrings.begin(), dummyStrings.end());
+
+    std::transform(m_fileEntries.begin(), m_fileEntries.end(), std::back_inserter(m_displayDateModified),
+                   [](const auto& entry) { return FormatSize(entry.lastModificationDate); });
+
+    m_displayDateModified.insert(m_displayDateModified.end(), dummyStrings.begin(), dummyStrings.end());
 
     m_fullPaths = CombineAllEntriesIntoFullPathsVec(FilePathsFromEntries(m_fileEntries), m_directoryEntries);
     FillIcons();
