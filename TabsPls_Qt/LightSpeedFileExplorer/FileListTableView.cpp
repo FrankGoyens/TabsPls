@@ -196,7 +196,7 @@ QString FileListTableView::AggregateSelectionDataAsUriList() const {
 }
 
 QStringList FileListTableView::AggregateSelectionDataAsLocalFileList() const {
-    const auto selectionIndices = selectionModel()->selectedRows();
+    const auto selectionIndices = selectionModel()->selectedIndexes();
     QStringList dataAsList;
     for (const auto& index : selectionIndices) {
         const QString filePath = model()->data(index, Qt::UserRole).toString();
