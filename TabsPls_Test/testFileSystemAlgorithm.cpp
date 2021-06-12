@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <cmath>
+
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
 
 #include "FakeFileSystem.hpp"
