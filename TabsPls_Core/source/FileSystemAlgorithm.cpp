@@ -1,5 +1,7 @@
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
 
+#include <cmath>
+#include <cstring>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
