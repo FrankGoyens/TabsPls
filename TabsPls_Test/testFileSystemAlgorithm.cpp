@@ -41,7 +41,7 @@ TEST(FileSystemAlgorithmTest, StripLeadingPathSeparators) {
               FakeFileSystem::MergeUsingSeparator({"C", "Users", "..", "Users", ".", "Jeff"}));
 }
 
-constexpr char* arbitraryDateString = "Mon Feb 15 16:17:18 2021";
+constexpr const char* arbitraryDateString = "Mon Feb 15 16:17:18 2021";
 
 static std::time_t MakeArbitraryDate() {
     struct tm tm;
