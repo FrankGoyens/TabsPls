@@ -19,7 +19,7 @@ struct ScaledFileSize {
     std::variant<int, float> value = 0.f;
     const char* unit;
 
-    //! \brief Floating point comparison is done with Epsilon
+    //! \brief Floating point comparison is done with precision to the 6th decimal (decided by running TabsPlsTest)
     bool operator==(const FileSystem::Algorithm::ScaledFileSize&) const;
 };
 
