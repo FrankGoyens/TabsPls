@@ -63,7 +63,7 @@ TEST(FileSystemAlgorithmTest, StripLeadingPathSeparators) {
 constexpr const char* arbitraryDateString = "Mon Feb 15 16:17:18 2021";
 
 static std::time_t MakeArbitraryDate() {
-    struct tm tm;
+    std::tm tm{};
     std::istringstream iss(arbitraryDateString);
     iss >> std::get_time(&tm, "%a %b %d %H:%M:%S %Y");
     return mktime(&tm);
