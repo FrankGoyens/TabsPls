@@ -105,7 +105,7 @@ bool ScaledFileSize::operator==(const FileSystem::Algorithm::ScaledFileSize& oth
         return false;
 
     if (std::holds_alternative<float>(value))
-        return std::abs(std::get<float>(value) - std::get<float>(other.value)) < std::numeric_limits<float>::epsilon();
+        return std::abs(std::get<float>(value) - std::get<float>(other.value)) < 10e-6;
     else
         return std::get<int>(value) == std::get<int>(other.value);
 }
