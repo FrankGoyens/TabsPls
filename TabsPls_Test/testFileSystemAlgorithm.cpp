@@ -6,6 +6,25 @@
 
 #include "FakeFileSystem.hpp"
 
+static void PrintTypeName(std::ostream& os, float) {
+    os.precision(std::numeric_limits<float>::max_digits10);
+    os << "float";
+}
+static void PrintTypeName(std::ostream& os, int) { os << "int"; }
+
+static std::ostream& operator<<(std::ostream& os, const FileSystem::Algorithm::ScaledFileSize& scaledFileSize) {
+    os << "ScaledFileSize object" << std::endl;
+    os << "unit = " << scaledFileSize.unit << std::endl;
+    os << "value (";
+    std::visit(
+        [&os](const auto& value) {
+            PrintTypeName(os, value);
+            os << ") = " << value << std::endl;
+        },
+        scaledFileSize.value);
+    return os;
+}
+
 namespace FileSystemAlgorithmTests {
 TEST(FileSystemAlgorithmTest, StripTrailingPathSeparators) {
     auto givenPath = FakeFileSystem::MergeUsingSeparator({"C", "", ""});
