@@ -144,6 +144,9 @@ bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value,
 Qt::ItemFlags FileListViewModel::flags(const QModelIndex& index) const {
     if (index.column() == 0 && index.row() == 0)
         return QAbstractTableModel::flags(index);
+    if (index.column() > 0)
+        return QAbstractTableModel::flags(index);
+
     return QAbstractTableModel::flags(index) | Qt::ItemFlag::ItemIsEditable;
 }
 
