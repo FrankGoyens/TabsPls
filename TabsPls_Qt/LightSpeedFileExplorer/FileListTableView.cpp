@@ -111,6 +111,7 @@ FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> curre
     setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
 
     horizontalHeader()->setStretchLastSection(true);
+    setSelectionBehavior(QAbstractItemView::SelectRows);
 }
 
 int FileListTableView::GetModelRoleForFullPaths() { return Qt::UserRole; }
@@ -196,7 +197,7 @@ QString FileListTableView::AggregateSelectionDataAsUriList() const {
 }
 
 QStringList FileListTableView::AggregateSelectionDataAsLocalFileList() const {
-    const auto selectionIndices = selectionModel()->selectedIndexes();
+    const auto selectionIndices = selectionModel()->selectedRows();
     QStringList dataAsList;
     for (const auto& index : selectionIndices) {
         const QString filePath = model()->data(index, Qt::UserRole).toString();
