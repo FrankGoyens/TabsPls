@@ -16,7 +16,7 @@ RawPath CombineDirectoryAndName(const FileSystem::Directory&, const FileSystem::
 std::string FormatAsFileTimestamp(const std::time_t&);
 
 struct ScaledFileSize {
-    std::variant<int, float> value = 0.f;
+    std::variant<int, float> value = 0;
     const char* unit;
 
     //! \brief Floating point comparison is done with precision to the 6th decimal (decided by running TabsPlsTest)
