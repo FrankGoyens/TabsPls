@@ -142,10 +142,18 @@ bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value,
 }
 
 Qt::ItemFlags FileListViewModel::flags(const QModelIndex& index) const {
-    if (index.column() == 0 && index.row() == 0)
-        return QAbstractTableModel::flags(index);
+    const auto defaultFlags = QAbstractTableModel::flags(index);
+
+    if (m_displayName.empty())
+        return defaultFlags;
+
+    // The parent directory field should be readonly
+    if (m_displayName.front() == ".." && index.row() == 0)
+        return defaultFlags;
+
+    // Anything other than the name field should be readonly
     if (index.column() > 0)
-        return QAbstractTableModel::flags(index);
+        return defaultFlags;
 
     return QAbstractTableModel::flags(index) | Qt::ItemFlag::ItemIsEditable;
 }
