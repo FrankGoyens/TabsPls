@@ -1,7 +1,5 @@
 #include "FileListViewModel.hpp"
 
-#include <sstream>
-
 #include <QStyle>
 
 #include <TabsPlsCore/FileSystem.hpp>
