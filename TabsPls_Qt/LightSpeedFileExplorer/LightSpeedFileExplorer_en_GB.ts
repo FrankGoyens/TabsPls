@@ -92,17 +92,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListViewModel.cpp" line="18"/>
+        <location filename="FileListViewModel.cpp" line="16"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListViewModel.cpp" line="18"/>
+        <location filename="FileListViewModel.cpp" line="16"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListViewModel.cpp" line="18"/>
+        <location filename="FileListViewModel.cpp" line="16"/>
         <source>Date modified</source>
         <translation type="unfinished"></translation>
     </message>
