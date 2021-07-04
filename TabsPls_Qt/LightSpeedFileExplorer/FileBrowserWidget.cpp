@@ -175,6 +175,10 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::weak_ptr<Current
 
     auto* fileListViewWidget = new FileListTableViewWithFilter(std::move(currentDirFileOp), viewModel);
 
+    fileListViewWidget->GetFileListTableView().resizeColumnsToContents();
+    QObject::connect(&viewModel, &QAbstractItemModel::modelReset,
+                     [fileListViewWidget] { fileListViewWidget->GetFileListTableView().resizeColumnsToContents(); });
+
     auto* fileListViewActiveFilterLabel = new QLabel();
 
     auto* rootLayout = new QVBoxLayout(&fileBrowserWidget);
