@@ -97,4 +97,7 @@ endif()
 target_link_libraries(LightSpeedFileExplorer
   PRIVATE Qt5::Widgets)
 
+#Put the icon file in the build folder
+configure_file(${CMAKE_SOURCE_DIR}/../../res/boot_icon.png ${CMAKE_BINARY_DIR} COPYONLY)
+
 qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
