@@ -34,7 +34,7 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
     return -1; // Failure
 }
 
-static void DumpBitmap(HBITMAP hBitmap, LPSTR icon_name) {
+static void DumpBitmap(HBITMAP hBitmap, int icon_name) {
     auto* image = new Gdiplus::Bitmap(hBitmap, NULL);
 
     CLSID myClsId;
@@ -54,10 +54,10 @@ static void DumpBitmap(HBITMAP hBitmap, LPSTR icon_name) {
     do {
         unsigned char buffer[bytes_to_read];
         stream->Read((void*)buffer, bytes_to_read, &bytesread);
-        data.insert(data.end(), std::begin(buffer), std::end(buffer));
+        data.insert(data.end(), std::begin(buffer), std::begin(buffer) + bytesread);
     } while (bytesread == bytes_to_read);
 
-    std::ofstream outputFile("icon_" + std::to_string((int)icon_name) + std::string(".bmp"),
+    std::ofstream outputFile("icon_" + std::to_string(icon_name) + std::string(".bmp"),
                              std::ios::out | std::ios::binary);
     outputFile.write((char*)data.data(), data.size());
 }
@@ -73,6 +73,17 @@ static BOOL resourceCallback(HMODULE hModule, LPCSTR lpType, LPSTR lpName, LONG_
     auto& icon_names = *reinterpret_cast<std::vector<std::pair<LPCSTR, LPSTR>>*>(lParam);
     icon_names.emplace_back(lpType, lpName);
     return TRUE;
+}
+
+static void DumpAssociatedIconInfo(const std::string& path) {
+    WORD index = 0;
+    auto hIcon = ExtractAssociatedIcon(0, (LPSTR)path.c_str(), &index);
+    if (hIcon != 0) {
+        ICONINFO iconinfo;
+        GetIconInfo(hIcon, &iconinfo);
+        DumpBitmap(iconinfo.hbmColor, 99);
+        DestroyIcon(hIcon);
+    }
 }
 
 static void DumpIconInfo(const std::string& path) {
@@ -94,7 +105,8 @@ static void DumpIconInfo(const std::string& path) {
                 if (hIcon != 0) {
                     ICONINFO iconinfo;
                     GetIconInfo(hIcon, &iconinfo);
-                    DumpBitmap(iconinfo.hbmColor, icon.second);
+                    DumpBitmap(iconinfo.hbmColor, (int)icon.second);
+                    DestroyIcon(hIcon);
                 }
             }
         }
@@ -111,7 +123,7 @@ int main(int argc, char** argv) {
     ULONG_PTR gdiplusToken;
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-    DumpIconInfo(argv[1]);
+    DumpAssociatedIconInfo(argv[1]);
 
     Gdiplus::GdiplusShutdown(gdiplusToken);
 }
