@@ -13,7 +13,8 @@ int main(int argc, char** argv) {
 
     struct FileDumper : WinIconExtract::IconDumper {
         void Dump(const std::vector<unsigned char>& data, int, int) const override {
-            std::ofstream out(std::string("icon_") + std::to_string(++index) + std::string(".bmp"));
+            std::ofstream out(std::string("icon_") + std::to_string(++index) + std::string(".bmp"),
+                              std::ios::out | std::ios::binary);
             out.write((char*)data.data(), data.size());
         }
 
