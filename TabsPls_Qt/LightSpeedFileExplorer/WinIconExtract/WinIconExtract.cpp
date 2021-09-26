@@ -36,8 +36,8 @@ static int GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
     return -1; // Failure
 }
 
-static void DumpBitmap(HBITMAP hBitmap, const WinIconExtract::IconDumper& dumper) {
-    auto* image = new Gdiplus::Bitmap(hBitmap, NULL);
+static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
+    auto* image = new Gdiplus::Bitmap(hIcon);
 
     CLSID myClsId;
     int retVal = GetEncoderClsid(L"image/bmp", &myClsId);
@@ -46,6 +46,7 @@ static void DumpBitmap(HBITMAP hBitmap, const WinIconExtract::IconDumper& dumper
     // For now, writing to a file is handy for debugging, so that happens anyway
     IStream* stream = SHCreateMemStream(NULL, 0);
     image->Save(stream, &myClsId, NULL);
+    // image->Save((std::wstring(L"icon_") + std::to_wstring(++index) + std::wstring(L".bmp")).c_str(), &myClsId, NULL);
 
     stream->Seek(LARGE_INTEGER{0}, STREAM_SEEK_SET, NULL);
     std::vector<unsigned char> data;
@@ -88,9 +89,7 @@ void DumpAssociatedIconInfo(const std::string& path, const IconDumper& dumper) {
     WORD index = 0;
     auto hIcon = ExtractAssociatedIcon(0, (LPSTR)path.c_str(), &index);
     if (hIcon != 0) {
-        ICONINFO iconinfo;
-        GetIconInfo(hIcon, &iconinfo);
-        DumpBitmap(iconinfo.hbmColor, dumper);
+        DumpBitmap(hIcon, dumper);
         DestroyIcon(hIcon);
     }
 }
@@ -112,9 +111,7 @@ void DumpIconInfo(const std::string& path, const IconDumper& dumper) {
             if (res != 0) {
                 auto hIcon = CreateIconFromResource((PBYTE)res, size, TRUE, 0x00030000);
                 if (hIcon != 0) {
-                    ICONINFO iconinfo;
-                    GetIconInfo(hIcon, &iconinfo);
-                    DumpBitmap(iconinfo.hbmColor, dumper);
+                    DumpBitmap(hIcon, dumper);
                     DestroyIcon(hIcon);
                 }
             }
