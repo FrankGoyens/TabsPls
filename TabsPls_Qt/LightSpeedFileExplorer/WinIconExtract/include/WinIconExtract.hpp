@@ -13,6 +13,6 @@ struct IconDumper {
     virtual void Dump(const std::vector<unsigned char>& data, int width, int height) const = 0;
 };
 
-void DumpAssociatedIconInfo(const std::string& path, const IconDumper&);
-void DumpIconInfo(const std::string& path, const IconDumper&);
+void DumpAssociatedIconInfo(const std::wstring& path, const IconDumper&);
+void DumpIconInfo(const std::wstring& path, const IconDumper&);
 } // namespace WinIconExtract
