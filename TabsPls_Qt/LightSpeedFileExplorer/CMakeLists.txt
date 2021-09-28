@@ -42,6 +42,7 @@ set(LightSpeedFileExplorer_Headers
   FutureWatchDialogWithProgressBar.hpp
   QStringListFutureWatchDialog.hpp
   ShowIsReadySignaler.hpp
+  AssociatedIconProvider.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -92,6 +93,24 @@ else()
   #Stub the components that would otherwise be implemented by the Python components
   target_sources(LightSpeedFileExplorer PRIVATE Send2Trash_stub.cpp)
 endif()
+
+if(WIN32)
+  set(USE_WINAPI_ICON_PROVIDER "Use the Windows API to be able to retrieve icons associated with files (for display purposes)" CACHE BOOL ON)
+  if(USE_WINAPI_ICON_PROVIDER)
+    message(STATUS "TabsPls Windows API icon provider will be used")
+    target_sources(LightSpeedFileExplorer PRIVATE TabsPls_WinIconExtract/AssociatedIconProvider.cpp)
+
+    target_sources(LightSpeedFileExplorer PRIVATE WinIconExtract/WinIconExtract.cpp)
+    target_include_directories(LightSpeedFileExplorer PRIVATE WinIconExtract/include)
+    target_link_libraries(LightSpeedFileExplorer PRIVATE GdiPlus Shlwapi)
+  endif()
+endif()
+
+if(NOT USE_WINAPI_ICON_PROVIDER)
+  message(STATUS "TabsPls Windows API icon provider will NOT be used")
+  target_sources(LightSpeedFileExplorer PRIVATE AssociatedIconProvider_stub.cpp)
+endif()
+
 
 #Link against required Qt component
 target_link_libraries(LightSpeedFileExplorer

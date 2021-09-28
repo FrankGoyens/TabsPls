@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 
@@ -21,7 +22,9 @@ int main(int argc, char** argv) {
         mutable int index = 0;
     };
 
-    WinIconExtract::DumpIconInfo(argv[1], FileDumper{});
+    std::vector<wchar_t> widePath(strlen(argv[1]) + 1);
+    mbstowcs(widePath.data(), argv[1], widePath.size());
+    WinIconExtract::DumpAssociatedIconInfo(widePath.data(), FileDumper{});
 
     WinIconExtract::DeInit();
 }

@@ -7,6 +7,8 @@
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemOp.hpp>
 
+#include "AssociatedIconProvider.hpp"
+
 #include "FileSystemDefsConversion.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
@@ -258,8 +260,11 @@ void FileListViewModel::FillIcons() {
         const auto fullPathStdString = ToRawPath(fullPath);
         if (FileSystem::IsDirectory(fullPathStdString))
             return dirIcon;
-        else if (FileSystem::IsRegularFile(fullPathStdString))
+        else if (FileSystem::IsRegularFile(fullPathStdString)) {
+            if (const auto associatedIcon = AssociatedIconProvider::Get().FromPath(fullPathStdString))
+                return *associatedIcon;
             return fileIcon;
+        }
 
         return QIcon();
     });
