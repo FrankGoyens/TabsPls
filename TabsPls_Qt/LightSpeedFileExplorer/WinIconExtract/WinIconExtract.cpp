@@ -42,11 +42,8 @@ static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
     CLSID myClsId;
     int retVal = GetEncoderClsid(L"image/bmp", &myClsId);
 
-    // Yes, image->Save could directly write to a file, but later on, it is required to have the data in memory
-    // For now, writing to a file is handy for debugging, so that happens anyway
     IStream* stream = SHCreateMemStream(NULL, 0);
     image->Save(stream, &myClsId, NULL);
-    // image->Save((std::wstring(L"icon_") + std::to_wstring(++index) + std::wstring(L".bmp")).c_str(), &myClsId, NULL);
 
     stream->Seek(LARGE_INTEGER{0}, STREAM_SEEK_SET, NULL);
     std::vector<unsigned char> data;
