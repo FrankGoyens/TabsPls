@@ -30,7 +30,7 @@ std::optional<QIcon> AssociatedIconProvider::FromPath(const FileSystem::RawPath&
         return {};
 
     QPixmap pixmap;
-    pixmap.loadFromData(data.data(), data.size(), "bmp");
+    pixmap.loadFromData(data.data(), data.size(), "png");
     return QIcon(pixmap);
 }
 

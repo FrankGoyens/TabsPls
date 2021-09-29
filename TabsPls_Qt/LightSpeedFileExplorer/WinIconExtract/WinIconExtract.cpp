@@ -37,13 +37,21 @@ static int GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
 }
 
 static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
-    auto* image = new Gdiplus::Bitmap(hIcon);
+    ICONINFO info;
+    GetIconInfo(hIcon, &info);
+    Gdiplus::Bitmap betterBitmap(info.hbmColor, NULL);
+    Gdiplus::Rect rectBounds(0, 0, betterBitmap.GetWidth(), betterBitmap.GetHeight());
+    Gdiplus::BitmapData betterBitmapData;
+    betterBitmap.LockBits(&rectBounds, Gdiplus::ImageLockModeRead, betterBitmap.GetPixelFormat(), &betterBitmapData);
+    Gdiplus::Bitmap alphaBitmap(betterBitmapData.Width, betterBitmapData.Height, betterBitmapData.Stride,
+                                PixelFormat32bppARGB, (BYTE*)betterBitmapData.Scan0);
+    betterBitmap.UnlockBits(&betterBitmapData);
 
     CLSID myClsId;
-    int retVal = GetEncoderClsid(L"image/bmp", &myClsId);
+    int retVal = GetEncoderClsid(L"image/png", &myClsId);
 
     IStream* stream = SHCreateMemStream(NULL, 0);
-    image->Save(stream, &myClsId, NULL);
+    alphaBitmap.Save(stream, &myClsId, NULL);
 
     stream->Seek(LARGE_INTEGER{0}, STREAM_SEEK_SET, NULL);
     std::vector<unsigned char> data;
@@ -56,9 +64,7 @@ static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
         data.insert(data.end(), std::begin(buffer), std::begin(buffer) + bytesread);
     } while (bytesread == bytes_to_read);
 
-    dumper.Dump(data, image->GetWidth(), image->GetHeight());
-
-    delete image;
+    dumper.Dump(data, alphaBitmap.GetWidth(), alphaBitmap.GetHeight());
 }
 
 static void DumpPNGIcon(HGLOBAL res, LPSTR icon_name, DWORD size) {
