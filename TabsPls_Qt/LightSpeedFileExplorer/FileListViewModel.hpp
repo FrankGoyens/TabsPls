@@ -50,6 +50,9 @@ class FileListViewModel : public QAbstractTableModel {
         std::uintmax_t size;
     };
 
+  private slots:
+    void RefreshIcon(QIcon, const QString& fullPath, int index);
+
   private:
     std::vector<FileSystem::Directory> m_directoryEntries;
     std::vector<FileEntry> m_fileEntries;
@@ -67,6 +70,8 @@ class FileListViewModel : public QAbstractTableModel {
     void FillModelDataCheckingForRoot(const QString& dir);
     void FillModelData();
     void FillIcons();
+
+    void StartIconRetrievalThread(const std::wstring& fullPathStdString, int index);
 
     std::optional<std::reference_wrapper<const std::vector<QString>>> GetDisplayDataForColumn(int column) const;
 };
