@@ -1,6 +1,10 @@
 #include "FileListViewModel.hpp"
 
+#include <iostream>
+#include <thread>
+
 #include <QStyle>
+#include <QThread>
 
 #include <TabsPlsCore/FileSystem.hpp>
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
@@ -8,8 +12,8 @@
 #include <TabsPlsCore/FileSystemOp.hpp>
 
 #include "AssociatedIconProvider.hpp"
-
 #include "FileSystemDefsConversion.hpp"
+#include "IconRetrievalThread.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
@@ -105,40 +109,46 @@ FileListViewModel::GetDisplayDataForColumn(int column) const {
     return {};
 }
 
-bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value, int) {
-    const auto fullPathAtIndex = ToRawPath(data(index, Qt::UserRole).toString());
+bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value, int role) {
+    if (value.type() == QVariant::Type::String) {
 
-    std::optional<std::pair<FileSystem::RawPath, FileSystem::RawPath>> renameCall = {};
-    FileSystem::RawPath parentPath;
+        const auto fullPathAtIndex = ToRawPath(data(index, Qt::UserRole).toString());
 
-    if (const auto dir = FileSystem::Directory::FromPath(fullPathAtIndex)) {
-        parentPath = FileSystem::Algorithm::StripTrailingPathSeparators(dir->Parent().path());
-        if (FileSystem::Algorithm::StripTrailingPathSeparators(dir->path()) == parentPath)
+        std::optional<std::pair<FileSystem::RawPath, FileSystem::RawPath>> renameCall = {};
+        FileSystem::RawPath parentPath;
+
+        if (const auto dir = FileSystem::Directory::FromPath(fullPathAtIndex)) {
+            parentPath = FileSystem::Algorithm::StripTrailingPathSeparators(dir->Parent().path());
+            if (FileSystem::Algorithm::StripTrailingPathSeparators(dir->path()) == parentPath)
+                return false;
+
+            renameCall = std::make_pair(
+                dir->path(), parentPath + FileSystem::Separator() +
+                                 FileSystem::Algorithm::StripLeadingPathSeparators(ToRawPath(value.toString())));
+        } else if (const auto file = FileSystem::FilePath::FromPath(fullPathAtIndex)) {
+            parentPath = FileSystem::Algorithm::StripTrailingPathSeparators(
+                FileSystem::Directory::FromFilePathParent(*file).path());
+            renameCall = std::make_pair(
+                file->path(), parentPath + FileSystem::Separator() +
+                                  FileSystem::Algorithm::StripLeadingPathSeparators(ToRawPath(value.toString())));
+        }
+
+        if (!renameCall)
             return false;
 
-        renameCall = std::make_pair(dir->path(),
-                                    parentPath + FileSystem::Separator() +
-                                        FileSystem::Algorithm::StripLeadingPathSeparators(ToRawPath(value.toString())));
-    } else if (const auto file = FileSystem::FilePath::FromPath(fullPathAtIndex)) {
-        parentPath =
-            FileSystem::Algorithm::StripTrailingPathSeparators(FileSystem::Directory::FromFilePathParent(*file).path());
-        renameCall = std::make_pair(file->path(),
-                                    parentPath + FileSystem::Separator() +
-                                        FileSystem::Algorithm::StripLeadingPathSeparators(ToRawPath(value.toString())));
+        try {
+            FileSystem::Op::Rename(renameCall->first, renameCall->second);
+            RefreshDirectory(FromRawPath(parentPath));
+        } catch (const FileSystem::Op::RenameException& e) {
+            m_error = e.message;
+            return false;
+        }
+
+        return true;
+    } else if (role == Qt::DecorationRole && value.type() == QVariant::Type::Icon) {
+        m_icons[index.row()] = qvariant_cast<QIcon>(value);
     }
-
-    if (!renameCall)
-        return false;
-
-    try {
-        FileSystem::Op::Rename(renameCall->first, renameCall->second);
-        RefreshDirectory(FromRawPath(parentPath));
-    } catch (const FileSystem::Op::RenameException& e) {
-        m_error = e.message;
-        return false;
-    }
-
-    return true;
+    return false;
 }
 
 Qt::ItemFlags FileListViewModel::flags(const QModelIndex& index) const {
@@ -256,18 +266,28 @@ void FileListViewModel::FillIcons() {
 
     m_icons.clear();
 
+    int index = 1;
+
     std::transform(m_fullPaths.begin(), m_fullPaths.end(), std::back_inserter(m_icons), [&](const auto& fullPath) {
         const auto fullPathStdString = ToRawPath(fullPath);
-        if (FileSystem::IsDirectory(fullPathStdString))
+        if (FileSystem::IsDirectory(fullPathStdString)) {
+            ++index;
             return dirIcon;
-        else if (FileSystem::IsRegularFile(fullPathStdString)) {
-            if (const auto associatedIcon = AssociatedIconProvider::Get().FromPath(fullPathStdString))
-                return *associatedIcon;
+        } else if (FileSystem::IsRegularFile(fullPathStdString)) {
+            StartIconRetrievalThread(fullPathStdString, index);
+            ++index;
             return fileIcon;
         }
 
         return QIcon();
     });
+}
+
+void FileListViewModel::StartIconRetrievalThread(const std::wstring& fullPathStdString, int index) {
+    auto* thread = new IconRetrievalThread(fullPathStdString, index);
+    connect(thread, &IconRetrievalThread::resultReady, this, &FileListViewModel::RefreshIcon);
+    connect(thread, &IconRetrievalThread::finished, thread, &QObject::deleteLater);
+    thread->start();
 }
 
 int FileListViewModel::rowCount(const QModelIndex&) const { return static_cast<int>(m_displayName.size()); }
@@ -284,4 +304,14 @@ QVariant FileListViewModel::headerData(int section, Qt::Orientation, int role) c
     }
 
     return {};
+}
+
+void FileListViewModel::RefreshIcon(QIcon icon, const QString& fullPath, int index) {
+    const auto modelIndex = createIndex(index, 0);
+    assert(data(modelIndex, Qt::UserRole).type() == QVariant::Type::String);
+
+    /*Don't update unless it's still the right filepath for the given index
+    Also don't update when the index is out of range*/
+    if (data(modelIndex, Qt::UserRole).toString() == fullPath && index < m_icons.size())
+        setData(modelIndex, icon, Qt::DecorationRole);
 }
