@@ -77,25 +77,12 @@ static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
     if (alphaBitmap->Save(stream, &myClsId, NULL) != Gdiplus::Status::Ok)
         return;
 
-    if (FAILED(stream->Seek(LARGE_INTEGER{0}, STREAM_SEEK_SET, NULL)))
+    if (FAILED(stream->Seek(LARGE_INTEGER{{0}}, STREAM_SEEK_SET, NULL)))
         return;
 
     const auto data = PutStreamDataInDynamicBuffer(stream);
 
     dumper.Dump(std::move(data), alphaBitmap->GetWidth(), alphaBitmap->GetHeight());
-}
-
-static void DumpPNGIcon(HGLOBAL res, LPSTR icon_name, DWORD size) {
-    auto bitmap_pointer = LockResource(res);
-    std::ofstream outputFile("icon_" + std::to_string((int)icon_name) + std::string(".png"),
-                             std::ios::out | std::ios::binary);
-    outputFile.write((char*)bitmap_pointer, size);
-}
-
-static BOOL resourceCallback(HMODULE hModule, LPCWSTR lpType, LPWSTR lpName, LONG_PTR lParam) {
-    auto& icon_names = *reinterpret_cast<std::vector<std::pair<LPCWSTR, LPWSTR>>*>(lParam);
-    icon_names.emplace_back(lpType, lpName);
-    return TRUE;
 }
 
 namespace WinIconExtract {
@@ -112,31 +99,6 @@ void DumpAssociatedIconInfo(const std::wstring& path, const IconDumper& dumper) 
     if (hIcon != 0) {
         DumpBitmap(hIcon, dumper);
         DestroyIcon(hIcon);
-    }
-}
-
-void DumpIconInfo(const std::wstring& path, const IconDumper& dumper) {
-    auto hlib = LoadLibraryW(static_cast<LPCWSTR>(path.c_str()));
-    std::vector<std::pair<LPCWSTR, LPWSTR>> icon_names;
-    BOOL success = EnumResourceNamesW(hlib, (LPWSTR)RT_ICON, resourceCallback, reinterpret_cast<LONG_PTR>(&icon_names));
-    if (!success)
-        std::cout << "Enumerating names went wrong" << std::endl;
-
-    std::unique_ptr<unsigned char> bitmap_data;
-
-    for (auto& icon : icon_names) {
-        auto resInfo = FindResourceW(hlib, icon.second, (LPWSTR)RT_ICON);
-        if (resInfo != 0) {
-            auto size = SizeofResource(hlib, resInfo);
-            auto res = LoadResource(hlib, resInfo);
-            if (res != 0) {
-                auto hIcon = CreateIconFromResource((PBYTE)res, size, TRUE, 0x00030000);
-                if (hIcon != 0) {
-                    DumpBitmap(hIcon, dumper);
-                    DestroyIcon(hIcon);
-                }
-            }
-        }
     }
 }
 } // namespace WinIconExtract
