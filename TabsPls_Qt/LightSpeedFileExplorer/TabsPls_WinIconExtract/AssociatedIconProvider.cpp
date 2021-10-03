@@ -20,7 +20,7 @@ static auto DumpIcon(const FileSystem::RawPath& path) {
         mutable int width, height;
     } iconDumper;
     WinIconExtract::DumpAssociatedIconInfo(path, iconDumper);
-    return std::make_tuple(iconDumper.data, iconDumper.width, iconDumper.height);
+    return std::make_tuple(std::move(iconDumper.data), iconDumper.width, iconDumper.height);
 }
 
 std::optional<QIcon> AssociatedIconProvider::FromPath(const FileSystem::RawPath& path) const {
