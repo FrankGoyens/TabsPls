@@ -266,16 +266,15 @@ void FileListViewModel::FillIcons() {
 
     m_icons.clear();
 
-    int index = 1;
+    int index = -1;
 
     std::transform(m_fullPaths.begin(), m_fullPaths.end(), std::back_inserter(m_icons), [&](const auto& fullPath) {
         const auto fullPathStdString = ToRawPath(fullPath);
+        ++index;
         if (FileSystem::IsDirectory(fullPathStdString)) {
-            ++index;
             return dirIcon;
         } else if (FileSystem::IsRegularFile(fullPathStdString)) {
             StartIconRetrievalThread(fullPathStdString, index);
-            ++index;
             return fileIcon;
         }
 
@@ -308,6 +307,12 @@ QVariant FileListViewModel::headerData(int section, Qt::Orientation, int role) c
 }
 
 void FileListViewModel::RefreshIcon(QIcon icon, const QString& fullPath, int index) {
+    if (m_fullPaths.empty())
+        return;
+
+    if (m_fullPaths.front() == "..")
+        ++index;
+
     /*Don't update unless it's still the right filepath for the given index
     Also don't update when the index is out of range*/
     if (index < m_icons.size() && index < m_fullPaths.size() && m_fullPaths[index] == fullPath)
