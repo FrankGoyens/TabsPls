@@ -1,10 +1,8 @@
 #include "FileListViewModel.hpp"
 
-#include <iostream>
 #include <thread>
 
 #include <QStyle>
-#include <QThread>
 #include <QThreadPool>
 
 #include <TabsPlsCore/FileSystem.hpp>

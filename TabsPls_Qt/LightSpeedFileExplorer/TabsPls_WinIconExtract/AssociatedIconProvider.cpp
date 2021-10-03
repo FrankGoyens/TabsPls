@@ -1,7 +1,5 @@
 #include "../AssociatedIconProvider.hpp"
 
-#include <fstream>
-
 #include <WinIconExtract.hpp>
 
 bool AssociatedIconProvider::ComponentIsAvailable() { return true; }
