@@ -8,7 +8,7 @@
 
 class QStyle;
 
-class FileListViewModel : public QAbstractTableModel {
+class FileListViewModel final : public QAbstractTableModel {
     Q_OBJECT
 
   public:
