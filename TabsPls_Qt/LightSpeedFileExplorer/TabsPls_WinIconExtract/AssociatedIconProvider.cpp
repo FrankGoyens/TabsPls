@@ -11,8 +11,8 @@ AssociatedIconProvider& AssociatedIconProvider::Get() {
 
 static auto DumpIcon(const FileSystem::RawPath& path) {
     struct AssociatedIconProviderDumper : WinIconExtract::IconDumper {
-        void Dump(const std::vector<unsigned char>& data_, int width_, int height_) const override {
-            data = data_;
+        void Dump(std::vector<unsigned char> data_, int width_, int height_) const override {
+            data = std::move(data_);
             width = width_;
             height = height_;
         }

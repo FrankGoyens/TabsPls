@@ -82,7 +82,7 @@ static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
 
     const auto data = PutStreamDataInDynamicBuffer(stream);
 
-    dumper.Dump(data, alphaBitmap->GetWidth(), alphaBitmap->GetHeight());
+    dumper.Dump(std::move(data), alphaBitmap->GetWidth(), alphaBitmap->GetHeight());
 }
 
 static void DumpPNGIcon(HGLOBAL res, LPSTR icon_name, DWORD size) {

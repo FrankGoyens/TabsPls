@@ -10,7 +10,7 @@ void DeInit();
 struct IconDumper {
     virtual ~IconDumper() = default;
 
-    virtual void Dump(const std::vector<unsigned char>& data, int width, int height) const = 0;
+    virtual void Dump(std::vector<unsigned char> data, int width, int height) const = 0;
 };
 
 void DumpAssociatedIconInfo(const std::wstring& path, const IconDumper&);
