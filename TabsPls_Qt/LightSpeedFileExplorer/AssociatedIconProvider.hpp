@@ -11,9 +11,10 @@ class AssociatedIconProvider final {
     static bool ComponentIsAvailable();
     static AssociatedIconProvider& Get();
 
+    ~AssociatedIconProvider();
+
     std::optional<QIcon> FromPath(const FileSystem::RawPath&) const;
 
   private:
     AssociatedIconProvider();
-    ~AssociatedIconProvider();
 };
