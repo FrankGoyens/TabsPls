@@ -36,17 +36,36 @@ static int GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
     return -1; // Failure
 }
 
-static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
+static std::unique_ptr<Gdiplus::Bitmap> RetrieveBitmapWithAlphaChannel(HICON hIcon) {
     ICONINFO info;
     GetIconInfo(hIcon, &info);
-    Gdiplus::Bitmap betterBitmap(info.hbmColor, NULL);
-    Gdiplus::Rect rectBounds(0, 0, betterBitmap.GetWidth(), betterBitmap.GetHeight());
-    Gdiplus::BitmapData betterBitmapData;
-    betterBitmap.LockBits(&rectBounds, Gdiplus::ImageLockModeRead, betterBitmap.GetPixelFormat(), &betterBitmapData);
-    Gdiplus::Bitmap alphaBitmap(betterBitmapData.Width, betterBitmapData.Height, betterBitmapData.Stride,
-                                PixelFormat32bppARGB, (BYTE*)betterBitmapData.Scan0);
-    betterBitmap.UnlockBits(&betterBitmapData);
+    Gdiplus::Bitmap iconBitmap(info.hbmColor, NULL);
+    Gdiplus::Rect rectBounds(0, 0, iconBitmap.GetWidth(), iconBitmap.GetHeight());
+    Gdiplus::BitmapData iconWithAlphaBitmap;
+    iconBitmap.LockBits(&rectBounds, Gdiplus::ImageLockModeRead, iconBitmap.GetPixelFormat(), &iconWithAlphaBitmap);
+    auto alphaBitmap = std::make_unique<Gdiplus::Bitmap>(iconWithAlphaBitmap.Width, iconWithAlphaBitmap.Height,
+                                                         iconWithAlphaBitmap.Stride, PixelFormat32bppARGB,
+                                                         (BYTE*)iconWithAlphaBitmap.Scan0);
+    iconBitmap.UnlockBits(&iconWithAlphaBitmap);
+    return alphaBitmap;
+}
 
+static auto PutStreamDataInDynamicBuffer(IStream* stream) {
+    std::vector<unsigned char> data;
+    constexpr ULONG bytes_to_read = 512;
+    ULONG bytesread = 0;
+    do {
+        unsigned char buffer[bytes_to_read];
+        if (FAILED(stream->Read((void*)buffer, bytes_to_read, &bytesread)))
+            break;
+        data.insert(data.end(), std::begin(buffer), std::begin(buffer) + bytesread);
+    } while (bytesread == bytes_to_read);
+
+    return data;
+}
+
+static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
+    auto alphaBitmap = RetrieveBitmapWithAlphaChannel(hIcon);
     CLSID myClsId;
     if (GetEncoderClsid(L"image/png", &myClsId) == -1)
         return;
@@ -55,22 +74,15 @@ static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
     if (!stream)
         return;
 
-    if (alphaBitmap.Save(stream, &myClsId, NULL) != Gdiplus::Status::Ok)
+    if (alphaBitmap->Save(stream, &myClsId, NULL) != Gdiplus::Status::Ok)
         return;
 
     if (FAILED(stream->Seek(LARGE_INTEGER{0}, STREAM_SEEK_SET, NULL)))
         return;
-    std::vector<unsigned char> data;
 
-    constexpr ULONG bytes_to_read = 512;
-    ULONG bytesread = 0;
-    do {
-        unsigned char buffer[bytes_to_read];
-        stream->Read((void*)buffer, bytes_to_read, &bytesread);
-        data.insert(data.end(), std::begin(buffer), std::begin(buffer) + bytesread);
-    } while (bytesread == bytes_to_read);
+    const auto data = PutStreamDataInDynamicBuffer(stream);
 
-    dumper.Dump(data, alphaBitmap.GetWidth(), alphaBitmap.GetHeight());
+    dumper.Dump(data, alphaBitmap->GetWidth(), alphaBitmap->GetHeight());
 }
 
 static void DumpPNGIcon(HGLOBAL res, LPSTR icon_name, DWORD size) {
