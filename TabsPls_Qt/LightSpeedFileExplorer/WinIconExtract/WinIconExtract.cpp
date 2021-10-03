@@ -48,12 +48,18 @@ static void DumpBitmap(HICON hIcon, const WinIconExtract::IconDumper& dumper) {
     betterBitmap.UnlockBits(&betterBitmapData);
 
     CLSID myClsId;
-    int retVal = GetEncoderClsid(L"image/png", &myClsId);
+    if (GetEncoderClsid(L"image/png", &myClsId) == -1)
+        return;
 
     IStream* stream = SHCreateMemStream(NULL, 0);
-    alphaBitmap.Save(stream, &myClsId, NULL);
+    if (!stream)
+        return;
 
-    stream->Seek(LARGE_INTEGER{0}, STREAM_SEEK_SET, NULL);
+    if (alphaBitmap.Save(stream, &myClsId, NULL) != Gdiplus::Status::Ok)
+        return;
+
+    if (FAILED(stream->Seek(LARGE_INTEGER{0}, STREAM_SEEK_SET, NULL)))
+        return;
     std::vector<unsigned char> data;
 
     constexpr ULONG bytes_to_read = 512;
