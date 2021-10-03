@@ -9,7 +9,7 @@
 class IconRetrievalRunnable : public QObject, public QRunnable {
     Q_OBJECT
   public:
-    IconRetrievalRunnable(const std::wstring& path, int index) : m_path(path), m_index(index) {}
+    IconRetrievalRunnable(const FileSystem::RawPath& path, int index) : m_path(path), m_index(index) {}
 
     void run() override {
         if (AssociatedIconProvider::ComponentIsAvailable()) {
@@ -23,6 +23,6 @@ class IconRetrievalRunnable : public QObject, public QRunnable {
     void resultReady(const QIcon& icon, const QString& path, int index);
 
   private:
-    std::wstring m_path;
+    FileSystem::RawPath m_path;
     int m_index;
 };
