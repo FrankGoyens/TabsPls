@@ -148,6 +148,7 @@ bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value,
         return true;
     } else if (role == Qt::DecorationRole && value.type() == QVariant::Type::Icon) {
         m_icons[index.row()] = qvariant_cast<QIcon>(value);
+        return true;
     }
     return false;
 }
