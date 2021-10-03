@@ -43,7 +43,7 @@ set(LightSpeedFileExplorer_Headers
   QStringListFutureWatchDialog.hpp
   ShowIsReadySignaler.hpp
   AssociatedIconProvider.hpp
-  IconRetrievalThread.hpp
+  IconRetrievalRunnable.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
