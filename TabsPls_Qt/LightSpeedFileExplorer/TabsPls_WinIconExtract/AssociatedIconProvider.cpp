@@ -4,6 +4,8 @@
 
 #include <WinIconExtract.hpp>
 
+bool AssociatedIconProvider::ComponentIsAvailable() { return true; }
+
 AssociatedIconProvider& AssociatedIconProvider::Get() {
     static AssociatedIconProvider provider;
     return provider;

@@ -285,9 +285,11 @@ void FileListViewModel::FillIcons() {
 }
 
 void FileListViewModel::StartIconRetrievalThread(const std::wstring& fullPathStdString, int index) {
-    auto* runnable = new IconRetrievalRunnable(fullPathStdString, index);
-    connect(runnable, &IconRetrievalRunnable::resultReady, this, &FileListViewModel::RefreshIcon);
-    QThreadPool::globalInstance()->start(runnable);
+    if (AssociatedIconProvider::ComponentIsAvailable() /*Don't start making threads that don't do anything*/) {
+        auto* runnable = new IconRetrievalRunnable(fullPathStdString, index);
+        connect(runnable, &IconRetrievalRunnable::resultReady, this, &FileListViewModel::RefreshIcon);
+        QThreadPool::globalInstance()->start(runnable);
+    }
 }
 
 int FileListViewModel::rowCount(const QModelIndex&) const { return static_cast<int>(m_displayName.size()); }

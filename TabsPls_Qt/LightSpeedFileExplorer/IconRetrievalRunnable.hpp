@@ -12,8 +12,10 @@ class IconRetrievalRunnable : public QObject, public QRunnable {
     IconRetrievalRunnable(const std::wstring& path, int index) : m_path(path), m_index(index) {}
 
     void run() override {
-        if (const auto associatedIcon = AssociatedIconProvider::Get().FromPath(m_path)) {
-            emit resultReady(*associatedIcon, QString::fromStdWString(m_path), m_index);
+        if (AssociatedIconProvider::ComponentIsAvailable()) {
+            if (const auto associatedIcon = AssociatedIconProvider::Get().FromPath(m_path)) {
+                emit resultReady(*associatedIcon, QString::fromStdWString(m_path), m_index);
+            }
         }
     }
 
