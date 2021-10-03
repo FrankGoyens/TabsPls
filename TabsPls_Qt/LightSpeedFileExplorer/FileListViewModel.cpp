@@ -307,11 +307,8 @@ QVariant FileListViewModel::headerData(int section, Qt::Orientation, int role) c
 }
 
 void FileListViewModel::RefreshIcon(QIcon icon, const QString& fullPath, int index) {
-    const auto modelIndex = createIndex(index, 0);
-    assert(data(modelIndex, Qt::UserRole).type() == QVariant::Type::String);
-
     /*Don't update unless it's still the right filepath for the given index
     Also don't update when the index is out of range*/
-    if (data(modelIndex, Qt::UserRole).toString() == fullPath && index < m_icons.size())
-        setData(modelIndex, icon, Qt::DecorationRole);
+    if (index < m_icons.size() && index < m_fullPaths.size() && m_fullPaths[index] == fullPath)
+        setData(createIndex(index, 0), icon, Qt::DecorationRole);
 }
