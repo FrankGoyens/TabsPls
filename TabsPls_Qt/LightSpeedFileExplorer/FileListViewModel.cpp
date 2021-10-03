@@ -5,6 +5,7 @@
 
 #include <QStyle>
 #include <QThread>
+#include <QThreadPool>
 
 #include <TabsPlsCore/FileSystem.hpp>
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
@@ -13,7 +14,7 @@
 
 #include "AssociatedIconProvider.hpp"
 #include "FileSystemDefsConversion.hpp"
-#include "IconRetrievalThread.hpp"
+#include "IconRetrievalRunnable.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
@@ -284,10 +285,9 @@ void FileListViewModel::FillIcons() {
 }
 
 void FileListViewModel::StartIconRetrievalThread(const std::wstring& fullPathStdString, int index) {
-    auto* thread = new IconRetrievalThread(fullPathStdString, index);
-    connect(thread, &IconRetrievalThread::resultReady, this, &FileListViewModel::RefreshIcon);
-    connect(thread, &IconRetrievalThread::finished, thread, &QObject::deleteLater);
-    thread->start();
+    auto* runnable = new IconRetrievalRunnable(fullPathStdString, index);
+    connect(runnable, &IconRetrievalRunnable::resultReady, this, &FileListViewModel::RefreshIcon);
+    QThreadPool::globalInstance()->start(runnable);
 }
 
 int FileListViewModel::rowCount(const QModelIndex&) const { return static_cast<int>(m_displayName.size()); }
