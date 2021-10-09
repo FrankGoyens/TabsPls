@@ -315,6 +315,10 @@ void FileListViewModel::RefreshIcon(QIcon icon, const QString& fullPath, int ind
 
     /*Don't update unless it's still the right filepath for the given index
     Also don't update when the index is out of range*/
-    if (index < m_icons.size() && index < m_fullPaths.size() && m_fullPaths[index] == fullPath)
-        setData(createIndex(index, 0), icon, Qt::DecorationRole);
+    if (index < m_icons.size() && index < m_fullPaths.size() && m_fullPaths[index] == fullPath) {
+        const auto modelIndex = createIndex(index, 0);
+        if (setData(modelIndex, icon, Qt::DecorationRole)) {
+            emit dataChanged(modelIndex, modelIndex, {Qt::DecorationRole});
+        }
+    }
 }
