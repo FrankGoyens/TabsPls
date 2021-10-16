@@ -5,6 +5,10 @@
 namespace TabsPlsPython {
 namespace Send2Trash {
 
+    void Init() {}
+void* BeginThreads() { return nullptr; }
+    void EndThreads(void* ) {}
+
 bool ComponentIsAvailable() { return false; }
 Result SendToTrash(const char* item) { throw ExplicitStubException{}; }
 AggregatedResult SendToTrash(const std::vector<std::string>& items,
