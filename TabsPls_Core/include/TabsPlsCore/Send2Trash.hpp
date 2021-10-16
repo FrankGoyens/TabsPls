@@ -14,6 +14,13 @@ namespace TabsPlsPython {
 namespace Send2Trash {
 bool ComponentIsAvailable();
 
+//! \brief Call this from the main thread once
+void Init();
+//! \brief Call this from the main thread before calling a function in this module from a worker thread
+[[nodiscard]] void* BeginThreads();
+//! \brief Call this when the worker thread is done, the state would've been obtained already from calling 'BeginThreads'
+void EndThreads(void* state);
+
 struct Exception : std::exception {
     Exception(std::string message_) : message(std::move(message_)) {}
     const char* what() const noexcept override { return message.c_str(); };
@@ -28,11 +35,20 @@ struct Result {
     std::optional<std::string> error;
 };
 
+/** \brief Sends multiple items to trash in one batch call.
+ *
+ * This may only be called from a worker thread, after calling BeginThreads
+ */
 Result SendToTrash(const char* item);
 
 struct AggregatedResult {
     std::vector<std::pair<std::string, Result>> itemResults;
 };
+
+/** \brief Sends multiple items to trash in one batch call.
+ * 
+ * This may only be called from a worker thread, after calling BeginThreads.
+ */
 AggregatedResult SendToTrash(const std::vector<std::string>& items, const std::weak_ptr<ProgressReport>&);
 } // namespace Send2Trash
 } // namespace TabsPlsPython

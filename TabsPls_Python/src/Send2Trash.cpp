@@ -12,6 +12,12 @@ namespace Send2Trash {
 
 bool ComponentIsAvailable() { return true; }
 
+void Init() { InitializePyInstance(); }
+
+void* BeginThreads() { return static_cast<void*>(PyEval_SaveThread()); }
+
+void EndThreads(void* state) { PyEval_RestoreThread(static_cast<PyThreadState*>(state)); }
+
 namespace {
 
 struct AcquiredSend2TrashModule {
@@ -96,8 +102,6 @@ template <typename ProgressWithValue> static void UpdateProgress(ProgressWithVal
 // \brief Returns an error string when an error ocurred
 static AggregatedResult SendMultipleToTrashFromInitializedPy(const std::vector<std::string>& items,
                                                              const std::weak_ptr<ProgressReport>& progressReport) {
-    AcquiredPyObject send2TrashModuleName = PyUnicode_FromString("send2trash");
-
     auto progressWithValue = std::make_pair(progressReport, 0);
 
     AggregatedResult result;
@@ -109,9 +113,12 @@ static AggregatedResult SendMultipleToTrashFromInitializedPy(const std::vector<s
 }
 
 Result SendToTrash(const char* item) {
-    InitializePyInstance();
-    if (auto error = CallSend2TrashFunction(item))
+    const PyGILState_STATE gstate = PyGILState_Ensure();
+    if (auto error = CallSend2TrashFunction(item)) {
+        PyGILState_Release(gstate);
         return {*error};
+    }
+    PyGILState_Release(gstate);
     return {};
 }
 
@@ -125,9 +132,11 @@ static void StartProgress(const std::vector<std::string>& items, const std::weak
 
 AggregatedResult SendToTrash(const std::vector<std::string>& items,
                              const std::weak_ptr<ProgressReport>& progressReport) {
-    InitializePyInstance();
+    const PyGILState_STATE gstate = PyGILState_Ensure();
     StartProgress(items, progressReport);
-    return SendMultipleToTrashFromInitializedPy(items, progressReport);
+    const auto result = SendMultipleToTrashFromInitializedPy(items, progressReport);
+    PyGILState_Release(gstate);
+    return result;
 }
 } // namespace Send2Trash
 } // namespace TabsPlsPython
