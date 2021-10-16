@@ -3,6 +3,9 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+namespace TabsPlsPython::Send2Trash {
+std::string FormatPythonException(PyObject* exceptionType, PyObject* exceptionValue);
+} // namespace TabsPlsPython::Send2Trash
 namespace CatchPythonExceptionTests {
 struct PythonInstance {
     PythonInstance() { Py_Initialize(); }
@@ -43,6 +46,23 @@ TEST(CatchPythonExceptionTest, Catch) {
     auto* valueString = PyObject_Str(value);
     EXPECT_EQ(std::string("something went wrong"), std::string(PyUnicode_AsUTF8(valueString)));
     Py_XDECREF(valueString);
+
+    Py_XDECREF(type);
+    Py_XDECREF(value);
+    Py_XDECREF(traceback);
+
+    PyErr_Clear();
+}
+
+TEST(CatchPythonExceptionTest, Send2Trash_FormatPythonException) {
+    RaisePythonException();
+
+    PyObject *type, *value, *traceback;
+    PyErr_Fetch(&type, &value, &traceback);
+    PyErr_NormalizeException(&type, &value, &traceback);
+
+    EXPECT_EQ(std::string("<class 'Exception'>: something went wrong"),
+              TabsPlsPython::Send2Trash::FormatPythonException(type, value));
 
     Py_XDECREF(type);
     Py_XDECREF(value);

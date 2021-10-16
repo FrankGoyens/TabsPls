@@ -53,7 +53,7 @@ set(USE_PYTHON_TESTS "Also include tests related to Python components" CACHE BOO
 if(Python3_FOUND AND USE_PYTHON_TESTS)
     message(STATUS "Python core tests will be included")
     target_link_libraries(TabsPlsTest PRIVATE Python3::Python Python3::Module)
-    target_sources(TabsPlsTest PRIVATE testCatchPythonException.cpp)
+    target_sources(TabsPlsTest PRIVATE testCatchPythonException.cpp ${CMAKE_SOURCE_DIR}/../TabsPls_Python/src/Send2Trash.cpp)
 else()
     message(STATUS "Python core tests will NOT be included")
 endif()
