@@ -18,7 +18,8 @@ bool ComponentIsAvailable();
 void Init();
 //! \brief Call this from the main thread before calling a function in this module from a worker thread
 [[nodiscard]] void* BeginThreads();
-//! \brief Call this when the worker thread is done, the state would've been obtained already from calling 'BeginThreads'
+//! \brief Call this when the worker thread is done, the state would've been obtained already from calling
+//! 'BeginThreads'
 void EndThreads(void* state);
 
 struct Exception : std::exception {
@@ -46,7 +47,7 @@ struct AggregatedResult {
 };
 
 /** \brief Sends multiple items to trash in one batch call.
- * 
+ *
  * This may only be called from a worker thread, after calling BeginThreads.
  */
 AggregatedResult SendToTrash(const std::vector<std::string>& items, const std::weak_ptr<ProgressReport>&);
