@@ -1,6 +1,7 @@
 #include <QApplication>
 
 #include <TabsPlsCore/FileSystem.hpp>
+#include <TabsPlsCore/Send2Trash.hpp>
 
 #include "FileSystemDefsConversion.hpp"
 #include "TabsPlsMainWindow.hpp"
@@ -9,6 +10,8 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QApplication app(argc, argv);
+
+    TabsPlsPython::Send2Trash::Init();
 
     TabsPlsMainWindow mainWindow(FileSystem::StringConversion::FromRawPath(FileSystem::GetWorkingDirectory()));
     mainWindow.setMinimumWidth(600);

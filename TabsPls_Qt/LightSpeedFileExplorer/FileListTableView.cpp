@@ -297,11 +297,12 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
                        [](const auto& qstring) { return qstring.toStdString(); });
 
         auto* futureWatchDialog = new RecycleFutureWatchDialog(this, tr("Recycle item"));
-
+        auto* const pyThreadState = TabsPlsPython::Send2Trash::BeginThreads();
         workerThreadBusy = true;
-        connect(futureWatchDialog, &RecycleFutureWatchDialog::accepted, [this, futureWatchDialog] {
+        connect(futureWatchDialog, &RecycleFutureWatchDialog::accepted, [this, futureWatchDialog, pyThreadState] {
             DisplayRecycleFailures(*this, futureWatchDialog->Result());
             workerThreadBusy = false;
+            TabsPlsPython::Send2Trash::EndThreads(pyThreadState);
             NotifyModelOfChange();
         });
         connect(futureWatchDialog, &RecycleFutureWatchDialog::accepted, futureWatchDialog, &QObject::deleteLater);
