@@ -46,3 +46,14 @@ if(UNIX)
 endif()
 
 gtest_add_tests(TARGET TabsPlsTest)
+
+#Optionally include tests that use Python
+find_package(Python3 COMPONENTS Development)
+set(USE_PYTHON_TESTS "Also include tests related to Python components" CACHE BOOL ON)
+if(Python3_FOUND AND USE_PYTHON_TESTS)
+    message(STATUS "Python core tests will be included")
+    target_link_libraries(TabsPlsTest PRIVATE Python3::Python Python3::Module)
+    target_sources(TabsPlsTest PRIVATE testCatchPythonException.cpp)
+else()
+    message(STATUS "Python core tests will NOT be included")
+endif()
