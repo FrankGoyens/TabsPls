@@ -72,7 +72,9 @@ static std::optional<std::string> RetrieveMessageIfExceptionOcurred() {
         AcquiredPyObject exceptionType, exceptionValue, exceptionTraceback;
         PyErr_Fetch(&exceptionType.obj, &exceptionValue.obj, &exceptionTraceback.obj);
         PyErr_NormalizeException(&exceptionType.obj, &exceptionValue.obj, &exceptionTraceback.obj);
-        return RetreiveMessageFromPyObjects(exceptionType, exceptionValue);
+        const auto message = RetreiveMessageFromPyObjects(exceptionType, exceptionValue);
+        PyErr_Clear();
+        return message;
     }
 
     return {};
