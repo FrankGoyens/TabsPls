@@ -125,7 +125,7 @@ Result SendToTrash(const char* item) {
 static void StartProgress(const std::vector<std::string>& items, const std::weak_ptr<ProgressReport>& progressReport) {
     if (auto liveProgressReport = progressReport.lock()) {
         liveProgressReport->SetMinimum(0);
-        liveProgressReport->SetMaximum(items.size());
+        liveProgressReport->SetMaximum(static_cast<int>(items.size()));
         liveProgressReport->UpdateValue(0);
     }
 }
