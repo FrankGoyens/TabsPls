@@ -1,9 +1,8 @@
-#include "RecycleFutureWatchDialog.hpp"
+#include "FutureWatchDialog.hpp"
 
 #include "FutureWatchDialogWithProgressBar.hpp"
-#include "QObjectProgressReport.hpp"
 
-RecycleFutureWatchDialog::RecycleFutureWatchDialog(QWidget* parent, const QString& title) : QDialog(parent) {
+FutureWatchDialog::FutureWatchDialog(QWidget* parent, const QString& title): QDialog(parent) {
     setWindowTitle(title);
 
     m_progressBar = &FutureWatchDialogWithProgressBar::MakeSingleProgressBarFutureDialog(*this);
@@ -11,8 +10,7 @@ RecycleFutureWatchDialog::RecycleFutureWatchDialog(QWidget* parent, const QStrin
     ConnectFunctionToFutureFinish([this] { accept(); });
 }
 
-void RecycleFutureWatchDialog::ConnectProgressReporterFromAnotherThread(
-    std::shared_ptr<QObjectProgressReport> progressReport) {
+void FutureWatchDialog::ConnectProgressReporterFromAnotherThread(std::shared_ptr<QObjectProgressReport> progressReport) {
     if (m_progressReport)
         return;
 

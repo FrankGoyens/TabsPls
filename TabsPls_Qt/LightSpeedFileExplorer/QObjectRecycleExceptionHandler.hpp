@@ -12,7 +12,7 @@ class QObjectRecycleExceptionHandler : public QObject {
     Q_OBJECT
 
   public:
-    template <typename Result> Result DoWithRecycleExceptionHandling(std::function<Result()> func) {
+    template <typename Result> Result DoWithRecycleExceptionHandling(std::function<Result()> func, Result fallback) {
         try {
             return func();
         } catch (const TabsPlsPython::Send2Trash::ModuleNotFoundException&) {
@@ -25,7 +25,7 @@ class QObjectRecycleExceptionHandler : public QObject {
             // let's not bother the user with this information
             emit ExplicitStubError(QObject::tr("Recycle item"), QObject::tr("Unknown error"));
         }
-        return Result();
+        return fallback;
     }
   signals:
     void ModuleNotFound(QString title, QString message);

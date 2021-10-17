@@ -1,30 +1,36 @@
 #pragma once
 
 #include <memory>
+#include <variant>
 
+#include <QDialog>
 #include <QFutureWatcher>
 
-template <typename ResultT> class FutureWatchDialog {
+namespace TabsPlsPython::Send2Trash { struct AggregatedResult; }
+class QObjectProgressReport;
+class QProgressBar;
+class QStringList;
+
+class FutureWatchDialog: public QDialog {
+    Q_OBJECT
   public:
-    void SetFuture(const QFuture<ResultT>&);
-    ResultT Result();
+    using ResultValue = std::variant<std::monostate, std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>, std::shared_ptr<QStringList>>;
 
-    template <typename Func> void ConnectFunctionToFutureFinish(Func);
+    FutureWatchDialog(QWidget* parent, const QString& title);
 
-    const QFutureWatcher<ResultT>& GetWatcher() const { return m_watcher; }
+    void SetFuture(const QFuture<ResultValue>& future) { m_watcher.setFuture(future); }
+    void ConnectProgressReporterFromAnotherThread(std::shared_ptr<QObjectProgressReport>);
+
+    ResultValue Result() { return m_watcher.future().result(); }
+
+    template <typename Func> void ConnectFunctionToFutureFinish(const Func& function) {
+        QObject::connect(&m_watcher, &QFutureWatcher<ResultValue>::finished, function);
+    }
+
+    const QFutureWatcher<ResultValue>& GetWatcher() const { return m_watcher; }
 
   private:
-    QFutureWatcher<ResultT> m_watcher;
+    QFutureWatcher<ResultValue> m_watcher;
+    std::shared_ptr<QObjectProgressReport> m_progressReport = nullptr;
+    QProgressBar* m_progressBar = nullptr;
 };
-
-template <typename ResultT> inline void FutureWatchDialog<ResultT>::SetFuture(const QFuture<ResultT>& future) {
-    m_watcher.setFuture(future);
-}
-
-template <typename ResultT> inline ResultT FutureWatchDialog<ResultT>::Result() { return m_watcher.future().result(); }
-
-template <typename ResultT>
-template <typename Func>
-inline void FutureWatchDialog<ResultT>::ConnectFunctionToFutureFinish(Func function) {
-    QObject::connect(&m_watcher, &QFutureWatcher<ResultT>::finished, function);
-}

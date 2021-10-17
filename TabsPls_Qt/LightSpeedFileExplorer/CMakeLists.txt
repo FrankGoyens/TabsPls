@@ -37,10 +37,7 @@ set(LightSpeedFileExplorer_Headers
   FutureWatchDialog.hpp
   QObjectProgressReport.hpp
   QObjectRecycleExceptionHandler.hpp
-  VoidFutureWatchDialog.hpp
-  RecycleFutureWatchDialog.hpp
   FutureWatchDialogWithProgressBar.hpp
-  QStringListFutureWatchDialog.hpp
   ShowIsReadySignaler.hpp
   AssociatedIconProvider.hpp
   IconRetrievalRunnable.hpp
@@ -63,11 +60,9 @@ set(LightSpeedFileExplorer_Sources
   FileSystemOp.cpp
   FileBrowserWidget.cpp
   QObjectProgressReport.cpp
-  VoidFutureWatchDialog.cpp
-  RecycleFutureWatchDialog.cpp
   FutureWatchDialogWithProgressBar.cpp
-  QStringListFutureWatchDialog.cpp
   ShowIsReadySignaler.cpp
+  FutureWatchDialog.cpp
 )
 
 add_executable(LightSpeedFileExplorer
