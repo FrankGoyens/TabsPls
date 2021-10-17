@@ -2,7 +2,7 @@
 
 #include "FutureWatchDialogWithProgressBar.hpp"
 
-FutureWatchDialog::FutureWatchDialog(QWidget* parent, const QString& title): QDialog(parent) {
+FutureWatchDialog::FutureWatchDialog(QWidget* parent, const QString& title) : QDialog(parent) {
     setWindowTitle(title);
 
     m_progressBar = &FutureWatchDialogWithProgressBar::MakeSingleProgressBarFutureDialog(*this);
@@ -10,7 +10,8 @@ FutureWatchDialog::FutureWatchDialog(QWidget* parent, const QString& title): QDi
     ConnectFunctionToFutureFinish([this] { accept(); });
 }
 
-void FutureWatchDialog::ConnectProgressReporterFromAnotherThread(std::shared_ptr<QObjectProgressReport> progressReport) {
+void FutureWatchDialog::ConnectProgressReporterFromAnotherThread(
+    std::shared_ptr<QObjectProgressReport> progressReport) {
     if (m_progressReport)
         return;
 
