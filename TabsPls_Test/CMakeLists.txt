@@ -38,11 +38,11 @@ target_compile_features(TabsPlsTest PUBLIC cxx_std_17)
 
 find_package(GTest)
 if(GTest_FOUND)
-	target_link_libraries(TabsPlsTest GTest::gtest)
+	target_link_libraries(TabsPlsTest PRIVATE GTest::gtest)
 endif()
 
 if(UNIX)
-	target_link_libraries(TabsPlsTest pthread)
+	target_link_libraries(TabsPlsTest PRIVATE pthread)
 endif()
 
 #Optionally include tests that use Python
