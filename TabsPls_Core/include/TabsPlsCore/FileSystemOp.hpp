@@ -28,6 +28,10 @@ struct RenameException : FileSystemOpException {
 
 void Rename(const RawPath& source, const RawPath& dest);
 
+struct RemoveAllException : FileSystemOpException {
+    RemoveAllException(std::string what) : FileSystemOpException(std::move(what)) {}
+};
+
 void RemoveAll(const RawPath&);
 
 struct CreateDirectoryException : FileSystemOpException {

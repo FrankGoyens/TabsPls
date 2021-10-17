@@ -366,9 +366,13 @@ void FileListTableView::AskPermanentlyDeleteSelectedFiles() {
         auto* futureWatchDialog = new FutureWatchDialog(this, tr("Delete file"));
 
         workerThreadBusy = true;
-        connect(futureWatchDialog, &QDialog::accepted, [&] {
+        connect(futureWatchDialog, &QDialog::accepted, [this, futureWatchDialog] {
             workerThreadBusy = false;
-            NotifyModelOfChange();
+            if (std::holds_alternative<std::shared_ptr<QStringList>>(futureWatchDialog->Result())) {
+                CompleteFileOp(tr("Delete file"), *std::get<std::shared_ptr<QStringList>>(futureWatchDialog->Result()));
+            } else {
+                NotifyModelOfChange();
+            }
         });
         connect(futureWatchDialog, &QDialog::accepted, futureWatchDialog, &QObject::deleteLater);
 
@@ -380,11 +384,17 @@ void FileListTableView::AskPermanentlyDeleteSelectedFiles() {
 
                 int progress = 0;
 
+                auto errors = std::make_shared<QStringList>();
+
                 for (const auto& entry : entries) {
+                    try {
                     FileSystem::Op::RemoveAll(ToRawPath(entry));
+                    } catch (const FileSystem::Op::RemoveAllException& e) {
+                        *errors << e.message.c_str();
+                    }
                     UpdateProgress(progressReport, progress);
                 }
-                return {};
+                return errors;
             });
             futureWatchDialog->SetFuture(future);
         });
