@@ -45,8 +45,6 @@ if(UNIX)
 	target_link_libraries(TabsPlsTest pthread)
 endif()
 
-gtest_add_tests(TARGET TabsPlsTest)
-
 #Optionally include tests that use Python
 find_package(Python3 COMPONENTS Development)
 set(USE_PYTHON_TESTS "Also include tests related to Python components" CACHE BOOL ON)
@@ -57,3 +55,5 @@ if(Python3_FOUND AND USE_PYTHON_TESTS)
 else()
     message(STATUS "Python core tests will NOT be included")
 endif()
+
+gtest_add_tests(TARGET TabsPlsTest)
