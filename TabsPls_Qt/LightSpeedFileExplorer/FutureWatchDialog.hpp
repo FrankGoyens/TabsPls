@@ -6,15 +6,18 @@
 #include <QDialog>
 #include <QFutureWatcher>
 
-namespace TabsPlsPython::Send2Trash { struct AggregatedResult; }
+namespace TabsPlsPython::Send2Trash {
+struct AggregatedResult;
+}
 class QObjectProgressReport;
 class QProgressBar;
 class QStringList;
 
-class FutureWatchDialog: public QDialog {
+class FutureWatchDialog : public QDialog {
     Q_OBJECT
   public:
-    using ResultValue = std::variant<std::monostate, std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>, std::shared_ptr<QStringList>>;
+    using ResultValue = std::variant<std::monostate, std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>,
+                                     std::shared_ptr<QStringList>>;
 
     FutureWatchDialog(QWidget* parent, const QString& title);
 

@@ -23,10 +23,10 @@
 #include "ExplicitStub.hpp"
 #include "FileListViewModel.hpp"
 #include "FileSystemDefsConversion.hpp"
+#include "FutureWatchDialog.hpp"
 #include "QObjectProgressReport.hpp"
 #include "QObjectRecycleExceptionHandler.hpp"
 #include "ShowIsReadySignaler.hpp"
-#include "FutureWatchDialog.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
@@ -298,10 +298,10 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
         auto* const pyThreadState = TabsPlsPython::Send2Trash::BeginThreads();
         workerThreadBusy = true;
         connect(futureWatchDialog, &FutureWatchDialog::accepted, [this, futureWatchDialog, pyThreadState] {
-            if (std::holds_alternative<std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>>(futureWatchDialog->Result())) {
-                DisplayRecycleFailures(
-                    *this,
-                    *std::get<std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>>(futureWatchDialog->Result()));
+            if (std::holds_alternative<std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>>(
+                    futureWatchDialog->Result())) {
+                DisplayRecycleFailures(*this, *std::get<std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>>(
+                                                  futureWatchDialog->Result()));
             }
             workerThreadBusy = false;
             TabsPlsPython::Send2Trash::EndThreads(pyThreadState);
@@ -311,16 +311,17 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
 
         auto* showReadySignaler = InstallReadySignaler(*futureWatchDialog);
         connect(showReadySignaler, &ShowIsReadySignaler::ShowIsReady, [&] {
-            auto future = QtConcurrent::run([&] ()-> FutureWatchDialog::ResultValue {
+            auto future = QtConcurrent::run([&]() -> FutureWatchDialog::ResultValue {
                 QObjectRecycleExceptionHandler errorHandler;
                 ConnectRecyclingErrorSignals(errorHandler);
-                return errorHandler.DoWithRecycleExceptionHandling<
-                    std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>>(
-                    [futureWatchDialog, entries_std_string]() {
-                        return std::make_shared<TabsPlsPython::Send2Trash::AggregatedResult>(TabsPlsPython::Send2Trash::SendToTrash(
-                            entries_std_string, ProvisionWatcherWithProgressReporter(*futureWatchDialog)));
-                    },
-                    std::make_shared<TabsPlsPython::Send2Trash::AggregatedResult>());
+                return errorHandler
+                    .DoWithRecycleExceptionHandling<std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>>(
+                        [futureWatchDialog, entries_std_string]() {
+                            return std::make_shared<TabsPlsPython::Send2Trash::AggregatedResult>(
+                                TabsPlsPython::Send2Trash::SendToTrash(
+                                    entries_std_string, ProvisionWatcherWithProgressReporter(*futureWatchDialog)));
+                        },
+                        std::make_shared<TabsPlsPython::Send2Trash::AggregatedResult>());
             });
             futureWatchDialog->SetFuture(future);
         });
@@ -378,7 +379,7 @@ void FileListTableView::AskPermanentlyDeleteSelectedFiles() {
 
         const auto* readySignaler = InstallReadySignaler(*futureWatchDialog);
         connect(readySignaler, &ShowIsReadySignaler::ShowIsReady, [=] {
-            const auto future = QtConcurrent::run([entries, futureWatchDialog] () -> FutureWatchDialog::ResultValue {
+            const auto future = QtConcurrent::run([entries, futureWatchDialog]() -> FutureWatchDialog::ResultValue {
                 const auto progressReport = ProvisionWatcherWithProgressReporter(*futureWatchDialog);
                 StartProgressReport(entries, progressReport);
 
@@ -388,7 +389,7 @@ void FileListTableView::AskPermanentlyDeleteSelectedFiles() {
 
                 for (const auto& entry : entries) {
                     try {
-                    FileSystem::Op::RemoveAll(ToRawPath(entry));
+                        FileSystem::Op::RemoveAll(ToRawPath(entry));
                     } catch (const FileSystem::Op::RemoveAllException& e) {
                         *errors << e.message.c_str();
                     }
@@ -442,7 +443,7 @@ void FileListTableView::DoFileOpWhileShowingProgress(const std::vector<QUrl>& ur
 
     auto* showReadySignaler = InstallReadySignaler(*futureWatcher);
     connect(showReadySignaler, &ShowIsReadySignaler::ShowIsReady, [&] {
-        auto future = QtConcurrent::run([urls, futureWatcher, opFunction] () -> FutureWatchDialog::ResultValue {
+        auto future = QtConcurrent::run([urls, futureWatcher, opFunction]() -> FutureWatchDialog::ResultValue {
             return std::make_shared<QStringList>(
                 PerformOpOnFileUris(urls, ProvisionWatcherWithProgressReporter(*futureWatcher), opFunction));
         });
