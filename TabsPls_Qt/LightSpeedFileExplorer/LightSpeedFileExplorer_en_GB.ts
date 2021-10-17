@@ -46,6 +46,7 @@
     <message>
         <location filename="FileListTableView.cpp" line="364"/>
         <location filename="FileListTableView.cpp" line="366"/>
+        <location filename="FileListTableView.cpp" line="372"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -55,22 +56,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="468"/>
+        <location filename="FileListTableView.cpp" line="478"/>
         <source>Copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="468"/>
+        <location filename="FileListTableView.cpp" line="478"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="481"/>
+        <location filename="FileListTableView.cpp" line="491"/>
         <source>Moving</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="481"/>
+        <location filename="FileListTableView.cpp" line="491"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>

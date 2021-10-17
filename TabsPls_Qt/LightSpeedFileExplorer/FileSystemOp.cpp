@@ -31,6 +31,7 @@ void RemoveAll(const RawPath& dest) {
     try {
         std::filesystem::remove_all(dest);
     } catch (const std::filesystem::filesystem_error& e) {
+        throw RemoveAllException(e.what());
     }
 }
 
