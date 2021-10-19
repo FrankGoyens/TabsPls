@@ -61,9 +61,14 @@ GetFilesInDirectoryWithFSCatch(const FileSystem::Directory& dir) {
     return {{}, {}};
 }
 
+static bool DirIsRoot(const QString& dir) {
+    const auto rawDir = ToRawPath(dir);
+    return rawDir == FileSystem::_getRootPath(rawDir);
+}
+
 static std::pair<std::vector<FileListViewModel::FileEntry>, std::vector<FileSystem::Directory>>
-RetrieveDirectoryContents(const QString& initialDirectory) {
-    if (auto dir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory)))
+RetrieveDirectoryContents(const QString& directory) {
+    if (auto dir = FileSystem::Directory::FromPath(ToRawPath(directory)))
         return GetFilesInDirectoryWithFSCatch(*dir);
 
     return {{}, {}};
@@ -207,11 +212,6 @@ static auto CombineAllEntriesIntoFullPathsVec(const FileContainer& files, const 
     std::transform(begin(dirs), end(dirs), std::back_inserter(fullPaths),
                    [&](const auto& dir) { return FromRawPath(dir.path()); });
     return fullPaths;
-}
-
-static bool DirIsRoot(const QString& dir) {
-    const auto rawDir = ToRawPath(dir);
-    return rawDir == FileSystem::_getRootPath(rawDir);
 }
 
 void FileListViewModel::FillModelDataCheckingForRoot(const QString& dir) {
