@@ -12,6 +12,8 @@ macro(ProvisionCoreSources prefix)
 	    ${prefix}/include/TabsPlsCore/FileSystemAlgorithm.hpp
 	    ${prefix}/include/TabsPlsCore/Send2Trash.hpp
 	    ${prefix}/include/TabsPlsCore/ProgressReport.hpp
+	    ${prefix}/include/TabsPlsCore/TargetDirectoryConstraints.hpp
+
     )
 
     set(TabsPls_Core_Sources
@@ -21,6 +23,7 @@ macro(ProvisionCoreSources prefix)
         ${prefix}/source/RobustDirectoryHistoryStore.cpp
         ${prefix}/source/CurrentDirectoryFileOp.cpp
 	    ${prefix}/source/FileSystemAlgorithm.cpp
+	    ${prefix}/source/TargetDirectoryConstraints.cpp
     )
 
 endmacro()

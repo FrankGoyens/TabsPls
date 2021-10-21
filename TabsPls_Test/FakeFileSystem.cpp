@@ -272,11 +272,7 @@ Name GetDirectoryname(const Directory& dir) {
     return components.back();
 }
 
-Name _getRootPath(const RawPath& path) {
-    const auto components = SplitUsingSeparator(path);
-
-    return components.front() + FileSystem::Separator();
-}
+Name _getRootPath(const RawPath& path) { return std::filesystem::path(path).root_path().string(); }
 
 Name _getRootName(const RawPath& path) {
     const auto components = SplitUsingSeparator(path);
