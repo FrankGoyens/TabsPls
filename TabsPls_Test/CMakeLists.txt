@@ -24,6 +24,7 @@ set(TabsPlsTest_Sources
     testRobustDirectoryHistoryStore.cpp
     testFileSystemAlgorithm.cpp
     testCreateNewDirectory.cpp
+    testTargetDirectoryConstraints.cpp
 
     meta/testFakeFileSystem.cpp
     meta/testFakeFileSystemOp.cpp

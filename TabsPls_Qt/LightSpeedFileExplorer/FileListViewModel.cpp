@@ -9,6 +9,7 @@
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemOp.hpp>
+#include <TabsPlsCore/TargetDirectoryConstraints.hpp>
 
 #include "AssociatedIconProvider.hpp"
 #include "FileSystemDefsConversion.hpp"
@@ -68,8 +69,10 @@ static bool DirIsRoot(const QString& dir) {
 
 static std::pair<std::vector<FileListViewModel::FileEntry>, std::vector<FileSystem::Directory>>
 RetrieveDirectoryContents(const QString& directory) {
-    if (auto dir = FileSystem::Directory::FromPath(ToRawPath(directory)))
-        return GetFilesInDirectoryWithFSCatch(*dir);
+    const auto rawPath = ToRawPath(directory);
+    if (auto dir = FileSystem::Directory::FromPath(rawPath))
+        if (!TargetDirectoryConstraints::IsIncompleteWindowsRootPath(rawPath))
+            return GetFilesInDirectoryWithFSCatch(*dir);
 
     return {{}, {}};
 }
