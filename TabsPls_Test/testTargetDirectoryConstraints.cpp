@@ -11,7 +11,7 @@ FileSystem::RawPath RemoveWhitespace(FileSystem::RawPath string);
 
 } // namespace TargetDirectoryConstraints
 
-#if defined(_WIN32) || defined(WIN32)  
+#if defined(_WIN32) || defined(WIN32)
 
 TEST(testTargetDirectoryConstraints, DirIsRoot) {
     EXPECT_TRUE(TargetDirectoryConstraints::DirIsRoot({"C:"}));
