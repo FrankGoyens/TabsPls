@@ -6,13 +6,11 @@
 
 namespace TargetDirectoryConstraints {
 
-bool DirIsRoot(const FileSystem::RawPath& dir) {
-    return dir == FileSystem::_getRootPath(dir);
-}
+bool DirIsRoot(const FileSystem::RawPath& dir) { return dir == FileSystem::_getRootPath(dir); }
 
 FileSystem::RawPath RemoveWhitespace(FileSystem::RawPath string) {
-    string.erase(std::remove_if(string.begin(), string.end(), [](auto element){
-        return std::isspace(element);}), string.end());
+    string.erase(std::remove_if(string.begin(), string.end(), [](auto element) { return std::isspace(element); }),
+                 string.end());
     return string;
 }
 
