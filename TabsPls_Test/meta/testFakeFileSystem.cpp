@@ -86,8 +86,16 @@ TEST_F(FakeFileSystemTest, RemovedFileName) {
 }
 
 TEST_F(FakeFileSystemTest, _getRootPath) {
+#ifdef __unix__
+    EXPECT_EQ(FileSystem::_getRootPath(FileSystem::Separator() +
+                                       FakeFileSystem::MergeUsingSeparator({"c", "users", "jeff", "file.txt"})),
+              std::string("/"));
+#elif defined(_WIN32) || defined(WIN32)
     EXPECT_EQ(FileSystem::_getRootPath(FakeFileSystem::MergeUsingSeparator({"C:", "users", "jeff", "file.txt"})),
               std::string("C:") + FileSystem::Separator());
+#else
+    FAIL() << "This test is run on an unsupported platform";
+#endif
 }
 
 TEST_F(FakeFileSystemTest, _getRootName) {
