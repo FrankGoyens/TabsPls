@@ -300,8 +300,10 @@ void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurr
         connect(futureWatchDialog, &FutureWatchDialog::accepted, [this, futureWatchDialog, pyThreadState] {
             if (std::holds_alternative<std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>>(
                     futureWatchDialog->Result())) {
-                DisplayRecycleFailures(*this, *std::get<std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>>(
-                                                  futureWatchDialog->Result()));
+                if (const auto result = std::get<std::shared_ptr<TabsPlsPython::Send2Trash::AggregatedResult>>(
+                        futureWatchDialog->Result())) {
+                    DisplayRecycleFailures(*this, *result);
+                }
             }
             workerThreadBusy = false;
             TabsPlsPython::Send2Trash::EndThreads(pyThreadState);
@@ -370,7 +372,9 @@ void FileListTableView::AskPermanentlyDeleteSelectedFiles() {
         connect(futureWatchDialog, &QDialog::accepted, [this, futureWatchDialog] {
             workerThreadBusy = false;
             if (std::holds_alternative<std::shared_ptr<QStringList>>(futureWatchDialog->Result())) {
-                CompleteFileOp(tr("Delete file"), *std::get<std::shared_ptr<QStringList>>(futureWatchDialog->Result()));
+                if (const auto result = std::get<std::shared_ptr<QStringList>>(futureWatchDialog->Result())) {
+                    CompleteFileOp(tr("Delete file"), *result);
+                }
             } else {
                 NotifyModelOfChange();
             }
@@ -435,7 +439,9 @@ void FileListTableView::DoFileOpWhileShowingProgress(const std::vector<QUrl>& ur
     workerThreadBusy = true;
     connect(futureWatcher, &QDialog::accepted, [this, futureWatcher, opDoneWithErrortitle] {
         if (std::holds_alternative<std::shared_ptr<QStringList>>(futureWatcher->Result())) {
-            CompleteFileOp(opDoneWithErrortitle, *std::get<std::shared_ptr<QStringList>>(futureWatcher->Result()));
+            if (const auto result = std::get<std::shared_ptr<QStringList>>(futureWatcher->Result())) {
+                CompleteFileOp(opDoneWithErrortitle, *result);
+            }
         }
         workerThreadBusy = false;
     });
