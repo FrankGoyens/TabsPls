@@ -44,34 +44,34 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="364"/>
-        <location filename="FileListTableView.cpp" line="366"/>
-        <location filename="FileListTableView.cpp" line="372"/>
+        <location filename="FileListTableView.cpp" line="367"/>
+        <location filename="FileListTableView.cpp" line="369"/>
+        <location filename="FileListTableView.cpp" line="376"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="364"/>
+        <location filename="FileListTableView.cpp" line="367"/>
         <source>Do you want to remove these files? (Cannot be undone!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="478"/>
+        <location filename="FileListTableView.cpp" line="485"/>
         <source>Copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="478"/>
+        <location filename="FileListTableView.cpp" line="485"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="491"/>
+        <location filename="FileListTableView.cpp" line="498"/>
         <source>Moving</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="491"/>
+        <location filename="FileListTableView.cpp" line="498"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
