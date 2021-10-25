@@ -4,7 +4,9 @@
 
 namespace TargetDirectoryConstraints {
 
-/**! \brief For some reason, paths like "C:" are accepted, but iterating through them yiels the current directory's
+bool DirIsRoot(const FileSystem::RawPath& dir);
+
+/**! \brief For some reason, paths like "C:" are accepted, but iterating through them yields the current directory's
  * contents. Very strange.
  * */
 bool IsIncompleteWindowsRootPath(FileSystem::RawPath path);
