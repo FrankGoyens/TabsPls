@@ -57,3 +57,13 @@ else()
 endif()
 
 gtest_add_tests(TARGET TabsPlsTest)
+
+#Copy all Python DLLs to the build output, this is usually necessary on a Windows platform
+if(WIN32 AND USE_PYTHON_TESTS AND Python3_FOUND)
+    foreach(RuntimeLibraryDir ${Python3_RUNTIME_LIBRARY_DIRS})
+        file(GLOB PythonDLLs "${RuntimeLibraryDir}/*.dll")
+        if(PythonDLLs)
+            file(COPY ${PythonDLLs} DESTINATION ${CMAKE_BINARY_DIR})
+        endif()
+    endforeach()
+endif()
