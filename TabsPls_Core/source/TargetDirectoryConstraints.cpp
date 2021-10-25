@@ -15,7 +15,11 @@ FileSystem::RawPath RemoveWhitespace(FileSystem::RawPath string) {
 }
 
 bool IsIncompleteWindowsRootPath(FileSystem::RawPath path) {
+#if defined(WIN32) || defined(_WIN32)
     path = RemoveWhitespace(path);
     return DirIsRoot(path) && path.back() == L':';
+#else // When not on Windows, it can't be considered an incomplete Windows root path
+    return false;
+#endif
 }
 } // namespace TargetDirectoryConstraints
