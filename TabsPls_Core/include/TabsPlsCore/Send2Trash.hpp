@@ -18,8 +18,9 @@ bool ComponentIsAvailable();
 void Init();
 //! \brief Call this from the main thread before calling a function in this module from a worker thread
 [[nodiscard]] void* BeginThreads();
-//! \brief Call this when the worker thread is done, the state would've been obtained already from calling
-//! 'BeginThreads'
+/**! \brief Call this from the main thread when the worker thread is done.
+ * The state would've been obtained already from calling 'BeginThreads'
+ */
 void EndThreads(void* state);
 
 struct Exception : std::exception {
