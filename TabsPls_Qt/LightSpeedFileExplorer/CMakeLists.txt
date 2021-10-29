@@ -65,7 +65,7 @@ set(LightSpeedFileExplorer_Sources
   FutureWatchDialog.cpp
 )
 
-add_executable(LightSpeedFileExplorer
+add_executable(LightSpeedFileExplorer  
   ${LightSpeedFileExplorer_Headers}
   ${LightSpeedFileExplorer_Sources}
   
@@ -100,6 +100,12 @@ if(WIN32)
     target_include_directories(LightSpeedFileExplorer PRIVATE TabsPls_WinIconExtract/WinIconExtract/include)
     target_link_libraries(LightSpeedFileExplorer PRIVATE GdiPlus Shlwapi)
   endif()
+
+  #Provision resource file for icons and such
+  set(APP_ICON_RESOURCE_WINDOWS ${CMAKE_SOURCE_DIR}/../../res/boot_icon.ico)
+  get_filename_component(APP_ICON_RESOURCE_WINDOWS ${APP_ICON_RESOURCE_WINDOWS} ABSOLUTE)
+  configure_file(res_win32/resources.rc.template ${CMAKE_CURRENT_SOURCE_DIR}/res_win32/resources.rc)
+  target_sources(LightSpeedFileExplorer PRIVATE res_win32/resources.rc)
 endif()
 
 if(NOT USE_WINAPI_ICON_PROVIDER)
@@ -113,6 +119,9 @@ target_link_libraries(LightSpeedFileExplorer
   PRIVATE Qt5::Widgets)
 
 #Put the icon file in the build folder
-configure_file(${CMAKE_SOURCE_DIR}/../../res/boot_icon_32.png ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file(../../res/boot_icon_32.png ${CMAKE_SOURCE_DIR}/res COPYONLY)
+set(TABSPLS_APP_ICON res/boot_icon_32.png)
+configure_file(res/resources.qrc.template ${CMAKE_SOURCE_DIR}/resources.qrc)
+target_sources(LightSpeedFileExplorer PRIVATE ${CMAKE_SOURCE_DIR}/resources.qrc)
 
 qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
