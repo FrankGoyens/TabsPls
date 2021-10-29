@@ -35,7 +35,13 @@ RawPath CombineDirectoryAndName(const FileSystem::Directory& dir, const FileSyst
 }
 
 std::string FormatAsFileTimestamp(const std::time_t& timestamp) {
+#if defined(WIN32) || defined(_WIN32)
+    struct tm localTimeBuf {};
+    ::localtime_s(&localTimeBuf, &timestamp);
+    struct tm* localTime = &localTimeBuf;
+#else
     struct tm* localTime = std::localtime(&timestamp);
+#endif
     std::ostringstream oss;
     oss << std::put_time(localTime, "%a %b %d %H:%M:%S %Y");
     return oss.str();
