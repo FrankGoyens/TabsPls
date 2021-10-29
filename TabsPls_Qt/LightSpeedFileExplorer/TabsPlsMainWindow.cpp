@@ -26,7 +26,7 @@ int CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir) {
 
 TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
     setWindowTitle(tr("Light Speed File Explorer"));
-    setWindowIcon(QIcon("boot_icon_32.png"));
+    setWindowIcon(QIcon(":/res/boot_icon_32.png"));
 
     const auto validInitialDir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory));
 
