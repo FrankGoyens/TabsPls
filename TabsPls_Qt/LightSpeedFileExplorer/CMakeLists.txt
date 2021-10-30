@@ -120,8 +120,8 @@ target_link_libraries(LightSpeedFileExplorer
 
 #Put the icon file in the build folder
 configure_file(../../res/boot_icon_32.png ${CMAKE_SOURCE_DIR}/res COPYONLY)
-set(TABSPLS_APP_ICON res/boot_icon_32.png)
-configure_file(res/resources.qrc.template ${CMAKE_SOURCE_DIR}/resources.qrc)
-target_sources(LightSpeedFileExplorer PRIVATE ${CMAKE_SOURCE_DIR}/resources.qrc)
+set(TABSPLS_APP_ICON boot_icon_32.png)
+configure_file(res/resources.qrc.template ${CMAKE_SOURCE_DIR}/res/resources.qrc)
+target_sources(LightSpeedFileExplorer PRIVATE ${CMAKE_SOURCE_DIR}/res/resources.qrc)
 
 qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
