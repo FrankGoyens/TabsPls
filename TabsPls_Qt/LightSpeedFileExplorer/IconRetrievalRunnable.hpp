@@ -13,6 +13,7 @@ class IconRetrievalRunnable : public QObject, public QRunnable {
 
     void run() override {
         if (AssociatedIconProvider::ComponentIsAvailable()) {
+            AssociatedIconProvider::InitThread();
             if (const auto associatedIcon = AssociatedIconProvider::Get().FromPath(m_path)) {
                 emit resultReady(*associatedIcon, QString::fromStdWString(m_path), m_index);
             }
