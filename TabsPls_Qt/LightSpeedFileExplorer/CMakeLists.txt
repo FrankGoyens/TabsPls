@@ -98,7 +98,9 @@ if(WIN32)
 
     target_sources(LightSpeedFileExplorer PRIVATE TabsPls_WinIconExtract/WinIconExtract/WinIconExtract.cpp)
     target_include_directories(LightSpeedFileExplorer PRIVATE TabsPls_WinIconExtract/WinIconExtract/include)
-    target_link_libraries(LightSpeedFileExplorer PRIVATE GdiPlus Shlwapi)
+    
+    find_package(Qt5WinExtras CONFIG REQUIRED)
+    target_link_libraries(LightSpeedFileExplorer PRIVATE Qt5::WinExtras Qt5::WinExtrasPrivate)
   endif()
 
   #Provision resource file for icons and such

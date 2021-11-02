@@ -7,6 +7,7 @@
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
 class QStyle;
+class QRunnable;
 
 class FileListViewModel final : public QAbstractTableModel {
     Q_OBJECT
@@ -71,7 +72,7 @@ class FileListViewModel final : public QAbstractTableModel {
     void FillModelData();
     void FillIcons();
 
-    void StartIconRetrievalThread(const std::wstring& fullPathStdString, int index);
+    QRunnable* StartIconRetrievalThread(const std::wstring& fullPathStdString, int index);
 
     std::optional<std::reference_wrapper<const std::vector<QString>>> GetDisplayDataForColumn(int column) const;
 };

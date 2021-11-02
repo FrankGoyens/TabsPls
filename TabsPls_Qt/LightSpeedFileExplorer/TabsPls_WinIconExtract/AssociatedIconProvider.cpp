@@ -9,31 +9,14 @@ AssociatedIconProvider& AssociatedIconProvider::Get() {
     return provider;
 }
 
-static auto DumpIcon(const FileSystem::RawPath& path) {
-    struct AssociatedIconProviderDumper : WinIconExtract::IconDumper {
-        void Dump(std::vector<unsigned char> data_, int width_, int height_) const override {
-            data = std::move(data_);
-            width = width_;
-            height = height_;
-        }
-        mutable std::vector<unsigned char> data;
-        mutable int width, height;
-    } iconDumper;
-    WinIconExtract::DumpAssociatedIconInfo(path, iconDumper);
-    return std::make_tuple(std::move(iconDumper.data), iconDumper.width, iconDumper.height);
-}
-
 std::optional<QIcon> AssociatedIconProvider::FromPath(const FileSystem::RawPath& path) const {
-    const auto [data, width, height] = DumpIcon(path);
-
-    if (data.empty())
-        return {};
-
-    QPixmap pixmap;
-    pixmap.loadFromData(data.data(), data.size(), "png");
-    return QIcon(pixmap);
+    if (const auto pixmap = WinIconExtract::IconInfoAsPixmap(path))
+        return QIcon(*pixmap);
+    return {};
 }
 
-AssociatedIconProvider::AssociatedIconProvider() { WinIconExtract::Init(); }
+AssociatedIconProvider::AssociatedIconProvider() = default;
 
-AssociatedIconProvider::~AssociatedIconProvider() { WinIconExtract::DeInit(); }
+void AssociatedIconProvider::InitThread() { WinIconExtract::InitThread(); }
+
+AssociatedIconProvider::~AssociatedIconProvider() = default;

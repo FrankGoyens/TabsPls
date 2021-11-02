@@ -266,26 +266,34 @@ void FileListViewModel::FillIcons() {
 
     int index = -1;
 
+    std::vector<std::reference_wrapper<QRunnable>> iconRetrievalRunnables;
+
     std::transform(m_fullPaths.begin(), m_fullPaths.end(), std::back_inserter(m_icons), [&](const auto& fullPath) {
         const auto fullPathStdString = ToRawPath(fullPath);
         ++index;
         if (FileSystem::IsDirectory(fullPathStdString)) {
             return dirIcon;
         } else if (FileSystem::IsRegularFile(fullPathStdString)) {
-            StartIconRetrievalThread(fullPathStdString, index);
+            if (auto* runnable = StartIconRetrievalThread(fullPathStdString, index))
+                iconRetrievalRunnables.push_back(std::ref(*runnable));
             return fileIcon;
         }
 
         return QIcon();
     });
+
+    std::for_each(iconRetrievalRunnables.begin(), iconRetrievalRunnables.end(),
+                  [](QRunnable& runnable) { QThreadPool::globalInstance()->start(&runnable); });
 }
 
-void FileListViewModel::StartIconRetrievalThread(const std::wstring& fullPathStdString, int index) {
+QRunnable* FileListViewModel::StartIconRetrievalThread(const std::wstring& fullPathStdString,
+                                                                       int index) {
     if (AssociatedIconProvider::ComponentIsAvailable() /*Don't start making threads that don't do anything*/) {
         auto* runnable = new IconRetrievalRunnable(fullPathStdString, index);
         connect(runnable, &IconRetrievalRunnable::resultReady, this, &FileListViewModel::RefreshIcon);
-        QThreadPool::globalInstance()->start(runnable);
+        return runnable;
     }
+    return nullptr;
 }
 
 int FileListViewModel::rowCount(const QModelIndex&) const { return static_cast<int>(m_displayName.size()); }
@@ -318,5 +326,5 @@ void FileListViewModel::RefreshIcon(QIcon icon, const QString& fullPath, int ind
         if (setData(modelIndex, icon, Qt::DecorationRole)) {
             emit dataChanged(modelIndex, modelIndex, {Qt::DecorationRole});
         }
-    }
+    } 
 }
