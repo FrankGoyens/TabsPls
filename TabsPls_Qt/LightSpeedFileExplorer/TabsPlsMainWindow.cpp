@@ -3,13 +3,16 @@
 #include <stdexcept>
 
 #include <QAction>
+#include <QDesktopServices>
 #include <QMenuBar>
 #include <QShortcut>
 #include <QTabWidget>
+#include <QUrl>
 
 #include "FileBrowserWidget.hpp"
 #include "FileSystemDefsConversion.hpp"
 
+using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
 
 int CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir) {
@@ -26,13 +29,24 @@ int CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir) {
     return tabIndex;
 }
 
-static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow) {
+static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget& tabWidget) {
     auto* quit = new QAction("&Quit", &menubar);
 
     auto* file = menubar.addMenu("&File");
     file->addAction(quit);
 
     QObject::connect(quit, &QAction::triggered, [&] { mainWindow.close(); });
+
+    auto* openInExplorer = new QAction("&Explorer");
+    auto* openIn = menubar.addMenu("&Open in");
+    openIn->addAction(openInExplorer);
+
+    QObject::connect(openInExplorer, &QAction::triggered, [&, openInExplorer] {
+        if (const auto* currentFileBrowser = dynamic_cast<FileBrowserWidget*>(tabWidget.currentWidget())) {
+            QDesktopServices::openUrl(
+                QUrl::fromLocalFile(FromRawPath(currentFileBrowser->GetCurrentDirectory().path())));
+        }
+    });
 }
 
 TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
@@ -65,5 +79,5 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
 
     setCentralWidget(tabWidget);
 
-    SetupMenubar(*menuBar(), *this);
+    SetupMenubar(*menuBar(), *this, *tabWidget);
 }
