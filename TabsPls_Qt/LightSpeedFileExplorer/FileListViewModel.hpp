@@ -72,7 +72,7 @@ class FileListViewModel final : public QAbstractTableModel {
     void FillModelData();
     void FillIcons();
 
-    QRunnable* StartIconRetrievalThread(const std::wstring& fullPathStdString, int index);
+    QRunnable* MakeIconRetrievalThread(const std::wstring& fullPathStdString, int index);
 
     std::optional<std::reference_wrapper<const std::vector<QString>>> GetDisplayDataForColumn(int column) const;
 };
