@@ -346,7 +346,7 @@ template <typename Data>
 static void StartProgressReport(const Data& data, const std::weak_ptr<ProgressReport>& progressReport) {
     if (const auto liveProgressReport = progressReport.lock()) {
         liveProgressReport->SetMinimum(0);
-        liveProgressReport->SetMaximum(data.size());
+        liveProgressReport->SetMaximum(static_cast<int>(data.size()));
     }
 }
 
