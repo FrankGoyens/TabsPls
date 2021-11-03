@@ -286,8 +286,7 @@ void FileListViewModel::FillIcons() {
                   [](QRunnable& runnable) { QThreadPool::globalInstance()->start(&runnable); });
 }
 
-QRunnable* FileListViewModel::StartIconRetrievalThread(const std::wstring& fullPathStdString,
-                                                                       int index) {
+QRunnable* FileListViewModel::StartIconRetrievalThread(const std::wstring& fullPathStdString, int index) {
     if (AssociatedIconProvider::ComponentIsAvailable() /*Don't start making threads that don't do anything*/) {
         auto* runnable = new IconRetrievalRunnable(fullPathStdString, index);
         connect(runnable, &IconRetrievalRunnable::resultReady, this, &FileListViewModel::RefreshIcon);
@@ -326,5 +325,5 @@ void FileListViewModel::RefreshIcon(QIcon icon, const QString& fullPath, int ind
         if (setData(modelIndex, icon, Qt::DecorationRole)) {
             emit dataChanged(modelIndex, modelIndex, {Qt::DecorationRole});
         }
-    } 
+    }
 }

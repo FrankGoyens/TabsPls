@@ -11,7 +11,7 @@ class AssociatedIconProvider final {
     static bool ComponentIsAvailable();
     static AssociatedIconProvider& Get();
 
-    //Call this at least once from any thread that will retrieve icons
+    // Call this at least once from any thread that will retrieve icons
     static void InitThread();
 
     ~AssociatedIconProvider();
