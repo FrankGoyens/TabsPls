@@ -99,6 +99,11 @@ if(WIN32)
     target_sources(LightSpeedFileExplorer PRIVATE TabsPls_WinIconExtract/WinIconExtract/WinIconExtract.cpp)
     target_include_directories(LightSpeedFileExplorer PRIVATE TabsPls_WinIconExtract/WinIconExtract/include)
     
+    #There is a non-portable include path in a Windows-specific header
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+        set_source_files_properties(TabsPls_WinIconExtract/WinIconExtract/WinIconExtract.cpp PROPERTIES COMPILE_FLAGS -Wno-nonportable-include-path)
+    endif()
+
     find_package(Qt5WinExtras CONFIG REQUIRED)
     target_link_libraries(LightSpeedFileExplorer PRIVATE Qt5::WinExtras Qt5::WinExtrasPrivate)
   endif()
