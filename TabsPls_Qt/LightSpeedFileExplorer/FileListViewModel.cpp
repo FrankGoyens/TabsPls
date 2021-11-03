@@ -274,7 +274,7 @@ void FileListViewModel::FillIcons() {
         if (FileSystem::IsDirectory(fullPathStdString)) {
             return dirIcon;
         } else if (FileSystem::IsRegularFile(fullPathStdString)) {
-            if (auto* runnable = StartIconRetrievalThread(fullPathStdString, index))
+            if (auto* runnable = MakeIconRetrievalThread(fullPathStdString, index))
                 iconRetrievalRunnables.push_back(std::ref(*runnable));
             return fileIcon;
         }
@@ -286,7 +286,7 @@ void FileListViewModel::FillIcons() {
                   [](QRunnable& runnable) { QThreadPool::globalInstance()->start(&runnable); });
 }
 
-QRunnable* FileListViewModel::StartIconRetrievalThread(const std::wstring& fullPathStdString, int index) {
+QRunnable* FileListViewModel::MakeIconRetrievalThread(const std::wstring& fullPathStdString, int index) {
     if (AssociatedIconProvider::ComponentIsAvailable() /*Don't start making threads that don't do anything*/) {
         auto* runnable = new IconRetrievalRunnable(fullPathStdString, index);
         connect(runnable, &IconRetrievalRunnable::resultReady, this, &FileListViewModel::RefreshIcon);
