@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include <QAction>
+#include <QMenuBar>
 #include <QShortcut>
 #include <QTabWidget>
 
@@ -22,6 +24,15 @@ int CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir) {
         tab, &FileBrowserWidget::currentDirectoryNameChanged,
         [&, tabIndex, namePrefix](const auto& newName) { tabWidget.setTabText(tabIndex, namePrefix + newName); });
     return tabIndex;
+}
+
+static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow) {
+    auto* quit = new QAction("&Quit", &menubar);
+
+    auto* file = menubar.addMenu("&File");
+    file->addAction(quit);
+
+    QObject::connect(quit, &QAction::triggered, [&] { mainWindow.close(); });
 }
 
 TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
@@ -53,4 +64,6 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
     });
 
     setCentralWidget(tabWidget);
+
+    SetupMenubar(*menuBar(), *this);
 }
