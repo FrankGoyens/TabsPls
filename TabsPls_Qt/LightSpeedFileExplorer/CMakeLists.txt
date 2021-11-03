@@ -91,7 +91,7 @@ else()
 endif()
 
 if(WIN32)
-  set(USE_WINAPI_ICON_PROVIDER "Use the Windows API to be able to retrieve icons associated with files (for display purposes)" CACHE BOOL ON)
+  set(USE_WINAPI_ICON_PROVIDER "Use the Windows API to be able to retrieve icons associated with files (for display purposes). Requires QtWinExtras." CACHE BOOL ON)
   if(USE_WINAPI_ICON_PROVIDER)
     message(STATUS "TabsPls Windows API icon provider will be used")
     target_sources(LightSpeedFileExplorer PRIVATE TabsPls_WinIconExtract/AssociatedIconProvider.cpp)
