@@ -41,7 +41,7 @@ static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget&
     auto* openIn = menubar.addMenu("&Open in");
     openIn->addAction(openInExplorer);
 
-    QObject::connect(openInExplorer, &QAction::triggered, [&, openInExplorer] {
+    QObject::connect(openInExplorer, &QAction::triggered, [&] {
         if (const auto* currentFileBrowser = dynamic_cast<FileBrowserWidget*>(tabWidget.currentWidget())) {
             QDesktopServices::openUrl(
                 QUrl::fromLocalFile(FromRawPath(currentFileBrowser->GetCurrentDirectory().path())));
