@@ -8,6 +8,7 @@
 
 #include "FileSystemDefsConversion.hpp"
 
+#include <TabsPlsCore/DirectoryInputAutoComplete.hpp>
 #include <TabsPlsCore/FileSystem.hpp>
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/TargetDirectoryConstraints.hpp>
@@ -41,38 +42,11 @@ DirectoryInputField::DirectoryInputField(QString initialDirectory) : m_currentDi
     });
 }
 
-static auto Reverse(const FileSystem::RawPath& rawPath) {
-    return FileSystem::RawPath(rawPath.rbegin(), rawPath.rend());
-}
-
-static auto GetDirectories(const FileSystem::Directory& dir) {
-    std::vector<FileSystem::Directory> directories;
-    for (const auto& item : FileSystem::GetFilesInDirectory(dir)) {
-        if (const auto possibleDir = FileSystem::Directory::FromPath(item)) {
-            directories.emplace_back(*possibleDir);
-        }
-    }
-    return directories;
-}
-
 void DirectoryInputField::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Tab) {
         const auto incompletePath = ToRawPath(text());
-        const auto lastSeparator =
-            std::find(incompletePath.rbegin(), incompletePath.rend(), FileSystem::Separator().front());
-        const FileSystem::RawPath incompleteNewPart = Reverse({incompletePath.rbegin(), lastSeparator});
-        const auto basePathForIncompletePart =
-            incompletePath.substr(0, incompletePath.size() - incompleteNewPart.size());
-        if (const auto baseDir = FileSystem::Directory::FromPath(basePathForIncompletePart)) {
-            const auto directories = GetDirectories(*baseDir);
-            std::set<FileSystem::RawPath> sortedDirectories;
-            std::transform(directories.begin(), directories.end(),
-                           std::inserter(sortedDirectories, sortedDirectories.end()),
-                           [](const auto& dir) { return dir.path(); });
-            auto insertion = sortedDirectories.insert(incompletePath);
-            const auto autoCompleter = std::next(insertion.first) == sortedDirectories.end()
-                                           ? sortedDirectories.begin()
-                                           : std::next(insertion.first);
+
+        if (const auto autoCompleter = DirectoryInputAutoComplete::Do(incompletePath)) {
             setText(FromRawPath(*autoCompleter));
         }
         return;

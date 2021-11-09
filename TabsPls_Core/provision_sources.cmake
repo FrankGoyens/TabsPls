@@ -13,6 +13,7 @@ macro(ProvisionCoreSources prefix)
 	    ${prefix}/include/TabsPlsCore/Send2Trash.hpp
 	    ${prefix}/include/TabsPlsCore/ProgressReport.hpp
 	    ${prefix}/include/TabsPlsCore/TargetDirectoryConstraints.hpp
+	    ${prefix}/include/TabsPlsCore/DirectoryInputAutoComplete.hpp
 
     )
 
@@ -24,6 +25,7 @@ macro(ProvisionCoreSources prefix)
         ${prefix}/source/CurrentDirectoryFileOp.cpp
 	    ${prefix}/source/FileSystemAlgorithm.cpp
 	    ${prefix}/source/TargetDirectoryConstraints.cpp
+	    ${prefix}/source/DirectoryInputAutoComplete.cpp
     )
 
 endmacro()
