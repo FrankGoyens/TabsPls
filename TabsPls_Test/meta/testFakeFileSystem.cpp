@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
+
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
