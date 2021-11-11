@@ -181,7 +181,7 @@ class FakeFileSystemImpl {
 static auto SplitUsingSeparator(FileSystem::RawPath path) {
     std::vector<FileSystem::Name> components;
 
-    auto sep = FileSystem::Separator();
+    const auto sep = FileSystem::Separator();
     FileSystem::RawPath::size_type pos;
 
     while ((pos = path.find(sep)) != FileSystem::RawPath::npos) {
@@ -189,7 +189,8 @@ static auto SplitUsingSeparator(FileSystem::RawPath path) {
         path.erase(0, pos + 1 /*separator length*/);
     }
 
-    components.push_back(path);
+    if (!path.empty()) // Could have a trailing separator, so path might be an empty string right now
+        components.push_back(path);
     return components;
 }
 
@@ -294,7 +295,10 @@ RawPathVector _getFilesInDirectory(const RawPath& dir) {
     if (const auto node = FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(dir))) {
         auto entries = node->files;
         std::transform(node->childNodes.begin(), node->childNodes.end(), std::back_inserter(entries),
-                       [](const auto& childNode) { return childNode->nodeName; });
+                       [&dir](const auto& childNode) {
+                           return MergeUsingSeparator(
+                               {FileSystem::Algorithm::StripTrailingPathSeparators(dir), childNode->nodeName});
+                       });
         return entries;
     }
 
