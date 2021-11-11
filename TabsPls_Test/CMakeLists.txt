@@ -25,6 +25,7 @@ set(TabsPlsTest_Sources
     testFileSystemAlgorithm.cpp
     testCreateNewDirectory.cpp
     testTargetDirectoryConstraints.cpp
+    testDirectoryInputAutoComplete.cpp
 
     meta/testFakeFileSystem.cpp
     meta/testFakeFileSystemOp.cpp

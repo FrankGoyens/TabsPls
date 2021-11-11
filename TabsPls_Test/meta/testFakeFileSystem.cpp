@@ -113,14 +113,25 @@ static void FillJeffDirectory() {
     FakeFileSystem::AddDirectory({"C:", "users", "jeff", "photos"});
 }
 
+static auto MakeExpectedComponentsAbsolutePaths(const std::vector<FileSystem::Name>& components,
+                                                const FileSystem::RawPath& basePath) {
+    std::vector<FileSystem::RawPath> absoluteComponents;
+    std::transform(components.begin(), components.end(), std::back_inserter(absoluteComponents),
+                   [&basePath](const auto& component) {
+                       return FakeFileSystem::MergeUsingSeparator({basePath, component});
+                   });
+    return absoluteComponents;
+}
+
 TEST_F(FakeFileSystemTest, GetFilesInDirectory) {
     FillJeffDirectory();
     const auto createdDirectory =
         FileSystem::Directory::FromPath(FakeFileSystem::MergeUsingSeparator({"C:", "users", "jeff"}));
     EXPECT_TRUE(createdDirectory.has_value());
 
-    const std::vector<FileSystem::Name> expectedContents = {"file1.txt", "file2.txt", "file3.txt",
-                                                            "file4.txt", "documents", "photos"};
+    const std::vector<FileSystem::Name> expectedContents = MakeExpectedComponentsAbsolutePaths(
+        {"file1.txt", "file2.txt", "file3.txt", "file4.txt", "documents", "photos"}, createdDirectory->path());
+
     EXPECT_TRUE(std::is_permutation(expectedContents.begin(), expectedContents.end(),
                                     FileSystem::GetFilesInDirectory(*createdDirectory).begin()));
 }
