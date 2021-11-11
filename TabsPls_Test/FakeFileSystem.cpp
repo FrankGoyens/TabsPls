@@ -246,6 +246,9 @@ bool IsDirectory(const RawPath& dir) {
 }
 
 bool IsRegularFile(const RawPath& path) {
+    if (path.empty())
+        return false;
+
     const auto components = SplitUsingSeparator(path);
     if (auto parentDir = FakeFileSystemImpl::Instance().Lookup(
             std::vector<FileSystem::Name>(components.begin(), components.end() - 1))) {
@@ -294,6 +297,9 @@ RawPathVector GetFilesInDirectory(const Directory& dir) { return _getFilesInDire
 RawPathVector _getFilesInDirectory(const RawPath& dir) {
     if (const auto node = FakeFileSystemImpl::Instance().Lookup(SplitUsingSeparator(dir))) {
         auto entries = node->files;
+        std::for_each(entries.begin(), entries.end(), [&dir](auto& entry) {
+            entry = MergeUsingSeparator({FileSystem::Algorithm::StripTrailingPathSeparators(dir), entry});
+        });
         std::transform(node->childNodes.begin(), node->childNodes.end(), std::back_inserter(entries),
                        [&dir](const auto& childNode) {
                            return MergeUsingSeparator(
