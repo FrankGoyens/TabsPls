@@ -21,4 +21,6 @@ class DirectoryInputField : public QLineEdit {
   private:
     QString m_currentDirectory;
     std::optional<std::vector<QString>> m_autoCompleteCandidates;
+
+    void AutoCompleteCurrentPath(QKeyEvent* event);
 };

@@ -43,13 +43,22 @@ DirectoryInputField::DirectoryInputField(QString initialDirectory) : m_currentDi
 }
 
 void DirectoryInputField::keyPressEvent(QKeyEvent* event) {
-    if (event->key() == Qt::Key_Tab) {
-        const auto incompletePath = ToRawPath(text());
+    if (event->key() == Qt::Key_Tab || event->key() == Qt::Key_Backtab) {
+        return AutoCompleteCurrentPath(event);
+    }
+    QLineEdit::keyPressEvent(event);
+}
 
+void DirectoryInputField::AutoCompleteCurrentPath(QKeyEvent* event) {
+    const auto incompletePath = ToRawPath(text());
+
+    if (event->key() == Qt::Key_Tab) {
         if (const auto autoCompleter = DirectoryInputAutoComplete::Do(incompletePath)) {
             setText(FromRawPath(*autoCompleter));
         }
-        return;
+    } else if (event->key() == Qt::Key_Backtab) {
+        if (const auto autoCompleter = DirectoryInputAutoComplete::DoReverse(incompletePath)) {
+            setText(FromRawPath(*autoCompleter));
+        }
     }
-    QLineEdit::keyPressEvent(event);
 }
