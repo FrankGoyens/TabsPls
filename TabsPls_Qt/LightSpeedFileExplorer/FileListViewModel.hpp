@@ -6,10 +6,12 @@
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
+#include "DirectoryChanger.hpp"
+
 class QStyle;
 class QRunnable;
 
-class FileListViewModel final : public QAbstractTableModel {
+class FileListViewModel final : public QAbstractTableModel, public DirectoryChanger {
     Q_OBJECT
 
   public:
@@ -33,17 +35,9 @@ class FileListViewModel final : public QAbstractTableModel {
 
     /*TabsPls app*/
 
-    //! \brief This will have no effect if the given directory does not exist
-    void ChangeDirectory(const QString&);
-
-    /*! \brief This will have no effect if the given directory does not exist
-     *
-     * This should be called instead of 'ChangeDirectory' when the current
-     * directory did not change.
-     */
-    void RefreshDirectory(const QString&);
-
-    std::optional<std::string> ClaimError();
+    void ChangeDirectory(const QString&) override;
+    void RefreshDirectory(const QString&) override;
+    std::optional<std::string> ClaimError() override;
 
     struct FileEntry {
         FileSystem::FilePath filePath;
