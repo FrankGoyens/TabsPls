@@ -41,6 +41,7 @@ set(LightSpeedFileExplorer_Headers
   ShowIsReadySignaler.hpp
   AssociatedIconProvider.hpp
   IconRetrievalRunnable.hpp
+  FlattenedDirectoryViewModel.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -63,6 +64,7 @@ set(LightSpeedFileExplorer_Sources
   FutureWatchDialogWithProgressBar.cpp
   ShowIsReadySignaler.cpp
   FutureWatchDialog.cpp
+  FlattenedDirectoryViewModel.cpp
 )
 
 add_executable(LightSpeedFileExplorer  
