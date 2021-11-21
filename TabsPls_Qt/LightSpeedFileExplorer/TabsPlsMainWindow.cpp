@@ -46,6 +46,24 @@ std::shared_ptr<TabModel::Tab> CreateNewFileBrowserTab(QTabWidget& tabWidget, Fi
     return tabModel;
 }
 
+static void SetupMenubar_View(QMenuBar& menubar, QMainWindow& mainWindow) {
+    auto* hierarchyMode = new QAction("&Hierarchy");
+    auto* flatMode = new QAction("&Flat");
+    auto* fileViewMode = new QActionGroup(&menubar);
+    fileViewMode->setExclusive(true);
+
+    hierarchyMode->setCheckable(true);
+    flatMode->setCheckable(true);
+
+    hierarchyMode->setChecked(true);
+    flatMode->setChecked(false);
+    fileViewMode->addAction(hierarchyMode);
+    fileViewMode->addAction(flatMode);
+
+    auto* view = menubar.addMenu("&View");
+    view->addActions(fileViewMode->actions());
+}
+
 static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget& tabWidget) {
     auto* quit = new QAction("&Quit", &menubar);
 
@@ -64,6 +82,8 @@ static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget&
                 QUrl::fromLocalFile(FromRawPath(currentFileBrowser->GetCurrentDirectory().path())));
         }
     });
+
+    SetupMenubar_View(menubar, mainWindow);
 }
 
 TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
