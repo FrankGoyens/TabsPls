@@ -42,6 +42,7 @@ set(LightSpeedFileExplorer_Headers
   AssociatedIconProvider.hpp
   IconRetrievalRunnable.hpp
   FlattenedDirectoryViewModel.hpp
+  DirectoryChanger.hpp
 )
 
 set(LightSpeedFileExplorer_Sources

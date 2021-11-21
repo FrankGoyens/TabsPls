@@ -44,7 +44,7 @@ static auto CreateFilterUpdatedClosure(FileListTableView& tableView) {
 }
 
 FileListTableViewWithFilter::FileListTableViewWithFilter(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp,
-                                                         FileListViewModel& viewModel) {
+                                                         QAbstractTableModel& viewModel) {
     auto* filterField = new FilterHookedLineEdit;
     m_filterField = filterField;
 
