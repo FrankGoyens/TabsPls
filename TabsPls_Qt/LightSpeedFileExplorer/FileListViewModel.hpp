@@ -7,6 +7,7 @@
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
 #include "DirectoryChanger.hpp"
+#include "FileEntryModel.hpp"
 
 class QStyle;
 class QRunnable;
@@ -39,18 +40,12 @@ class FileListViewModel final : public QAbstractTableModel, public DirectoryChan
     void RefreshDirectory(const QString&) override;
     std::optional<std::string> ClaimError() override;
 
-    struct FileEntry {
-        FileSystem::FilePath filePath;
-        std::time_t lastModificationDate;
-        std::uintmax_t size;
-    };
-
   private slots:
     void RefreshIcon(QIcon, const QString& fullPath, int index);
 
   private:
     std::vector<FileSystem::Directory> m_directoryEntries;
-    std::vector<FileEntry> m_fileEntries;
+    std::vector<FileEntryModel::FileEntry> m_fileEntries;
 
     std::vector<QString> m_displayName;
     std::vector<QString> m_displaySize;

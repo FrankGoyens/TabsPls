@@ -30,15 +30,7 @@ struct GetFilesInDirectoryException : std::exception {
 };
 } // namespace
 
-static auto GetSizesForFiles(const std::vector<FileSystem::FilePath>& files) {
-    std::vector<FileListViewModel::FileEntry> filesWithSizes;
-    std::transform(files.begin(), files.end(), std::back_inserter(filesWithSizes), [](const auto& file) {
-        return FileListViewModel::FileEntry{file, FileSystem::GetLastWriteTime(file), FileSystem::GetFileSize(file)};
-    });
-    return filesWithSizes;
-}
-
-static std::pair<std::vector<FileListViewModel::FileEntry>, std::vector<FileSystem::Directory>>
+static std::pair<std::vector<FileEntryModel::FileEntry>, std::vector<FileSystem::Directory>>
 GetFilesInDirectoryWithFSCatch(const FileSystem::Directory& dir) {
     try {
         std::vector<FileSystem::FilePath> files;
@@ -54,7 +46,7 @@ GetFilesInDirectoryWithFSCatch(const FileSystem::Directory& dir) {
                 dirs.emplace_back(*dir);
         }
 
-        return std::make_pair(GetSizesForFiles(files), dirs);
+        return std::make_pair(FileEntryModel::FilesAsModelEntries(files), dirs);
     } catch (const std::exception& e) {
         throw GetFilesInDirectoryException(e.what());
     }
@@ -62,7 +54,7 @@ GetFilesInDirectoryWithFSCatch(const FileSystem::Directory& dir) {
     return {{}, {}};
 }
 
-static std::pair<std::vector<FileListViewModel::FileEntry>, std::vector<FileSystem::Directory>>
+static std::pair<std::vector<FileEntryModel::FileEntry>, std::vector<FileSystem::Directory>>
 RetrieveDirectoryContents(const QString& directory) {
     const auto rawPath = ToRawPath(directory);
     if (auto dir = FileSystem::Directory::FromPath(rawPath))
@@ -224,33 +216,18 @@ void FileListViewModel::FillModelDataCheckingForRoot(const QString& dir) {
     }
 }
 
-static auto FilePathsFromEntries(const std::vector<FileListViewModel::FileEntry>& entries) {
-    std::vector<FileSystem::FilePath> paths;
-    std::transform(entries.begin(), entries.end(), std::back_inserter(paths),
-                   [](const auto& entry) { return entry.filePath; });
-    return paths;
-}
-
-static QString FormatSize(std::uintmax_t bytes) {
-    return QString::fromStdString(
-        FileSystem::Algorithm::Format(FileSystem::Algorithm::ScaleSizeToLargestPossibleUnit(bytes), 0));
-}
-
-static QString FormatSize(std::time_t timestamp) {
-    return QString::fromStdString(FileSystem::Algorithm::FormatAsFileTimestamp(timestamp));
-}
-
 void FileListViewModel::FillModelData() {
     m_displayName = CombineAllEntriesIntoNameVec(FilePathsFromEntries(m_fileEntries), m_directoryEntries);
 
     std::transform(m_fileEntries.begin(), m_fileEntries.end(), std::back_inserter(m_displaySize),
-                   [](const auto& entry) { return FormatSize(entry.size); });
+                   [](const auto& entry) { return FileEntryModel::FormatSize(entry.size); });
 
     const std::vector<QString> dummyStrings(m_directoryEntries.size(), "");
     m_displaySize.insert(m_displaySize.end(), dummyStrings.begin(), dummyStrings.end());
 
-    std::transform(m_fileEntries.begin(), m_fileEntries.end(), std::back_inserter(m_displayDateModified),
-                   [](const auto& entry) { return FormatSize(entry.lastModificationDate); });
+    std::transform(
+        m_fileEntries.begin(), m_fileEntries.end(), std::back_inserter(m_displayDateModified),
+        [](const auto& entry) { return FileEntryModel::FormatDateLastModified(entry.lastModificationDate); });
 
     m_displayDateModified.insert(m_displayDateModified.end(), dummyStrings.begin(), dummyStrings.end());
 
