@@ -94,19 +94,19 @@
     </message>
     <message>
         <location filename="FileListViewModel.cpp" line="22"/>
-        <location filename="FlattenedDirectoryViewModel.cpp" line="4"/>
+        <location filename="FlattenedDirectoryViewModel.cpp" line="14"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="FileListViewModel.cpp" line="22"/>
-        <location filename="FlattenedDirectoryViewModel.cpp" line="4"/>
+        <location filename="FlattenedDirectoryViewModel.cpp" line="14"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="FileListViewModel.cpp" line="22"/>
-        <location filename="FlattenedDirectoryViewModel.cpp" line="4"/>
+        <location filename="FlattenedDirectoryViewModel.cpp" line="14"/>
         <source>Date modified</source>
         <translation type="unfinished"></translation>
     </message>

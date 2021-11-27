@@ -43,6 +43,7 @@ set(LightSpeedFileExplorer_Headers
   IconRetrievalRunnable.hpp
   FlattenedDirectoryViewModel.hpp
   DirectoryChanger.hpp
+  FileEntryModel.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -66,6 +67,7 @@ set(LightSpeedFileExplorer_Sources
   ShowIsReadySignaler.cpp
   FutureWatchDialog.cpp
   FlattenedDirectoryViewModel.cpp
+  FileEntryModel.cpp
 )
 
 add_executable(LightSpeedFileExplorer  

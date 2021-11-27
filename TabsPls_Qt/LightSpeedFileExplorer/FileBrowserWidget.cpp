@@ -200,7 +200,7 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
     m_currentDirFileOpImpl = std::make_shared<CurrentDirectoryFileOpQtImpl>(m_currentDirectory);
 
     // auto* fileListViewModel = new FileListViewModel(this, *style(), FromRawPath(m_currentDirectory.path()));
-    auto* fileListViewModel = new FlattenedDirectoryViewModel();
+    auto* fileListViewModel = new FlattenedDirectoryViewModel(this, *style(), FromRawPath(m_currentDirectory.path()));
 
     const auto [fileListViewWidget_from_binding, topBarDirectoryInputField_from_binding, backButton, forwardButton,
                 newDirectoryButton] =

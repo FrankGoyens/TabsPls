@@ -6,12 +6,15 @@
 #include <QIcon>
 
 #include "DirectoryChanger.hpp"
+#include "FileEntryModel.hpp"
+
+class QStyle;
 
 class FlattenedDirectoryViewModel final : public QAbstractTableModel, public DirectoryChanger {
     Q_OBJECT
 
   public:
-    FlattenedDirectoryViewModel() = default;
+    FlattenedDirectoryViewModel(QObject* parent, QStyle& styleProvider, const QString& initialDirectory);
     ~FlattenedDirectoryViewModel() = default;
 
     /*Qt table model implementation*/
@@ -33,22 +36,7 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
     void RefreshDirectory(const QString&) override;
     std::optional<std::string> ClaimError() override;
 
-    struct ModelEntry {
-        QString displayName;
-        QString displaySize;
-        QString displayDateModified;
-        QString fullPath;
-        QIcon icon;
-    };
-
   private:
-    struct FileEntry {
-        FileSystem::FilePath filePath;
-        std::time_t lastModificationDate;
-        std::uintmax_t size;
-    };
-
-    std::vector<FileEntry> m_fileEntries;
-
-    std::vector<ModelEntry> m_modelEntries;
+    std::vector<FileEntryModel::ModelEntry> m_modelEntries;
+    QStyle& m_styleProvider;
 };
