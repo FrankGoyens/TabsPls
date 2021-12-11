@@ -9,11 +9,12 @@ macro(ProvisionCoreSources prefix)
         ${prefix}/include/TabsPlsCore/FileSystemOp.hpp
         ${prefix}/include/TabsPlsCore/RobustDirectoryHistoryStore.hpp
         ${prefix}/include/TabsPlsCore/CurrentDirectoryFileOp.hpp
-	    ${prefix}/include/TabsPlsCore/FileSystemAlgorithm.hpp
-	    ${prefix}/include/TabsPlsCore/Send2Trash.hpp
-	    ${prefix}/include/TabsPlsCore/ProgressReport.hpp
-	    ${prefix}/include/TabsPlsCore/TargetDirectoryConstraints.hpp
-	    ${prefix}/include/TabsPlsCore/DirectoryInputAutoComplete.hpp
+	${prefix}/include/TabsPlsCore/FileSystemAlgorithm.hpp
+	${prefix}/include/TabsPlsCore/Send2Trash.hpp
+	${prefix}/include/TabsPlsCore/ProgressReport.hpp
+	${prefix}/include/TabsPlsCore/TargetDirectoryConstraints.hpp
+	${prefix}/include/TabsPlsCore/DirectoryInputAutoComplete.hpp
+	${prefix}/include/TabsPlsCore/TabModel.hpp
 
     )
 
@@ -23,9 +24,10 @@ macro(ProvisionCoreSources prefix)
         ${prefix}/source/DirectoryHistoryStore.cpp
         ${prefix}/source/RobustDirectoryHistoryStore.cpp
         ${prefix}/source/CurrentDirectoryFileOp.cpp
-	    ${prefix}/source/FileSystemAlgorithm.cpp
-	    ${prefix}/source/TargetDirectoryConstraints.cpp
-	    ${prefix}/source/DirectoryInputAutoComplete.cpp
+	${prefix}/source/FileSystemAlgorithm.cpp
+	${prefix}/source/TargetDirectoryConstraints.cpp
+	${prefix}/source/DirectoryInputAutoComplete.cpp
+	${prefix}/source/TabModel.cpp
     )
 
 endmacro()
