@@ -13,4 +13,12 @@ class TabsPlsMainWindow : public QMainWindow {
 
   public:
     TabsPlsMainWindow(const QString& initialDirectory);
+
+    struct Tab {
+        int index;
+        QString name;
+    };
+
+  private:
+    std::vector<std::shared_ptr<Tab>> m_tabs;
 };

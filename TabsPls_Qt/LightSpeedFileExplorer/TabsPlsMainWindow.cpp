@@ -15,18 +15,34 @@
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
 
-int CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir) {
+QString NamePrefixFromIndex(int index) { return index < 9 ? "&" + QString::number(index + 1) + " " : ""; }
 
-    auto* tab = new FileBrowserWidget(std::move(dir));
-    const int tabIndex = tabWidget.addTab(tab, tab->GetCurrentDirectoryName());
-    const QString namePrefix = tabIndex < 9 ? "&" + QString::number(tabIndex + 1) + " " : "";
+QString LabelFromTabModel(const TabsPlsMainWindow::Tab& tabModel) {
+    return NamePrefixFromIndex(tabModel.index) + tabModel.name;
+}
 
-    tabWidget.setTabText(tabIndex, namePrefix + tabWidget.tabText(tabIndex));
+void ConnectDirectoryChangedSignalToTab(const std::weak_ptr<TabsPlsMainWindow::Tab>& tab,
+                                        const FileBrowserWidget& widgetWithinTab, QTabWidget& tabWidget) {
+    QWidget::connect(&widgetWithinTab, &FileBrowserWidget::currentDirectoryNameChanged, [&, tab](const auto& newName) {
+        if (const auto liveTab = tab.lock()) {
+            liveTab->name = newName;
+            tabWidget.setTabText(liveTab->index, LabelFromTabModel(*liveTab));
+        }
+    });
+}
 
-    QWidget::connect(
-        tab, &FileBrowserWidget::currentDirectoryNameChanged,
-        [&, tabIndex, namePrefix](const auto& newName) { tabWidget.setTabText(tabIndex, namePrefix + newName); });
-    return tabIndex;
+std::shared_ptr<TabsPlsMainWindow::Tab> CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir) {
+
+    auto* widgetWithinTab = new FileBrowserWidget(std::move(dir));
+    const auto tabName = widgetWithinTab->GetCurrentDirectoryName();
+    const int tabIndex = tabWidget.addTab(widgetWithinTab, tabName);
+
+    const auto tabModel = std::make_shared<TabsPlsMainWindow::Tab>(TabsPlsMainWindow::Tab{tabIndex, tabName});
+
+    tabWidget.setTabText(tabIndex, LabelFromTabModel(*tabModel));
+
+    ConnectDirectoryChangedSignalToTab(tabModel, *widgetWithinTab, tabWidget);
+    return tabModel;
 }
 
 static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget& tabWidget) {
@@ -49,6 +65,18 @@ static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget&
     });
 }
 
+static void ReassignTabIndices(const std::vector<std::shared_ptr<TabsPlsMainWindow::Tab>>& tabs) {
+    for (int tabIndex = 0; tabIndex < tabs.size(); ++tabIndex) {
+        tabs[tabIndex]->index = tabIndex;
+    }
+}
+
+static void ReassignTabLabels(const std::vector<std::shared_ptr<TabsPlsMainWindow::Tab>>& tabs, QTabWidget& tabWidget) {
+    for (int tabIndex = 0; tabIndex < tabs.size(); ++tabIndex) {
+        tabWidget.setTabText(tabIndex, LabelFromTabModel(*tabs[tabIndex]));
+    }
+}
+
 TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
     setWindowTitle(tr("Light Speed File Explorer"));
     setWindowIcon(QIcon(":boot_icon_32.png"));
@@ -61,20 +89,26 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
     auto* tabWidget = new QTabWidget();
     tabWidget->setTabBarAutoHide(true);
 
-    CreateNewFileBrowserTab(*tabWidget, *validInitialDir);
+    m_tabs.push_back(CreateNewFileBrowserTab(*tabWidget, *validInitialDir));
 
     const auto* createTabShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_T), this);
     connect(createTabShortcut, &QShortcut::activated, [=]() {
         if (const auto* fileBrowserTab = dynamic_cast<FileBrowserWidget*>(tabWidget->currentWidget())) {
-            const int newIndex = CreateNewFileBrowserTab(*tabWidget, fileBrowserTab->GetCurrentDirectory());
-            tabWidget->setCurrentIndex(newIndex);
+            const auto tabModel = CreateNewFileBrowserTab(*tabWidget, fileBrowserTab->GetCurrentDirectory());
+            m_tabs.push_back(tabModel);
+            tabWidget->setCurrentIndex(tabModel->index);
         }
     });
 
     const auto* closeTabShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this);
     connect(closeTabShortcut, &QShortcut::activated, [=]() {
-        if (tabWidget->count() > 1)
-            tabWidget->removeTab(tabWidget->currentIndex());
+        if (tabWidget->count() > 1) {
+            const auto removalIndex = tabWidget->currentIndex();
+            tabWidget->removeTab(removalIndex);
+            m_tabs.erase(m_tabs.begin() + removalIndex);
+            ReassignTabIndices(m_tabs);
+            ReassignTabLabels(m_tabs, *tabWidget);
+        }
     });
 
     setCentralWidget(tabWidget);
