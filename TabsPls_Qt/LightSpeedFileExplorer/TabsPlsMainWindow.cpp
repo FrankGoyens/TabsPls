@@ -9,37 +9,38 @@
 #include <QTabWidget>
 #include <QUrl>
 
+#include <TabsPlsCore/TabModel.hpp>
+
 #include "FileBrowserWidget.hpp"
 #include "FileSystemDefsConversion.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
 
-QString NamePrefixFromIndex(int index) { return index < 9 ? "&" + QString::number(index + 1) + " " : ""; }
-
-QString LabelFromTabModel(const TabsPlsMainWindow::Tab& tabModel) {
-    return NamePrefixFromIndex(tabModel.index) + tabModel.name;
+static QString AsQString(const TabModel::TabLabel& label) {
+    return label.mnemonic ? QString("&").append(*label.mnemonic).append(" ").append(label.label.c_str())
+                          : QString(label.label.c_str());
 }
 
-void ConnectDirectoryChangedSignalToTab(const std::weak_ptr<TabsPlsMainWindow::Tab>& tab,
+void ConnectDirectoryChangedSignalToTab(const std::weak_ptr<TabModel::Tab>& tab,
                                         const FileBrowserWidget& widgetWithinTab, QTabWidget& tabWidget) {
     QWidget::connect(&widgetWithinTab, &FileBrowserWidget::currentDirectoryNameChanged, [&, tab](const auto& newName) {
         if (const auto liveTab = tab.lock()) {
-            liveTab->name = newName;
-            tabWidget.setTabText(liveTab->index, LabelFromTabModel(*liveTab));
+            liveTab->name = newName.toStdString();
+            tabWidget.setTabText(liveTab->index, AsQString(TabModel::LabelFromTabModel(*liveTab)));
         }
     });
 }
 
-std::shared_ptr<TabsPlsMainWindow::Tab> CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir) {
+std::shared_ptr<TabModel::Tab> CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir) {
 
     auto* widgetWithinTab = new FileBrowserWidget(std::move(dir));
     const auto tabName = widgetWithinTab->GetCurrentDirectoryName();
     const int tabIndex = tabWidget.addTab(widgetWithinTab, tabName);
 
-    const auto tabModel = std::make_shared<TabsPlsMainWindow::Tab>(TabsPlsMainWindow::Tab{tabIndex, tabName});
+    const auto tabModel = std::make_shared<TabModel::Tab>(TabModel::Tab{tabIndex, tabName.toStdString()});
 
-    tabWidget.setTabText(tabIndex, LabelFromTabModel(*tabModel));
+    tabWidget.setTabText(tabIndex, AsQString(LabelFromTabModel(*tabModel)));
 
     ConnectDirectoryChangedSignalToTab(tabModel, *widgetWithinTab, tabWidget);
     return tabModel;
@@ -63,18 +64,6 @@ static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget&
                 QUrl::fromLocalFile(FromRawPath(currentFileBrowser->GetCurrentDirectory().path())));
         }
     });
-}
-
-static void ReassignTabIndices(const std::vector<std::shared_ptr<TabsPlsMainWindow::Tab>>& tabs) {
-    for (int tabIndex = 0; tabIndex < tabs.size(); ++tabIndex) {
-        tabs[tabIndex]->index = tabIndex;
-    }
-}
-
-static void ReassignTabLabels(const std::vector<std::shared_ptr<TabsPlsMainWindow::Tab>>& tabs, QTabWidget& tabWidget) {
-    for (int tabIndex = 0; tabIndex < tabs.size(); ++tabIndex) {
-        tabWidget.setTabText(tabIndex, LabelFromTabModel(*tabs[tabIndex]));
-    }
 }
 
 TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
@@ -106,8 +95,9 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
             const auto removalIndex = tabWidget->currentIndex();
             tabWidget->removeTab(removalIndex);
             m_tabs.erase(m_tabs.begin() + removalIndex);
-            ReassignTabIndices(m_tabs);
-            ReassignTabLabels(m_tabs, *tabWidget);
+            TabModel::ReassignTabIndices(m_tabs);
+            TabModel::ReassignTabLabels(
+                m_tabs, [tabWidget](int index, const auto& label) { tabWidget->setTabText(index, AsQString(label)); });
         }
     });
 

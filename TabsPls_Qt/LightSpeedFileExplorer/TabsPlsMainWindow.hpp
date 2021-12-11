@@ -8,17 +8,16 @@
 
 class CurrentDirectoryFileOp;
 
+namespace TabModel {
+struct Tab;
+}
+
 class TabsPlsMainWindow : public QMainWindow {
     Q_OBJECT
 
   public:
     TabsPlsMainWindow(const QString& initialDirectory);
 
-    struct Tab {
-        int index;
-        QString name;
-    };
-
   private:
-    std::vector<std::shared_ptr<Tab>> m_tabs;
+    std::vector<std::shared_ptr<TabModel::Tab>> m_tabs;
 };
