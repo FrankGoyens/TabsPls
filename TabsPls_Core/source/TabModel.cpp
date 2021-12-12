@@ -2,8 +2,10 @@
 
 namespace TabModel {
 
+bool TabLabel::operator==(const TabLabel& other) const { return mnemonic == other.mnemonic && label == other.label; }
+
 std::optional<Mnemonic> MnemonicFromIndex(int index) {
-    if (index > 9)
+    if (index > 9 || index < 0)
         return {};
 
     if (index == 9)
@@ -11,5 +13,7 @@ std::optional<Mnemonic> MnemonicFromIndex(int index) {
 
     return std::to_string(index + 1)[0];
 }
+
 TabLabel LabelFromTabModel(const Tab& tabModel) { return {MnemonicFromIndex(tabModel.index), tabModel.name}; }
+
 } // namespace TabModel
