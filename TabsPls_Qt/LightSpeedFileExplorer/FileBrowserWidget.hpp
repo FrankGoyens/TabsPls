@@ -12,6 +12,7 @@ class Directory;
 }
 
 class CurrentDirectoryFileOpQtImpl;
+class FileListTableViewWithFilter;
 
 class FileBrowserWidget : public QWidget {
     Q_OBJECT
@@ -21,6 +22,9 @@ class FileBrowserWidget : public QWidget {
     const QString GetCurrentDirectoryName() const;
     const FileSystem::Directory& GetCurrentDirectory() const { return m_currentDirectory; }
 
+    void RequestChangeToFlatDirectoryStructure();
+    void RequestChangeToHierarchyDirectoryStructure();
+
   signals:
     void currentDirectoryNameChanged(const QString&);
 
@@ -29,6 +33,7 @@ class FileBrowserWidget : public QWidget {
     RobustDirectoryHistoryStore m_historyStore;
     std::shared_ptr<CurrentDirectoryFileOpQtImpl> m_currentDirFileOpImpl;
     QFileSystemWatcher m_fs_watcher;
+    FileListTableViewWithFilter* m_fileListTableView;
 
     void SetCurrentDirectory(FileSystem::Directory);
 

@@ -4,28 +4,28 @@
 <context>
     <name>FileBrowserWidget</name>
     <message>
+        <location filename="FileBrowserWidget.cpp" line="273"/>
         <location filename="FileBrowserWidget.cpp" line="274"/>
-        <location filename="FileBrowserWidget.cpp" line="275"/>
         <source>New Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="274"/>
+        <location filename="FileBrowserWidget.cpp" line="273"/>
         <source>New folder name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="281"/>
+        <location filename="FileBrowserWidget.cpp" line="280"/>
         <source>Create new folder failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="320"/>
+        <location filename="FileBrowserWidget.cpp" line="323"/>
         <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="325"/>
+        <location filename="FileBrowserWidget.cpp" line="328"/>
         <source>Unable to change directory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -134,7 +134,7 @@
 <context>
     <name>TabsPlsMainWindow</name>
     <message>
-        <location filename="TabsPlsMainWindow.cpp" line="90"/>
+        <location filename="TabsPlsMainWindow.cpp" line="102"/>
         <source>Light Speed File Explorer</source>
         <translation type="unfinished"></translation>
     </message>

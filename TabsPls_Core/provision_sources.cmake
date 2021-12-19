@@ -16,6 +16,7 @@ macro(ProvisionCoreSources prefix)
 	${prefix}/include/TabsPlsCore/DirectoryInputAutoComplete.hpp
 	${prefix}/include/TabsPlsCore/TabModel.hpp
 
+	${prefix}/include/TabsPlsCore/exception/TabsPlsException.hpp
     )
 
     set(TabsPls_Core_Sources

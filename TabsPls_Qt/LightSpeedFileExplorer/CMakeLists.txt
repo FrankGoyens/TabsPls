@@ -44,6 +44,7 @@ set(LightSpeedFileExplorer_Headers
   FlattenedDirectoryViewModel.hpp
   DirectoryChanger.hpp
   FileEntryModel.hpp
+  FileBrowserViewModelSwitcher.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -68,6 +69,7 @@ set(LightSpeedFileExplorer_Sources
   FutureWatchDialog.cpp
   FlattenedDirectoryViewModel.cpp
   FileEntryModel.cpp
+  FileBrowserViewModelSwitcher.cpp
 )
 
 add_executable(LightSpeedFileExplorer  
