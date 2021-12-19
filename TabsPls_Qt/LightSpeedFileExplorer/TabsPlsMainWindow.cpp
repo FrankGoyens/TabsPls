@@ -46,7 +46,7 @@ std::shared_ptr<TabModel::Tab> CreateNewFileBrowserTab(QTabWidget& tabWidget, Fi
     return tabModel;
 }
 
-static void SetupMenubar_View(QMenuBar& menubar, QMainWindow& mainWindow) {
+static void SetupMenubar_View(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget& tabWidget) {
     auto* hierarchyMode = new QAction("&Hierarchy");
     auto* flatMode = new QAction("&Flat");
     auto* fileViewMode = new QActionGroup(&menubar);
@@ -62,6 +62,18 @@ static void SetupMenubar_View(QMenuBar& menubar, QMainWindow& mainWindow) {
 
     auto* view = menubar.addMenu("&View");
     view->addActions(fileViewMode->actions());
+
+    QObject::connect(hierarchyMode, &QAction::triggered, [&] {
+        if (auto* currentFileBrowser = dynamic_cast<FileBrowserWidget*>(tabWidget.currentWidget())) {
+            currentFileBrowser->RequestChangeToHierarchyDirectoryStructure();
+        }
+    });
+
+    QObject::connect(flatMode, &QAction::triggered, [&] {
+        if (auto* currentFileBrowser = dynamic_cast<FileBrowserWidget*>(tabWidget.currentWidget())) {
+            currentFileBrowser->RequestChangeToFlatDirectoryStructure();
+        }
+    });
 }
 
 static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget& tabWidget) {
@@ -83,7 +95,7 @@ static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget&
         }
     });
 
-    SetupMenubar_View(menubar, mainWindow);
+    SetupMenubar_View(menubar, mainWindow, tabWidget);
 }
 
 TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {

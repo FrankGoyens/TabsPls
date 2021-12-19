@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 
+#include "FileBrowserViewModelSwitcher.hpp"
 #include "FileListViewModel.hpp"
 #include "FilterHookedFileListTableView.hpp"
 #include "FilterHookedLineEdit.hpp"
@@ -43,16 +44,17 @@ static auto CreateFilterUpdatedClosure(FileListTableView& tableView) {
     };
 }
 
-FileListTableViewWithFilter::FileListTableViewWithFilter(std::weak_ptr<CurrentDirectoryFileOp> currentDirFileOp,
+FileListTableViewWithFilter::FileListTableViewWithFilter(std::shared_ptr<CurrentDirectoryFileOp> currentDirFileOp,
                                                          QAbstractTableModel& viewModel) {
     auto* filterField = new FilterHookedLineEdit;
     m_filterField = filterField;
 
     m_filterField->hide(); // Hidden when empty
 
-    auto* fileListTableView = new FilterHookedFileListTableView(std::move(currentDirFileOp));
+    auto* fileListTableView = new FilterHookedFileListTableView(currentDirFileOp);
     m_fileListTableView = fileListTableView;
     m_fileListTableView->setModel(&viewModel);
+    m_viewModelSwitcher = std::make_unique<FileBrowserViewModelSwitcher>(*m_fileListTableView, currentDirFileOp);
 
     connect(fileListTableView, &FilterHookedFileListTableView::focusChangeCharacterReceived, [this](char c) {
         if (m_filterField->isHidden())
@@ -91,5 +93,11 @@ FileListTableViewWithFilter::FileListTableViewWithFilter(std::weak_ptr<CurrentDi
     connect(fileListTableView, &FilterHookedFileListTableView::escapePressed, [this]() { ClearFilter(); });
     connect(fileListTableView->model(), &QAbstractItemModel::modelReset, [this]() { ClearFilter(); });
 }
+
+FileListTableViewWithFilter::~FileListTableViewWithFilter() = default;
+
+void FileListTableViewWithFilter::RequestFlatModel() { m_viewModelSwitcher->RequestFlatModel(); }
+
+void FileListTableViewWithFilter::RequestHierarchyModel() { m_viewModelSwitcher->RequestHierarchyModel(); }
 
 void FileListTableViewWithFilter::ClearFilter() { m_filterField->clear(); }
