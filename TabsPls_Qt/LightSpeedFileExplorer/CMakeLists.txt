@@ -45,6 +45,7 @@ set(LightSpeedFileExplorer_Headers
   DirectoryChanger.hpp
   FileEntryModel.hpp
   FileBrowserViewModelSwitcher.hpp
+  FileBrowserViewModelProvider.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
