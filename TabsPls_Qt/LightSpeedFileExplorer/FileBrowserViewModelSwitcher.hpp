@@ -2,11 +2,13 @@
 
 #include <memory>
 
+#include "FileBrowserViewModelProvider.hpp"
+
 class QTableView;
 class QWidget;
 class CurrentDirectoryFileOp;
 
-class FileBrowserViewModelSwitcher {
+class FileBrowserViewModelSwitcher : public FileBrowserViewModelProvider {
 
   public:
     /**! \brief Assumes the table view already has a model, that model's parent will be used a parent when requesting
@@ -16,6 +18,11 @@ class FileBrowserViewModelSwitcher {
 
     void RequestFlatModel();
     void RequestHierarchyModel();
+
+    // FileBrowserViewModelProvider interface
+
+    QAbstractTableModel* GetActiveModel() const override;
+    DirectoryChanger* GetDirectoryChangerForActiveModel() const override;
 
   private:
     bool SwitchingIsPossible() const;

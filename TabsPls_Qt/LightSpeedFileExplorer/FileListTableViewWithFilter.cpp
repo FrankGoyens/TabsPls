@@ -45,7 +45,7 @@ static auto CreateFilterUpdatedClosure(FileListTableView& tableView) {
 }
 
 FileListTableViewWithFilter::FileListTableViewWithFilter(std::shared_ptr<CurrentDirectoryFileOp> currentDirFileOp,
-                                                         QAbstractTableModel& viewModel) {
+                                                         std::unique_ptr<QAbstractTableModel> viewModel) {
     auto* filterField = new FilterHookedLineEdit;
     m_filterField = filterField;
 
@@ -53,8 +53,8 @@ FileListTableViewWithFilter::FileListTableViewWithFilter(std::shared_ptr<Current
 
     auto* fileListTableView = new FilterHookedFileListTableView(currentDirFileOp);
     m_fileListTableView = fileListTableView;
-    m_fileListTableView->setModel(&viewModel);
-    m_viewModelSwitcher = std::make_unique<FileBrowserViewModelSwitcher>(*m_fileListTableView, currentDirFileOp);
+    m_fileListTableView->setModel(viewModel.release());
+    m_viewModelSwitcher = std::make_shared<FileBrowserViewModelSwitcher>(*m_fileListTableView, currentDirFileOp);
 
     connect(fileListTableView, &FilterHookedFileListTableView::focusChangeCharacterReceived, [this](char c) {
         if (m_filterField->isHidden())
@@ -99,5 +99,9 @@ FileListTableViewWithFilter::~FileListTableViewWithFilter() = default;
 void FileListTableViewWithFilter::RequestFlatModel() { m_viewModelSwitcher->RequestFlatModel(); }
 
 void FileListTableViewWithFilter::RequestHierarchyModel() { m_viewModelSwitcher->RequestHierarchyModel(); }
+
+std::weak_ptr<FileBrowserViewModelProvider> FileListTableViewWithFilter::GetModelProvider() const {
+    return m_viewModelSwitcher;
+}
 
 void FileListTableViewWithFilter::ClearFilter() { m_filterField->clear(); }
