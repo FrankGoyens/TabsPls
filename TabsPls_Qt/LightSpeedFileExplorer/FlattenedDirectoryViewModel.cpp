@@ -29,15 +29,21 @@ RetrieveFilesAndDirectories(const FileSystem::Directory& dir) {
     return std::make_pair(files, dirs);
 }
 
-static std::vector<FileEntryModel::FileEntry> RetreiveFiles(const FileSystem::Directory& dir) {
+namespace {
+struct DirectoryReadDispatcher {
+    virtual ~DirectoryReadDispatcher() = default;
+    virtual void DirectoryReadDispatch(const FileSystem::Directory&) const = 0;
+};
+} // namespace
+
+static std::vector<FileEntryModel::FileEntry> RetreiveFiles(const FileSystem::Directory& dir,
+                                                            const DirectoryReadDispatcher& dispatcher) {
     const auto [files, dirs] = RetrieveFilesAndDirectories(dir);
 
-    auto fileEntries = FileEntryModel::FilesAsModelEntries(files);
     for (const auto& childDir : dirs) {
-        const auto filesInChildDir = RetreiveFiles(childDir);
-        fileEntries.insert(fileEntries.end(), filesInChildDir.begin(), filesInChildDir.end());
+        dispatcher.DirectoryReadDispatch(childDir);
     }
-    return fileEntries;
+    return FileEntryModel::FilesAsModelEntries(files);
 }
 
 static FileSystem::RawPath SubtractBasePath(const FileSystem::RawPath& basePath, const FileSystem::RawPath& filePath) {
@@ -63,11 +69,32 @@ static auto AsModelEntries(const std::vector<FileEntryModel::FileEntry>& fileEnt
     return modelEntries;
 }
 
+namespace {
+
+struct DirectoryReadDispatcherImpl : DirectoryReadDispatcher {
+    using ResultReady = std::function<void(std::vector<FileEntryModel::ModelEntry>)>;
+
+    DirectoryReadDispatcherImpl(FileSystem::RawPath basePath, QStyle& styleProvider, ResultReady resultReady)
+        : basePath(std::move(basePath)), styleProvider(styleProvider), resultReady(std::move(resultReady)) {}
+
+    void DirectoryReadDispatch(const FileSystem::Directory& dir) const override {
+        const auto modelEntries = AsModelEntries(RetreiveFiles(dir, *this), basePath, styleProvider);
+        resultReady(modelEntries);
+    }
+
+    const FileSystem::RawPath basePath;
+    QStyle& styleProvider;
+
+    ResultReady resultReady;
+};
+
+} // namespace
+
 FlattenedDirectoryViewModel::FlattenedDirectoryViewModel(QObject* parent, QStyle& styleProvider,
                                                          const QString& initialDirectory)
     : QAbstractTableModel(parent), m_styleProvider(styleProvider) {
     if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory))) {
-        m_modelEntries = AsModelEntries(RetreiveFiles(*dir), ToRawPath(initialDirectory), styleProvider);
+        StartFileRetreival(*dir);
     }
 }
 
@@ -122,10 +149,17 @@ QVariant FlattenedDirectoryViewModel::data(const QModelIndex& index, int role) c
 
 void FlattenedDirectoryViewModel::ChangeDirectory(const QString& newDirectory) {
     if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(newDirectory))) {
-        m_modelEntries = AsModelEntries(RetreiveFiles(*dir), ToRawPath(newDirectory), m_styleProvider);
+        StartFileRetreival(*dir);
     }
 }
 
 void FlattenedDirectoryViewModel::RefreshDirectory(const QString& dir) { ChangeDirectory(dir); }
 
 std::optional<std::string> FlattenedDirectoryViewModel::ClaimError() { return {}; }
+
+void FlattenedDirectoryViewModel::StartFileRetreival(const FileSystem::Directory& dir) {
+    RetreiveFiles(dir, DirectoryReadDispatcherImpl{dir.path(), m_styleProvider, [this](auto modelEntries) {
+                                                       m_modelEntries.insert(m_modelEntries.end(), modelEntries.begin(),
+                                                                             modelEntries.end());
+                                                   }});
+}
