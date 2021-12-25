@@ -1,14 +1,21 @@
 #pragma once
 
+#include <memory>
+
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
 #include <QAbstractTableModel>
 #include <QIcon>
+#include <QVector>
 
 #include "DirectoryChanger.hpp"
 #include "FileEntryModel.hpp"
 
 class QStyle;
+
+namespace FileRetrievalByDispatch {
+struct DirectoryReadDispatcher;
+}
 
 class FlattenedDirectoryViewModel final : public QAbstractTableModel, public DirectoryChanger {
     Q_OBJECT
@@ -40,9 +47,13 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
   private:
     std::vector<FileEntryModel::ModelEntry> m_modelEntries;
     QStyle& m_styleProvider;
+    QIcon m_defaultFileIcon;
+    std::shared_ptr<FileRetrievalByDispatch::DirectoryReadDispatcher> m_dispatch;
 
-    void StartFileRetreival(const FileSystem::Directory&);
+    void StartFileRetrieval(const FileSystem::Directory&);
+    void ResetDispatcher(const FileSystem::Directory&);
 
-    // private slots:
-    //  void ReceiveModelEntries(std::vector<FileEntryModel::ModelEntry> modelEntries);
+  private slots:
+    void ReceiveModelEntries(QVector<FileEntryModel::ModelEntry> modelEntries,
+                             const FileRetrievalByDispatch::DirectoryReadDispatcher* usedDispatcher);
 };

@@ -1,11 +1,17 @@
 #include "FlattenedDirectoryViewModel.hpp"
 
+#include <QDebug>
+#include <QRunnable>
 #include <QStyle>
+#include <QThreadPool>
 
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 
 #include <FileSystemDefsConversion.hpp>
+
+#include "FileRetrievalByDispatch.hpp"
+#include "FileRetrievalRunnable.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
@@ -14,87 +20,39 @@ namespace {
 const std::vector<QString> tableHeaders = {QObject::tr("Name"), QObject::tr("Size"), QObject::tr("Date modified")};
 }
 
-static std::pair<std::vector<FileSystem::FilePath>, std::vector<FileSystem::Directory>>
-RetrieveFilesAndDirectories(const FileSystem::Directory& dir) {
-    std::vector<FileSystem::FilePath> files;
-    std::vector<FileSystem::Directory> dirs;
-
-    for (const auto& entry : FileSystem::GetFilesInDirectory(dir)) {
-        if (const auto file = FileSystem::FilePath::FromPath(entry))
-            files.push_back(*file);
-        else if (const auto dirEntry = FileSystem::Directory::FromPath(entry))
-            dirs.push_back(*dirEntry);
-    }
-
-    return std::make_pair(files, dirs);
-}
-
-namespace {
-struct DirectoryReadDispatcher {
-    virtual ~DirectoryReadDispatcher() = default;
-    virtual void DirectoryReadDispatch(const FileSystem::Directory&) const = 0;
-};
-} // namespace
-
-static std::vector<FileEntryModel::FileEntry> RetreiveFiles(const FileSystem::Directory& dir,
-                                                            const DirectoryReadDispatcher& dispatcher) {
-    const auto [files, dirs] = RetrieveFilesAndDirectories(dir);
-
-    for (const auto& childDir : dirs) {
-        dispatcher.DirectoryReadDispatch(childDir);
-    }
-    return FileEntryModel::FilesAsModelEntries(files);
-}
-
-static FileSystem::RawPath SubtractBasePath(const FileSystem::RawPath& basePath, const FileSystem::RawPath& filePath) {
-    if (basePath.size() > filePath.size())
-        return {};
-
-    return FileSystem::Algorithm::StripLeadingPathSeparators({filePath.begin() + basePath.size(), filePath.end()});
-}
-
-static FileEntryModel::ModelEntry AsModelEntry(const FileEntryModel::FileEntry& fileEntry,
-                                               const FileSystem::RawPath& basePath, const QStyle& styleProvider) {
-    const auto fullPath = fileEntry.filePath.path();
-    return {FromRawPath(SubtractBasePath(basePath, fullPath)), FileEntryModel::FormatSize(fileEntry.size),
-            FileEntryModel::FormatDateLastModified(fileEntry.lastModificationDate), FromRawPath(fullPath),
-            styleProvider.standardIcon(QStyle::SP_FileIcon)};
-}
-
-static auto AsModelEntries(const std::vector<FileEntryModel::FileEntry>& fileEntries,
-                           const FileSystem::RawPath& basePath, QStyle& styleProvider) {
-    std::vector<FileEntryModel::ModelEntry> modelEntries;
-    std::transform(fileEntries.begin(), fileEntries.end(), std::back_inserter(modelEntries),
-                   [&](const auto& fileEntry) { return AsModelEntry(fileEntry, basePath, styleProvider); });
-    return modelEntries;
-}
-
 namespace {
 
-struct DirectoryReadDispatcherImpl : DirectoryReadDispatcher {
-    using ResultReady = std::function<void(std::vector<FileEntryModel::ModelEntry>)>;
+struct DirectoryReadDispatcherImpl : FileRetrievalByDispatch::DirectoryReadDispatcher {
+    using CreateRunnable = std::function<QRunnable*(const FileSystem::Directory&, const FileSystem::RawPath&)>;
 
-    DirectoryReadDispatcherImpl(FileSystem::RawPath basePath, QStyle& styleProvider, ResultReady resultReady)
-        : basePath(std::move(basePath)), styleProvider(styleProvider), resultReady(std::move(resultReady)) {}
+    DirectoryReadDispatcherImpl(FileSystem::RawPath basePath, CreateRunnable createRunnable)
+        : basePath(std::move(basePath)), createRunnable(std::move(createRunnable)) {}
 
     void DirectoryReadDispatch(const FileSystem::Directory& dir) const override {
-        const auto modelEntries = AsModelEntries(RetreiveFiles(dir, *this), basePath, styleProvider);
-        resultReady(modelEntries);
+        if (cancelled)
+            return;
+        auto* runnable = createRunnable(dir, basePath);
+        QThreadPool::globalInstance()->start(runnable);
     }
 
+    bool cancelled = false;
     const FileSystem::RawPath basePath;
-    QStyle& styleProvider;
-
-    ResultReady resultReady;
+    CreateRunnable createRunnable;
 };
 
 } // namespace
 
 FlattenedDirectoryViewModel::FlattenedDirectoryViewModel(QObject* parent, QStyle& styleProvider,
                                                          const QString& initialDirectory)
-    : QAbstractTableModel(parent), m_styleProvider(styleProvider) {
+    : QAbstractTableModel(parent), m_styleProvider(styleProvider),
+      m_defaultFileIcon(m_styleProvider.standardIcon(QStyle::SP_FileIcon)) {
+
+    qRegisterMetaType<FileEntryModel::ModelEntry>();
+    qRegisterMetaType<QVector<FileEntryModel::ModelEntry>>();
+
     if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory))) {
-        StartFileRetreival(*dir);
+        ResetDispatcher(*dir);
+        StartFileRetrieval(*dir);
     }
 }
 
@@ -149,7 +107,11 @@ QVariant FlattenedDirectoryViewModel::data(const QModelIndex& index, int role) c
 
 void FlattenedDirectoryViewModel::ChangeDirectory(const QString& newDirectory) {
     if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(newDirectory))) {
-        StartFileRetreival(*dir);
+        beginResetModel();
+        m_modelEntries.clear();
+        ResetDispatcher(*dir);
+        endResetModel();
+        StartFileRetrieval(*dir);
     }
 }
 
@@ -157,9 +119,32 @@ void FlattenedDirectoryViewModel::RefreshDirectory(const QString& dir) { ChangeD
 
 std::optional<std::string> FlattenedDirectoryViewModel::ClaimError() { return {}; }
 
-void FlattenedDirectoryViewModel::StartFileRetreival(const FileSystem::Directory& dir) {
-    RetreiveFiles(dir, DirectoryReadDispatcherImpl{dir.path(), m_styleProvider, [this](auto modelEntries) {
-                                                       m_modelEntries.insert(m_modelEntries.end(), modelEntries.begin(),
-                                                                             modelEntries.end());
-                                                   }});
+void FlattenedDirectoryViewModel::StartFileRetrieval(const FileSystem::Directory& dir) {
+    if (m_dispatch) {
+        m_dispatch->DirectoryReadDispatch(dir);
+    }
+}
+
+void FlattenedDirectoryViewModel::ResetDispatcher(const FileSystem::Directory& newDirectory) {
+    if (auto* dispatchImpl = dynamic_cast<DirectoryReadDispatcherImpl*>(m_dispatch.get()))
+        dispatchImpl->cancelled = true;
+
+    m_dispatch = std::make_shared<DirectoryReadDispatcherImpl>(newDirectory.path(), [this](const auto& dir,
+                                                                                           const auto& basePath) {
+        auto* runnable = new FileRetrievalRunnable(dir, basePath, m_defaultFileIcon, m_dispatch);
+        connect(runnable, &FileRetrievalRunnable::resultReady, this, &FlattenedDirectoryViewModel::ReceiveModelEntries);
+        return runnable;
+    });
+}
+
+void FlattenedDirectoryViewModel::ReceiveModelEntries(
+    QVector<FileEntryModel::ModelEntry> modelEntries,
+    const FileRetrievalByDispatch::DirectoryReadDispatcher* usedDispatcher) {
+    if (modelEntries.empty() ||
+        m_dispatch.get() != usedDispatcher /*residual threads from an old dispatcher could still signal results*/)
+        return;
+
+    beginInsertRows(QModelIndex{}, rowCount(), rowCount() + modelEntries.size() - 1);
+    m_modelEntries.insert(m_modelEntries.end(), modelEntries.begin(), modelEntries.end());
+    endInsertRows();
 }
