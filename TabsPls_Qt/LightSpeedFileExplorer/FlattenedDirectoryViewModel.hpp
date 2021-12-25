@@ -18,6 +18,7 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
     ~FlattenedDirectoryViewModel() = default;
 
     /*Qt table model implementation*/
+
     int rowCount(const QModelIndex& = QModelIndex()) const override;
 
     int columnCount(const QModelIndex& = QModelIndex()) const override { return 3; }
@@ -30,7 +31,7 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
         return {{Qt::DisplayRole, "display"}, {Qt::DecorationRole, "icon_decoration"}, {Qt::UserRole, "full_paths"}};
     }
 
-    /*TabsPls app*/
+    /*DirectoryChanger implementation*/
 
     void ChangeDirectory(const QString&) override;
     void RefreshDirectory(const QString&) override;
@@ -39,4 +40,9 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
   private:
     std::vector<FileEntryModel::ModelEntry> m_modelEntries;
     QStyle& m_styleProvider;
+
+    void StartFileRetreival(const FileSystem::Directory&);
+
+    // private slots:
+    //  void ReceiveModelEntries(std::vector<FileEntryModel::ModelEntry> modelEntries);
 };
