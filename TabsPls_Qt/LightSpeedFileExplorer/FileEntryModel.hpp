@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QIcon>
+#include <QMetaType>
 #include <QString>
 
 #include <TabsPlsCore/FileSystemFilePath.hpp>
@@ -32,3 +33,5 @@ QString FormatSize(std::uintmax_t bytes);
 QString FormatDateLastModified(std::time_t timestamp);
 
 } // namespace FileEntryModel
+
+Q_DECLARE_METATYPE(FileEntryModel::ModelEntry)

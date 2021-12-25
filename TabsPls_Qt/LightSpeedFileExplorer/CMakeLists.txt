@@ -46,6 +46,8 @@ set(LightSpeedFileExplorer_Headers
   FileEntryModel.hpp
   FileBrowserViewModelSwitcher.hpp
   FileBrowserViewModelProvider.hpp
+  FileRetrievalRunnable.hpp
+  FileRetrievalByDispatch.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -71,6 +73,8 @@ set(LightSpeedFileExplorer_Sources
   FlattenedDirectoryViewModel.cpp
   FileEntryModel.cpp
   FileBrowserViewModelSwitcher.cpp
+  FileRetrievalRunnable.cpp
+  FileRetrievalByDispatch.cpp
 )
 
 add_executable(LightSpeedFileExplorer  
