@@ -91,7 +91,7 @@ FileListTableViewWithFilter::FileListTableViewWithFilter(std::shared_ptr<Current
     connect(filterField, &FilterHookedLineEdit::escapePressed, shiftFocusToTableView);
 
     connect(fileListTableView, &FilterHookedFileListTableView::escapePressed, [this]() { ClearFilter(); });
-    connect(fileListTableView->model(), &QAbstractItemModel::modelReset, [this]() { ClearFilter(); });
+    connect(m_viewModelSwitcher.get(), &FileBrowserViewModelProvider::modelReset, [this]() { ClearFilter(); });
 }
 
 FileListTableViewWithFilter::~FileListTableViewWithFilter() = default;

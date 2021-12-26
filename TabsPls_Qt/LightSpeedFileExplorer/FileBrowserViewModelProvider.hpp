@@ -14,4 +14,5 @@ class FileBrowserViewModelProvider : public QObject {
 
   signals:
     void modelReset();
+    void rowsInserted(const QModelIndex&, int, int);
 };
