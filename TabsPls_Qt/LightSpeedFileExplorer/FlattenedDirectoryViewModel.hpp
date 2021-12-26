@@ -10,6 +10,7 @@
 
 #include "DirectoryChanger.hpp"
 #include "FileEntryModel.hpp"
+#include "FileRetrievalRunnable.hpp"
 
 class QStyle;
 
@@ -45,7 +46,7 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
     std::optional<std::string> ClaimError() override;
 
   private:
-    std::vector<FileEntryModel::ModelEntry> m_modelEntries;
+    FileRetrievalRunnableContainer::NameSortedModelSet m_modelEntries;
     QStyle& m_styleProvider;
     QIcon m_defaultFileIcon;
     std::shared_ptr<FileRetrievalByDispatch::DirectoryReadDispatcher> m_dispatch;
@@ -54,6 +55,6 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
     void ResetDispatcher(const FileSystem::Directory&);
 
   private slots:
-    void ReceiveModelEntries(QVector<FileEntryModel::ModelEntry> modelEntries,
+    void ReceiveModelEntries(FileRetrievalRunnableContainer::NameSortedModelSet modelEntries,
                              const FileRetrievalByDispatch::DirectoryReadDispatcher* usedDispatcher);
 };
