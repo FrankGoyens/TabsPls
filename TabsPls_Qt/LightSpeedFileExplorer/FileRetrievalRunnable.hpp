@@ -1,7 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <set>
 
+#include <QMetaType>
 #include <QObject>
 #include <QRunnable>
 #include <QVector>
@@ -10,6 +12,11 @@
 
 #include "FileEntryModel.hpp"
 #include "FileRetrievalByDispatch.hpp"
+
+namespace FileRetrievalRunnableContainer {
+using NameSortedModelSet =
+    std::set<FileEntryModel::ModelEntry, decltype(&FileEntryModel::ModelEntryDisplayNameSortingPredicate)>;
+}
 
 class FileRetrievalRunnable : public QObject, public QRunnable {
     Q_OBJECT
@@ -22,7 +29,7 @@ class FileRetrievalRunnable : public QObject, public QRunnable {
     void run() override;
 
   signals:
-    void resultReady(QVector<FileEntryModel::ModelEntry>,
+    void resultReady(FileRetrievalRunnableContainer::NameSortedModelSet,
                      const FileRetrievalByDispatch::DirectoryReadDispatcher* usedDispatcher);
 
   private:
@@ -31,3 +38,5 @@ class FileRetrievalRunnable : public QObject, public QRunnable {
     std::reference_wrapper<const QIcon> m_fileIcon;
     std::shared_ptr<const FileRetrievalByDispatch::DirectoryReadDispatcher> m_dispatcher;
 };
+
+Q_DECLARE_METATYPE(FileRetrievalRunnableContainer::NameSortedModelSet)

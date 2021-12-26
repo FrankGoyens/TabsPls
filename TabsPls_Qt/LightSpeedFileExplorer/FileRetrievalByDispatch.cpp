@@ -44,20 +44,10 @@ FileSystem::RawPath SubtractBasePath(const FileSystem::RawPath& basePath, const 
 }
 
 FileEntryModel::ModelEntry AsModelEntry(const FileEntryModel::FileEntry& fileEntry, const FileSystem::RawPath& basePath,
-                                        const QStyle& styleProvider) {
-    return AsModelEntry(fileEntry, basePath, styleProvider.standardIcon(QStyle::SP_FileIcon));
-}
-
-FileEntryModel::ModelEntry AsModelEntry(const FileEntryModel::FileEntry& fileEntry, const FileSystem::RawPath& basePath,
                                         const QIcon& fileIcon) {
     const auto fullPath = fileEntry.filePath.path();
     return {FromRawPath(SubtractBasePath(basePath, fullPath)), FileEntryModel::FormatSize(fileEntry.size),
             FileEntryModel::FormatDateLastModified(fileEntry.lastModificationDate), FromRawPath(fullPath), fileIcon};
-}
-
-std::vector<FileEntryModel::ModelEntry> AsModelEntries(const std::vector<FileEntryModel::FileEntry>& fileEntries,
-                                                       const FileSystem::RawPath& basePath, QStyle& styleProvider) {
-    return AsModelEntries(fileEntries, basePath, styleProvider.standardIcon(QStyle::SP_FileIcon));
 }
 
 std::vector<FileEntryModel::ModelEntry> AsModelEntries(const std::vector<FileEntryModel::FileEntry>& fileEntries,

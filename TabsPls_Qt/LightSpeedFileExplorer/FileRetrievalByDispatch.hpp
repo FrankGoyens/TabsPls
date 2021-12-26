@@ -22,13 +22,7 @@ std::vector<FileEntryModel::FileEntry> RetrieveFiles(const FileSystem::Directory
 FileSystem::RawPath SubtractBasePath(const FileSystem::RawPath& basePath, const FileSystem::RawPath& filePath);
 
 FileEntryModel::ModelEntry AsModelEntry(const FileEntryModel::FileEntry& fileEntry, const FileSystem::RawPath& basePath,
-                                        const QStyle& styleProvider);
-
-FileEntryModel::ModelEntry AsModelEntry(const FileEntryModel::FileEntry& fileEntry, const FileSystem::RawPath& basePath,
                                         const QIcon& fileIcon);
-
-std::vector<FileEntryModel::ModelEntry> AsModelEntries(const std::vector<FileEntryModel::FileEntry>& fileEntries,
-                                                       const FileSystem::RawPath& basePath, QStyle& styleProvider);
 
 std::vector<FileEntryModel::ModelEntry> AsModelEntries(const std::vector<FileEntryModel::FileEntry>& fileEntries,
                                                        const FileSystem::RawPath& basePath, const QIcon&);

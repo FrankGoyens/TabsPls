@@ -3,6 +3,11 @@
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
 
 namespace FileEntryModel {
+
+bool ModelEntryDisplayNameSortingPredicate(const ModelEntry& first, const ModelEntry& second) {
+    return first.displayName < second.displayName;
+}
+
 std::vector<FileEntryModel::FileEntry> FilesAsModelEntries(const std::vector<FileSystem::FilePath>& files) {
     std::vector<FileEntryModel::FileEntry> filesWithSizes;
     std::transform(files.begin(), files.end(), std::back_inserter(filesWithSizes), [](const auto& file) {
