@@ -19,6 +19,9 @@ FileBrowserViewModelSwitcher::FileBrowserViewModelSwitcher(
 
     if (auto* model = GetActiveModel()) {
         QObject::connect(model, &QAbstractTableModel::modelReset, [this] { emit modelReset(); });
+        QObject::connect(
+            model, &QAbstractTableModel::rowsInserted,
+            [this](const QModelIndex& parent, int first, int last) { emit rowsInserted(parent, first, last); });
     }
 }
 
@@ -49,6 +52,9 @@ template <typename Model> void FileBrowserViewModelSwitcher::RequestModel() {
                                 FromRawPath(m_currentDirectoryProvider.lock()->GetCurrentDir().path()));
         m_tableView.setModel(model);
         QObject::connect(model, &QAbstractTableModel::modelReset, [this] { emit modelReset(); });
+        QObject::connect(
+            model, &QAbstractTableModel::rowsInserted,
+            [this](const QModelIndex& parent, int first, int last) { emit rowsInserted(parent, first, last); });
         delete currentModel;
     }
 }

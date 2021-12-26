@@ -4,7 +4,6 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QDebug>
 #include <QDrag>
 #include <QFutureWatcher>
 #include <QHeaderView>

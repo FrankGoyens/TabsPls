@@ -187,6 +187,11 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::shared_ptr<Curre
     fileListViewWidget->GetFileListTableView().resizeColumnsToContents();
     QObject::connect(fileListViewWidget->GetModelProvider().lock().get(), &FileBrowserViewModelProvider::modelReset,
                      [fileListViewWidget] { fileListViewWidget->GetFileListTableView().resizeColumnsToContents(); });
+    QObject::connect(fileListViewWidget->GetModelProvider().lock().get(), &FileBrowserViewModelProvider::rowsInserted,
+                     [fileListViewWidget](const QModelIndex&, int first, int) {
+                         if (first < 3) // Resize for the first couple batches of inserted rows
+                             fileListViewWidget->GetFileListTableView().resizeColumnsToContents();
+                     });
 
     auto* fileListViewActiveFilterLabel = new QLabel();
 
