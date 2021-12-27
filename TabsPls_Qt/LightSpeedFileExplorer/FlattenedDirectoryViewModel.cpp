@@ -106,7 +106,7 @@ QVariant FlattenedDirectoryViewModel::data(const QModelIndex& index, int role) c
     case Qt::DecorationRole:
         if (index.column() == 0) {
             if (AssociatedIconProvider::ComponentIsAvailable() && entryIt->icon.name() == m_defaultFileIcon.name()) {
-                StartIconRetrieval(entryIt->displayName);
+                StartIconRetrieval(entryIt->fullPath, entryIt->displayName);
             }
 
             return entryIt->icon;
@@ -138,8 +138,8 @@ void FlattenedDirectoryViewModel::StartFileRetrieval(const FileSystem::Directory
     }
 }
 
-void FlattenedDirectoryViewModel::StartIconRetrieval(const QString& displayName) const {
-    auto* runnable = new IconRetrievalRunnable(ToRawPath(displayName), 0);
+void FlattenedDirectoryViewModel::StartIconRetrieval(const QString& fullPath, const QString& displayName) const {
+    auto* runnable = new IconRetrievalRunnable(ToRawPath(fullPath), displayName);
     connect(runnable, &IconRetrievalRunnable::resultReady, this, &FlattenedDirectoryViewModel::RefreshIcon);
     QThreadPool::globalInstance()->start(runnable);
 }
@@ -171,7 +171,12 @@ void FlattenedDirectoryViewModel::ReceiveModelEntries(
     endInsertRows();
 }
 
-void FlattenedDirectoryViewModel::RefreshIcon(QIcon icon, const QString& displayName, int) {
+void FlattenedDirectoryViewModel::RefreshIcon(QIcon icon, const QString&, QVariant reference) {
+    if (reference.type() != QVariant::String)
+        return;
+
+    const auto displayName = reference.toString();
+
     const FileEntryModel::ModelEntry dummyEntry{displayName, "", "", "", QIcon{}};
     auto actualEntryIt = m_modelEntries.find(dummyEntry);
     if (actualEntryIt != m_modelEntries.end()) {
