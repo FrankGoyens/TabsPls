@@ -2,5 +2,4 @@
 
 #include <stdexcept>
 
-class TabsPlsException : public std::exception{
-};
+class TabsPlsException : public std::exception {};
