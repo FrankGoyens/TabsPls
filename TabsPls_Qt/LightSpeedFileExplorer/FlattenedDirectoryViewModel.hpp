@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
@@ -52,9 +53,12 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
     std::shared_ptr<FileRetrievalByDispatch::DirectoryReadDispatcher> m_dispatch;
 
     void StartFileRetrieval(const FileSystem::Directory&);
+    void StartIconRetrieval(const QString&) const;
     void ResetDispatcher(const FileSystem::Directory&);
 
   private slots:
     void ReceiveModelEntries(FileRetrievalRunnableContainer::NameSortedModelSet modelEntries,
                              const FileRetrievalByDispatch::DirectoryReadDispatcher* usedDispatcher);
+
+    void RefreshIcon(QIcon, const QString& fullPath, int index);
 };

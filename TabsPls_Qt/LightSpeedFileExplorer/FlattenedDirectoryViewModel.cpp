@@ -10,8 +10,10 @@
 
 #include <FileSystemDefsConversion.hpp>
 
+#include "AssociatedIconProvider.hpp"
 #include "FileRetrievalByDispatch.hpp"
 #include "FileRetrievalRunnable.hpp"
+#include "IconRetrievalRunnable.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
@@ -102,8 +104,13 @@ QVariant FlattenedDirectoryViewModel::data(const QModelIndex& index, int role) c
     case Qt::UserRole:
         return entryIt->fullPath;
     case Qt::DecorationRole:
-        if (index.column() == 0)
+        if (index.column() == 0) {
+            if (AssociatedIconProvider::ComponentIsAvailable() && entryIt->icon.name() == m_defaultFileIcon.name()) {
+                StartIconRetrieval(entryIt->displayName);
+            }
+
             return entryIt->icon;
+        }
     default:
         break;
     }
@@ -131,6 +138,12 @@ void FlattenedDirectoryViewModel::StartFileRetrieval(const FileSystem::Directory
     }
 }
 
+void FlattenedDirectoryViewModel::StartIconRetrieval(const QString& displayName) const {
+    auto* runnable = new IconRetrievalRunnable(ToRawPath(displayName), 0);
+    connect(runnable, &IconRetrievalRunnable::resultReady, this, &FlattenedDirectoryViewModel::RefreshIcon);
+    QThreadPool::globalInstance()->start(runnable);
+}
+
 void FlattenedDirectoryViewModel::ResetDispatcher(const FileSystem::Directory& newDirectory) {
     if (auto* dispatchImpl = dynamic_cast<DirectoryReadDispatcherImpl*>(m_dispatch.get()))
         dispatchImpl->cancelled = true;
@@ -156,4 +169,21 @@ void FlattenedDirectoryViewModel::ReceiveModelEntries(
     beginInsertRows(QModelIndex{}, insertIndex, insertIndex + modelEntries.size() - 1);
     m_modelEntries.insert(++modelEntries.begin(), modelEntries.end());
     endInsertRows();
+}
+
+void FlattenedDirectoryViewModel::RefreshIcon(QIcon icon, const QString& displayName, int) {
+    const FileEntryModel::ModelEntry dummyEntry{displayName, "", "", "", QIcon{}};
+    auto actualEntryIt = m_modelEntries.find(dummyEntry);
+    if (actualEntryIt != m_modelEntries.end()) {
+
+        // the container is sorted by the display name (which wuold be checked by the static_assert),
+        // modifying the icon is safe to do
+        static_assert(std::is_same<FileRetrievalRunnableContainer::NameSortedModelSet::key_compare,
+                                   decltype(&FileEntryModel::ModelEntryDisplayNameSortingPredicate)>::value);
+        auto& mutableModelEntry = const_cast<FileEntryModel::ModelEntry&>(*actualEntryIt);
+
+        mutableModelEntry.icon = icon;
+        const auto modelIndex = createIndex(std::distance(m_modelEntries.begin(), actualEntryIt), 0);
+        emit dataChanged(modelIndex, modelIndex, {Qt::DecorationRole});
+    }
 }
