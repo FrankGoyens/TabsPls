@@ -288,9 +288,11 @@ QVariant FileListViewModel::headerData(int section, Qt::Orientation, int role) c
     return {};
 }
 
-void FileListViewModel::RefreshIcon(QIcon icon, const QString& fullPath, int index) {
-    if (m_fullPaths.empty())
+void FileListViewModel::RefreshIcon(QIcon icon, const QString& fullPath, QVariant reference) {
+    if (m_fullPaths.empty() || reference.type() != QVariant::Int)
         return;
+
+    int index = reference.toInt();
 
     if (m_fullPaths.front() == "..")
         ++index;

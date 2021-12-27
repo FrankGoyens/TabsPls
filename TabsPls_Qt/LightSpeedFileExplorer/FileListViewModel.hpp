@@ -41,7 +41,7 @@ class FileListViewModel final : public QAbstractTableModel, public DirectoryChan
     std::optional<std::string> ClaimError() override;
 
   private slots:
-    void RefreshIcon(QIcon, const QString& fullPath, int index);
+    void RefreshIcon(QIcon, const QString& fullPath, QVariant reference);
 
   private:
     std::vector<FileSystem::Directory> m_directoryEntries;
