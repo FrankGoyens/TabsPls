@@ -47,21 +47,12 @@ std::shared_ptr<TabModel::Tab> CreateNewFileBrowserTab(QTabWidget& tabWidget, Fi
 }
 
 static void SetupMenubar_View(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget& tabWidget) {
-    auto* hierarchyMode = new QAction("&Hierarchy");
-    auto* flatMode = new QAction("&Flat");
-    auto* fileViewMode = new QActionGroup(&menubar);
-    fileViewMode->setExclusive(true);
-
-    hierarchyMode->setCheckable(true);
-    flatMode->setCheckable(true);
-
-    hierarchyMode->setChecked(true);
-    flatMode->setChecked(false);
-    fileViewMode->addAction(hierarchyMode);
-    fileViewMode->addAction(flatMode);
+    auto* hierarchyMode = new QAction("Switch to &Hierarchy");
+    auto* flatMode = new QAction("Switch to &Flat");
 
     auto* view = menubar.addMenu("&View");
-    view->addActions(fileViewMode->actions());
+    view->addAction(hierarchyMode);
+    view->addAction(flatMode);
 
     QObject::connect(hierarchyMode, &QAction::triggered, [&] {
         if (auto* currentFileBrowser = dynamic_cast<FileBrowserWidget*>(tabWidget.currentWidget())) {
