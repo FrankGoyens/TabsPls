@@ -56,5 +56,6 @@ template <typename Model> void FileBrowserViewModelSwitcher::RequestModel() {
             model, &QAbstractTableModel::rowsInserted,
             [this](const QModelIndex& parent, int first, int last) { emit rowsInserted(parent, first, last); });
         delete currentModel;
+        emit modelReset();
     }
 }
