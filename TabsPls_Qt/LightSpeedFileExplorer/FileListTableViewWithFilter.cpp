@@ -73,13 +73,17 @@ FileListTableViewWithFilter::FileListTableViewWithFilter(std::shared_ptr<Current
 
     setLayout(vbox);
 
-    connect(m_filterField, &QLineEdit::textChanged, CreateFilterUpdatedClosure(*m_fileListTableView));
+    const auto applyFilterClosure = CreateFilterUpdatedClosure(*m_fileListTableView);
+
+    connect(m_filterField, &QLineEdit::textChanged, applyFilterClosure);
     connect(m_filterField, &QLineEdit::textChanged, [this](const auto& filter) {
         if (filter == "") {
             m_filterField->hide();
             m_fileListTableView->setFocus();
         }
     });
+    connect(m_viewModelSwitcher.get(), &FileBrowserViewModelProvider::rowsInserted,
+            [=] { applyFilterClosure(m_filterField->text()); });
 
     const auto shiftFocusToTableView = [this]() { m_fileListTableView->setFocus(); };
     connect(filterField, &QLineEdit::returnPressed, [=]() {
