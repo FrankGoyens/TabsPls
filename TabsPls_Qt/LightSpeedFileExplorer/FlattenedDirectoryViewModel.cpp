@@ -150,7 +150,10 @@ void FlattenedDirectoryViewModel::ReceiveModelEntries(
         m_dispatch.get() != usedDispatcher /*residual threads from an old dispatcher could still signal results*/)
         return;
 
-    beginInsertRows(QModelIndex{}, rowCount(), rowCount() + modelEntries.size() - 1);
-    m_modelEntries.insert(modelEntries.begin(), modelEntries.end());
+    const auto insertionIt = m_modelEntries.insert(*modelEntries.begin());
+    const auto insertIndex = std::distance(m_modelEntries.begin(), insertionIt.first);
+
+    beginInsertRows(QModelIndex{}, insertIndex, insertIndex + modelEntries.size() - 1);
+    m_modelEntries.insert(++modelEntries.begin(), modelEntries.end());
     endInsertRows();
 }
