@@ -16,7 +16,6 @@ std::vector<FileEntryModel::FileEntry> FilesAsModelEntries(const std::vector<Fil
     return filesWithSizes;
 }
 
-ModelEntry AsModelEntry(const FileEntry& fileEntry) { return ModelEntry(); }
 std::vector<FileSystem::FilePath> FilePathsFromEntries(const std::vector<FileEntryModel::FileEntry>& entries) {
     std::vector<FileSystem::FilePath> paths;
     std::transform(entries.begin(), entries.end(), std::back_inserter(paths),

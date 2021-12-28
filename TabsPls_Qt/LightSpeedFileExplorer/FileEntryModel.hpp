@@ -26,8 +26,6 @@ bool ModelEntryDisplayNameSortingPredicate(const ModelEntry&, const ModelEntry&)
 
 std::vector<FileEntry> FilesAsModelEntries(const std::vector<FileSystem::FilePath>& files);
 
-ModelEntry AsModelEntry(const FileEntry& fileEntry);
-
 std::vector<FileSystem::FilePath> FilePathsFromEntries(const std::vector<FileEntryModel::FileEntry>& entries);
 
 QString FormatSize(std::uintmax_t bytes);
