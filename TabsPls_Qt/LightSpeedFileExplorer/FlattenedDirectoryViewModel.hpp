@@ -7,7 +7,6 @@
 
 #include <QAbstractTableModel>
 #include <QIcon>
-#include <QVector>
 
 #include "DirectoryChanger.hpp"
 #include "FileEntryModel.hpp"
