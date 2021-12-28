@@ -56,19 +56,44 @@ static auto DoFuncWithModelRefreshWhenExceptionIsThrown(Func f,
     }
 }
 
+static DirectoryChanger* GetDirectoryChanger(const FileListTableViewWithFilter& fileListViewWithFilter) {
+    if (const auto modelProvider = fileListViewWithFilter.GetModelProvider().lock()) {
+        if (auto* directoryChanger = modelProvider->GetDirectoryChangerForActiveModel()) {
+            return directoryChanger;
+        }
+    }
+    return nullptr;
+}
+
+static DirectoryChanger* GetDirectoryChanger(std::weak_ptr<const FileBrowserViewModelProvider> modelProviderPtr) {
+    if (const auto liveModelProvider = modelProviderPtr.lock()) {
+        if (auto* directoryChanger = liveModelProvider->GetDirectoryChangerForActiveModel()) {
+            return directoryChanger;
+        }
+    }
+    return nullptr;
+}
+
+static QAbstractTableModel* GetModel(std::weak_ptr<const FileBrowserViewModelProvider> modelProviderPtr) {
+    if (const auto liveModelProvider = modelProviderPtr.lock()) {
+        if (auto* liveModel = liveModelProvider->GetActiveModel()) {
+            return liveModel;
+        }
+    }
+    return nullptr;
+}
+
 static void ChangeDirectoryWithoutHistoryUpdate(const FileSystem::Directory& newDir,
                                                 FileListTableViewWithFilter& fileListViewWithFilter,
                                                 QLineEdit& directoryInputField, CurrentDirSetter currentDirSetter) {
-    if (const auto modelProvider = fileListViewWithFilter.GetModelProvider().lock()) {
-        if (auto* directoryChanger = modelProvider->GetDirectoryChangerForActiveModel()) {
-            const auto newDirString = FromRawPath(newDir.path());
-            directoryChanger->ChangeDirectory(newDirString);
-            if (const auto error = directoryChanger->ClaimError())
-                throw DirectoryChangeException(error->c_str());
-            directoryInputField.setText(newDirString);
-            fileListViewWithFilter.ClearFilter();
-            currentDirSetter(newDir);
-        }
+    if (auto* directoryChanger = GetDirectoryChanger(fileListViewWithFilter)) {
+        const auto newDirString = FromRawPath(newDir.path());
+        directoryChanger->ChangeDirectory(newDirString);
+        if (const auto error = directoryChanger->ClaimError())
+            throw DirectoryChangeException(error->c_str());
+        directoryInputField.setText(newDirString);
+        fileListViewWithFilter.ClearFilter();
+        currentDirSetter(newDir);
     }
 }
 
@@ -257,18 +282,16 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
         m_historyStore, *m_fileListTableView, *topBarDirectoryInputField, setCurrentDirectoryMemberCall);
 
     connect(&m_fileListTableView->GetFileListTableView(), &QTableView::activated, [=](const QModelIndex& index) {
-        if (const auto liveModelProvider = fileListViewModelProvider.lock()) {
-            if (auto* liveModel = liveModelProvider->GetActiveModel()) {
-                const auto itemString =
-                    liveModel->data(index, m_fileListTableView->GetFileListTableView().GetModelRoleForFullPaths());
+        if (auto* liveModel = GetModel(fileListViewModelProvider)) {
+            const auto itemString =
+                liveModel->data(index, m_fileListTableView->GetFileListTableView().GetModelRoleForFullPaths());
 
-                if (itemString == "..")
-                    DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedByGoingToParentClosure(); });
-                else if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(itemString.toString())))
-                    DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedClosure(*dir); });
-                else if (FileSystem::IsRegularFile(ToRawPath(itemString.toString())))
-                    QDesktopServices::openUrl(QUrl::fromLocalFile(itemString.toString()));
-            }
+            if (itemString == "..")
+                DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedByGoingToParentClosure(); });
+            else if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(itemString.toString())))
+                DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedClosure(*dir); });
+            else if (FileSystem::IsRegularFile(ToRawPath(itemString.toString())))
+                QDesktopServices::openUrl(QUrl::fromLocalFile(itemString.toString()));
         }
     });
 
@@ -290,10 +313,8 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
         if (ok) {
             try {
                 FileSystem::Op::CreateDirectory(m_currentDirectory, ToRawPath(nameForNewDir));
-                if (const auto liveModelProvider = fileListViewModelProvider.lock()) {
-                    if (auto* directoryChanger = liveModelProvider->GetDirectoryChangerForActiveModel()) {
-                        directoryChanger->RefreshDirectory(FromRawPath(m_currentDirectory.path()));
-                    }
+                if (auto* directoryChanger = GetDirectoryChanger(fileListViewModelProvider)) {
+                    directoryChanger->RefreshDirectory(FromRawPath(m_currentDirectory.path()));
                 }
             } catch (const FileSystem::Op::CreateDirectoryException& e) {
                 QMessageBox::warning(this, tr("Create new folder failed"), e.what());
@@ -302,10 +323,8 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
     });
 
     connect(&m_fs_watcher, &QFileSystemWatcher::directoryChanged, [=](const QString&) {
-        if (const auto liveModelProvider = fileListViewModelProvider.lock()) {
-            if (auto* directoryChanger = liveModelProvider->GetDirectoryChangerForActiveModel()) {
-                directoryChanger->RefreshDirectory(FromRawPath(m_currentDirectory.path()));
-            }
+        if (auto* directoryChanger = GetDirectoryChanger(fileListViewModelProvider)) {
+            directoryChanger->RefreshDirectory(FromRawPath(m_currentDirectory.path()));
         }
     });
 
