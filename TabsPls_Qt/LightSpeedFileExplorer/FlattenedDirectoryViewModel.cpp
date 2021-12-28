@@ -111,7 +111,6 @@ QVariant FlattenedDirectoryViewModel::data(const QModelIndex& index, int role) c
 
             return entryIt->icon;
         }
-    default:
         break;
     }
 
