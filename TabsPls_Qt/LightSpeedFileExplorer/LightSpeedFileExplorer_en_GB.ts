@@ -4,28 +4,28 @@
 <context>
     <name>FileBrowserWidget</name>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="288"/>
-        <location filename="FileBrowserWidget.cpp" line="289"/>
+        <location filename="FileBrowserWidget.cpp" line="311"/>
+        <location filename="FileBrowserWidget.cpp" line="312"/>
         <source>New Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="288"/>
+        <location filename="FileBrowserWidget.cpp" line="311"/>
         <source>New folder name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="299"/>
+        <location filename="FileBrowserWidget.cpp" line="320"/>
         <source>Create new folder failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="347"/>
+        <location filename="FileBrowserWidget.cpp" line="366"/>
         <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="352"/>
+        <location filename="FileBrowserWidget.cpp" line="371"/>
         <source>Unable to change directory</source>
         <translation type="unfinished"></translation>
     </message>
