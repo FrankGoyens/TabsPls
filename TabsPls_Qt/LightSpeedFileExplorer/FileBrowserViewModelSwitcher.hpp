@@ -7,6 +7,7 @@
 class QTableView;
 class QWidget;
 class CurrentDirectoryFileOp;
+class QAbstractItemModel;
 
 class FileBrowserViewModelSwitcher : public FileBrowserViewModelProvider {
 
@@ -26,7 +27,7 @@ class FileBrowserViewModelSwitcher : public FileBrowserViewModelProvider {
 
   private:
     bool SwitchingIsPossible() const;
-
+    void ConnectModelRedirectionSignals(QAbstractItemModel*);
     template <typename Model> void RequestModel();
 
     bool m_tableDeleted = false;

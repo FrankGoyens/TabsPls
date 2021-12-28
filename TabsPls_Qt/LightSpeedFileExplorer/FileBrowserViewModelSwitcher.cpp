@@ -1,5 +1,6 @@
 #include "FileBrowserViewModelSwitcher.hpp"
 
+#include <QAbstractItemModel>
 #include <QTableView>
 #include <QWidget>
 
@@ -18,10 +19,7 @@ FileBrowserViewModelSwitcher::FileBrowserViewModelSwitcher(
     QObject::connect(&tableView, &QObject::destroyed, [this] { m_tableDeleted = true; });
 
     if (auto* model = GetActiveModel()) {
-        QObject::connect(model, &QAbstractTableModel::modelReset, [this] { emit modelReset(); });
-        QObject::connect(
-            model, &QAbstractTableModel::rowsInserted,
-            [this](const QModelIndex& parent, int first, int last) { emit rowsInserted(parent, first, last); });
+        ConnectModelRedirectionSignals(model);
     }
 }
 
@@ -44,6 +42,13 @@ bool FileBrowserViewModelSwitcher::SwitchingIsPossible() const {
            dynamic_cast<QWidget*>(m_tableView.model()->parent()) != nullptr;
 }
 
+void FileBrowserViewModelSwitcher::ConnectModelRedirectionSignals(QAbstractItemModel* model) {
+    QObject::connect(model, &QAbstractTableModel::modelReset, [this] { emit modelReset(); });
+    QObject::connect(model, &QAbstractTableModel::rowsInserted, [this](const QModelIndex& parent, int first, int last) {
+        emit rowsInserted(parent, first, last);
+    });
+}
+
 template <typename Model> void FileBrowserViewModelSwitcher::RequestModel() {
     if (SwitchingIsPossible()) {
         auto* currentModel = m_tableView.model();
@@ -51,10 +56,7 @@ template <typename Model> void FileBrowserViewModelSwitcher::RequestModel() {
         auto* model = new Model(currentModelParent, *currentModelParent->style(),
                                 FromRawPath(m_currentDirectoryProvider.lock()->GetCurrentDir().path()));
         m_tableView.setModel(model);
-        QObject::connect(model, &QAbstractTableModel::modelReset, [this] { emit modelReset(); });
-        QObject::connect(
-            model, &QAbstractTableModel::rowsInserted,
-            [this](const QModelIndex& parent, int first, int last) { emit rowsInserted(parent, first, last); });
+        ConnectModelRedirectionSignals(model);
         delete currentModel;
         emit modelReset();
     }
