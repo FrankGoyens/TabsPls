@@ -214,7 +214,9 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::shared_ptr<Curre
                      [fileListViewWidget] { fileListViewWidget->GetFileListTableView().resizeColumnsToContents(); });
     QObject::connect(fileListViewWidget->GetModelProvider().lock().get(), &FileBrowserViewModelProvider::rowsInserted,
                      [fileListViewWidget](const QModelIndex&, int first, int) {
-                         if (first < 3) // Resize for the first couple batches of inserted rows
+                         if (first < 1)
+                             // Resize for the first batch of inserted rows,
+                             // because resizing the columns is expensive, and the view starts at the top
                              fileListViewWidget->GetFileListTableView().resizeColumnsToContents();
                      });
 
