@@ -10,20 +10,24 @@
 #include "FilterHookedFileListTableView.hpp"
 #include "FilterHookedLineEdit.hpp"
 
+static bool PassesFilter(const QString& filter, const QString& name) {
+    return name.contains(filter, Qt::CaseInsensitive);
+}
+
 static void ShowRowsThatMatchFilter(FileListTableView& tableView, const QAbstractItemModel& model,
                                     const QString& filter) {
     for (int i = 0; i < model.rowCount(); ++i) {
         const auto index = model.index(i, 0);
         const auto name = model.data(index, FileListTableView::GetModelRoleForNames()).toString();
 
-        if (name.contains(filter, Qt::CaseInsensitive))
+        if (PassesFilter(filter, name))
             tableView.showRow(i);
         else
             tableView.hideRow(i);
     }
 }
 
-static void HideAllRows(FileListTableView& tableView, int rows) {
+static void ShowAllRows(FileListTableView& tableView, int rows) {
     for (int i = 0; i < rows; ++i)
         tableView.showRow(i);
 }
@@ -36,12 +40,25 @@ static auto CreateFilterUpdatedClosure(FileListTableView& tableView) {
         auto& model = *tableView.model();
 
         if (filter == "") {
-            HideAllRows(tableView, model.rowCount());
+            ShowAllRows(tableView, model.rowCount());
             return;
         }
 
         ShowRowsThatMatchFilter(tableView, model, filter);
     };
+}
+
+static void HideRowRangeUsingFilter(FileListTableView& tableView, const QModelIndex& parentIndex, int first, int last,
+                                    const QString& filter) {
+    if (tableView.model() == nullptr || filter.isEmpty())
+        return;
+
+    for (int row = first; row <= last; ++row) {
+        const auto currentIndex = tableView.model()->index(row, 0, parentIndex);
+        const auto name = tableView.model()->data(currentIndex, FileListTableView::GetModelRoleForNames()).toString();
+        if (!PassesFilter(filter, name))
+            tableView.hideRow(row);
+    }
 }
 
 FileListTableViewWithFilter::FileListTableViewWithFilter(std::shared_ptr<CurrentDirectoryFileOp> currentDirFileOp,
@@ -73,9 +90,9 @@ FileListTableViewWithFilter::FileListTableViewWithFilter(std::shared_ptr<Current
 
     setLayout(vbox);
 
-    const auto applyFilterClosure = CreateFilterUpdatedClosure(*m_fileListTableView);
+    const auto applyNewFilterClosure = CreateFilterUpdatedClosure(*m_fileListTableView);
 
-    connect(m_filterField, &QLineEdit::textChanged, applyFilterClosure);
+    connect(m_filterField, &QLineEdit::textChanged, applyNewFilterClosure);
     connect(m_filterField, &QLineEdit::textChanged, [this](const auto& filter) {
         if (filter == "") {
             m_filterField->hide();
@@ -83,7 +100,9 @@ FileListTableViewWithFilter::FileListTableViewWithFilter(std::shared_ptr<Current
         }
     });
     connect(m_viewModelSwitcher.get(), &FileBrowserViewModelProvider::rowsInserted,
-            [=] { applyFilterClosure(m_filterField->text()); });
+            [=](const auto& qModelIndex, int first, int last) {
+                HideRowRangeUsingFilter(*m_fileListTableView, qModelIndex, first, last, m_filterField->text());
+            });
 
     const auto shiftFocusToTableView = [this]() { m_fileListTableView->setFocus(); };
     connect(filterField, &QLineEdit::returnPressed, [=]() {
