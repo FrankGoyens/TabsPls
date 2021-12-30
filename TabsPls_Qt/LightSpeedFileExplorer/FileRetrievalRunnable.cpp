@@ -8,7 +8,7 @@ void FileRetrievalRunnable::run() {
             FileRetrievalByDispatch::RetrieveFiles(m_dir, *m_dispatcher), m_basePath.get(), m_fileIcon.get());
 
         const FileRetrievalRunnableContainer::NameSortedModelSet sortedModelEntries(
-            modelEntries.begin(), modelEntries.end(), &FileEntryModel::ModelEntryDisplayNameSortingPredicate);
+            modelEntries, &FileEntryModel::ModelEntryDisplayNameSortingPredicate);
 
         emit resultReady(sortedModelEntries, m_dispatcher.get());
     } catch (const std::exception&) {

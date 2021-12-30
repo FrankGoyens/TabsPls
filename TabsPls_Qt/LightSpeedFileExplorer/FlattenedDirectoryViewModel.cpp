@@ -46,7 +46,7 @@ struct DirectoryReadDispatcherImpl : FileRetrievalByDispatch::DirectoryReadDispa
 
 FlattenedDirectoryViewModel::FlattenedDirectoryViewModel(QObject* parent, QStyle& styleProvider,
                                                          const QString& initialDirectory)
-    : QAbstractTableModel(parent), m_modelEntries(&FileEntryModel::ModelEntryDisplayNameSortingPredicate),
+    : QAbstractTableModel(parent), m_modelEntries({}, &FileEntryModel::ModelEntryDisplayNameSortingPredicate),
       m_styleProvider(styleProvider), m_defaultFileIcon(m_styleProvider.standardIcon(QStyle::SP_FileIcon)) {
 
     qRegisterMetaType<FileEntryModel::ModelEntry>();
@@ -58,7 +58,9 @@ FlattenedDirectoryViewModel::FlattenedDirectoryViewModel(QObject* parent, QStyle
     }
 }
 
-int FlattenedDirectoryViewModel::rowCount(const QModelIndex&) const { return static_cast<int>(m_modelEntries.size()); }
+int FlattenedDirectoryViewModel::rowCount(const QModelIndex&) const {
+    return static_cast<int>(m_modelEntries.get().size());
+}
 
 QVariant FlattenedDirectoryViewModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (static_cast<unsigned>(section) >= tableHeaders.size())
@@ -74,42 +76,40 @@ QVariant FlattenedDirectoryViewModel::headerData(int section, Qt::Orientation or
     return {};
 }
 
-static std::optional<QString>
-GetDisplayDataForColumn(const FileRetrievalRunnableContainer::NameSortedModelSet::const_iterator& entryIt, int column) {
+static std::optional<QString> GetDisplayDataForColumn(const FileEntryModel::ModelEntry& entry, int column) {
     switch (column) {
     case 0:
-        return entryIt->displayName;
+        return entry.displayName;
     case 1:
-        return entryIt->displaySize;
+        return entry.displaySize;
     case 2:
-        return entryIt->displayDateModified;
+        return entry.displayDateModified;
     }
     return {};
 }
 
 QVariant FlattenedDirectoryViewModel::data(const QModelIndex& index, int role) const {
-    if (index.row() >= m_modelEntries.size())
+    if (index.row() >= m_modelEntries.get().size())
         return {};
 
-    auto entryIt = m_modelEntries.begin();
-    std::advance(entryIt, index.row());
+    const auto& entry = m_modelEntries.get()[index.row()];
 
     switch (role) {
     case Qt::EditRole:
     case Qt::DisplayRole:
-        if (const auto& displayString = GetDisplayDataForColumn(entryIt, index.column())) {
+        if (const auto& displayString = GetDisplayDataForColumn(entry, index.column())) {
             return *displayString;
         }
         return "";
     case Qt::UserRole:
-        return entryIt->fullPath;
+        return entry.fullPath;
     case Qt::DecorationRole:
         if (index.column() == 0) {
-            if (AssociatedIconProvider::ComponentIsAvailable() && entryIt->icon.name() == m_defaultFileIcon.name()) {
-                StartIconRetrieval(entryIt->fullPath, entryIt->displayName);
+            if (AssociatedIconProvider::ComponentIsAvailable() && entry.icon.name() == m_defaultFileIcon.name()) {
+                StartIconRetrieval(entry.fullPath, entry.displayName);
             }
 
-            return entryIt->icon;
+            return entry.icon;
         }
         break;
     }
@@ -158,15 +158,15 @@ void FlattenedDirectoryViewModel::ResetDispatcher(const FileSystem::Directory& n
 void FlattenedDirectoryViewModel::ReceiveModelEntries(
     FileRetrievalRunnableContainer::NameSortedModelSet modelEntries,
     const FileRetrievalByDispatch::DirectoryReadDispatcher* usedDispatcher) {
-    if (modelEntries.empty() ||
+    if (modelEntries.get().empty() ||
         m_dispatch.get() != usedDispatcher /*residual threads from an old dispatcher could still signal results*/)
         return;
 
-    const auto insertionIt = m_modelEntries.insert(*modelEntries.begin());
-    const auto insertIndex = std::distance(m_modelEntries.begin(), insertionIt.first);
+    const auto newEntryAmount = modelEntries.get().size();
+    const auto insertIndex = m_modelEntries.lower_bound(modelEntries.get().front()) - m_modelEntries.get().begin();
 
-    beginInsertRows(QModelIndex{}, insertIndex, insertIndex + modelEntries.size() - 1);
-    m_modelEntries.insert(++modelEntries.begin(), modelEntries.end());
+    beginInsertRows(QModelIndex{}, insertIndex, insertIndex + newEntryAmount - 1);
+    m_modelEntries.insert(modelEntries);
     endInsertRows();
 }
 
@@ -178,7 +178,7 @@ void FlattenedDirectoryViewModel::RefreshIcon(QIcon icon, const QString&, QVaria
 
     const FileEntryModel::ModelEntry dummyEntry{displayName, "", "", "", QIcon{}};
     auto actualEntryIt = m_modelEntries.find(dummyEntry);
-    if (actualEntryIt != m_modelEntries.end()) {
+    if (actualEntryIt != m_modelEntries.get().end()) {
 
         // the container is sorted by the display name (which wuold be checked by the static_assert),
         // modifying the icon is safe to do
@@ -187,7 +187,7 @@ void FlattenedDirectoryViewModel::RefreshIcon(QIcon icon, const QString&, QVaria
         auto& mutableModelEntry = const_cast<FileEntryModel::ModelEntry&>(*actualEntryIt);
 
         mutableModelEntry.icon = icon;
-        const auto modelIndex = createIndex(std::distance(m_modelEntries.begin(), actualEntryIt), 0);
+        const auto modelIndex = createIndex(actualEntryIt - m_modelEntries.get().begin(), 0);
         emit dataChanged(modelIndex, modelIndex, {Qt::DecorationRole});
     }
 }

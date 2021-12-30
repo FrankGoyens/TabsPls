@@ -5,6 +5,12 @@
 
 template <typename T, typename Comp> class SortedVector {
   public:
+    using key_compare = Comp;
+
+    using container_impl = std::vector<T>;
+
+    SortedVector() = default;
+
     SortedVector(std::vector<T> initialItems, Comp comp) : m_comp(std::move(comp)) {
         std::sort(initialItems.begin(), initialItems.end(), m_comp);
         m_items = std::move(initialItems);
@@ -40,6 +46,8 @@ template <typename T, typename Comp> class SortedVector {
     }
 
     auto lower_bound(const T& item) const { return std::lower_bound(m_items.begin(), m_items.end(), item, m_comp); }
+
+    void clear() { m_items.clear(); }
 
     const std::vector<T>& get() const { return m_items; }
 
