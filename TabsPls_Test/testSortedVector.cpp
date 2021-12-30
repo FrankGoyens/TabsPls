@@ -48,6 +48,16 @@ TEST(testSortedVector, insert) {
     EXPECT_EQ(expectedVector, givenSortedVector.get());
 }
 
+TEST(testSortedVector, insert_one) {
+    SortedVector<int, std::less<int>> givenSortedVector({1, 5, 6, 7, 9}, std::less<int>{});
+    const SortedVector<int, std::less<int>> givenOtherSortedVector({2}, std::less<int>{});
+
+    givenSortedVector.insert(givenOtherSortedVector);
+
+    const std::vector<int> expectedVector{1, 2, 5, 6, 7, 9};
+    EXPECT_EQ(expectedVector, givenSortedVector.get());
+}
+
 TEST(testSortedVector, insert_into_empty) {
     SortedVector<int, std::less<int>> givenSortedVector({}, std::less<int>{});
     const SortedVector<int, std::less<int>> givenOtherSortedVector({2, 3, 4, 8}, std::less<int>{});
