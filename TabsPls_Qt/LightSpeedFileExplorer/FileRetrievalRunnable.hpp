@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <set>
 
 #include <QMetaType>
 #include <QObject>
@@ -9,13 +8,14 @@
 #include <QVector>
 
 #include <TabsPlsCore/FileSystemDirectory.hpp>
+#include <TabsPlsCore/SortedVector.hpp>
 
 #include "FileEntryModel.hpp"
 #include "FileRetrievalByDispatch.hpp"
 
 namespace FileRetrievalRunnableContainer {
 using NameSortedModelSet =
-    std::set<FileEntryModel::ModelEntry, decltype(&FileEntryModel::ModelEntryDisplayNameSortingPredicate)>;
+    SortedVector<FileEntryModel::ModelEntry, decltype(&FileEntryModel::ModelEntryDisplayNameSortingPredicate)>;
 }
 
 class FileRetrievalRunnable : public QObject, public QRunnable {
