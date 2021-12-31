@@ -22,7 +22,7 @@ struct FileEntry {
     std::uintmax_t size;
 };
 
-bool ModelEntryDisplayNameSortingPredicate(const ModelEntry&, const ModelEntry&);
+bool ModelEntryDepthSortingPredicate(const ModelEntry&, const ModelEntry&);
 
 std::vector<FileEntry> FilesAsModelEntries(const std::vector<FileSystem::FilePath>& files);
 

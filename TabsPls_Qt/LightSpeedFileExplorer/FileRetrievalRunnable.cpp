@@ -5,10 +5,10 @@
 void FileRetrievalRunnable::run() {
     try {
         const auto modelEntries = FileRetrievalByDispatch::AsModelEntries(
-            FileRetrievalByDispatch::RetrieveFiles(m_dir, *m_dispatcher), m_basePath.get(), m_fileIcon.get());
+            FileRetrievalByDispatch::RetrieveFiles(m_dir, *m_dispatcher), m_basePath.get(), m_fileIcon);
 
         const FileRetrievalRunnableContainer::NameSortedModelSet sortedModelEntries(
-            modelEntries, &FileEntryModel::ModelEntryDisplayNameSortingPredicate);
+            modelEntries, &FileEntryModel::ModelEntryDepthSortingPredicate);
 
         emit resultReady(sortedModelEntries, m_dispatcher.get());
     } catch (const std::exception&) {
