@@ -2,10 +2,21 @@
 
 #include <TabsPlsCore/FileSystemAlgorithm.hpp>
 
+#include "FileSystemDefsConversion.hpp"
+
 namespace FileEntryModel {
 
-bool ModelEntryDisplayNameSortingPredicate(const ModelEntry& first, const ModelEntry& second) {
+static bool ModelEntryDisplayNameSortingPredicate(const ModelEntry& first, const ModelEntry& second) {
     return first.displayName < second.displayName;
+}
+
+bool ModelEntryDepthSortingPredicate(const ModelEntry& first, const ModelEntry& second) {
+    static auto separatorAsQString = FileSystem::StringConversion::FromRawPath(FileSystem::Separator());
+    const auto firstDepth = first.displayName.count(separatorAsQString);
+    const auto secondDepth = second.displayName.count(separatorAsQString);
+    if (firstDepth == secondDepth)
+        return ModelEntryDisplayNameSortingPredicate(first, second);
+    return firstDepth < secondDepth;
 }
 
 std::vector<FileEntryModel::FileEntry> FilesAsModelEntries(const std::vector<FileSystem::FilePath>& files) {

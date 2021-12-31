@@ -25,20 +25,23 @@ const std::vector<QString> tableHeaders = {QObject::tr("Name"), QObject::tr("Siz
 namespace {
 
 struct DirectoryReadDispatcherImpl : FileRetrievalByDispatch::DirectoryReadDispatcher {
-    using CreateRunnable = std::function<QRunnable*(const FileSystem::Directory&, const FileSystem::RawPath&)>;
+    using CreateRunnable =
+        std::function<QRunnable*(const FileSystem::Directory&, const FileSystem::RawPath&, const QIcon&)>;
 
-    DirectoryReadDispatcherImpl(FileSystem::RawPath basePath, CreateRunnable createRunnable)
-        : basePath(std::move(basePath)), createRunnable(std::move(createRunnable)) {}
+    DirectoryReadDispatcherImpl(FileSystem::RawPath basePath, QIcon defaultIcon, CreateRunnable createRunnable)
+        : basePath(std::move(basePath)), defaultIcon(std::move(defaultIcon)),
+          createRunnable(std::move(createRunnable)) {}
 
     void DirectoryReadDispatch(const FileSystem::Directory& dir) const override {
         if (cancelled)
             return;
-        auto* runnable = createRunnable(dir, basePath);
+        auto* runnable = createRunnable(dir, basePath, defaultIcon);
         QThreadPool::globalInstance()->start(runnable);
     }
 
     bool cancelled = false;
     const FileSystem::RawPath basePath;
+    QIcon defaultIcon;
     CreateRunnable createRunnable;
 };
 
@@ -46,7 +49,7 @@ struct DirectoryReadDispatcherImpl : FileRetrievalByDispatch::DirectoryReadDispa
 
 FlattenedDirectoryViewModel::FlattenedDirectoryViewModel(QObject* parent, QStyle& styleProvider,
                                                          const QString& initialDirectory)
-    : QAbstractTableModel(parent), m_modelEntries({}, &FileEntryModel::ModelEntryDisplayNameSortingPredicate),
+    : QAbstractTableModel(parent), m_modelEntries({}, &FileEntryModel::ModelEntryDepthSortingPredicate),
       m_styleProvider(styleProvider), m_defaultFileIcon(m_styleProvider.standardIcon(QStyle::SP_FileIcon)) {
 
     qRegisterMetaType<FileEntryModel::ModelEntry>();
@@ -55,6 +58,12 @@ FlattenedDirectoryViewModel::FlattenedDirectoryViewModel(QObject* parent, QStyle
     if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory))) {
         ResetDispatcher(*dir);
         StartFileRetrieval(*dir);
+    }
+}
+
+FlattenedDirectoryViewModel::~FlattenedDirectoryViewModel() {
+    if (const auto liveDispatch = std::dynamic_pointer_cast<DirectoryReadDispatcherImpl>(m_dispatch)) {
+        liveDispatch->cancelled = true;
     }
 }
 
@@ -147,12 +156,13 @@ void FlattenedDirectoryViewModel::ResetDispatcher(const FileSystem::Directory& n
     if (auto* dispatchImpl = dynamic_cast<DirectoryReadDispatcherImpl*>(m_dispatch.get()))
         dispatchImpl->cancelled = true;
 
-    m_dispatch = std::make_shared<DirectoryReadDispatcherImpl>(newDirectory.path(), [this](const auto& dir,
-                                                                                           const auto& basePath) {
-        auto* runnable = new FileRetrievalRunnable(dir, basePath, m_defaultFileIcon, m_dispatch);
-        connect(runnable, &FileRetrievalRunnable::resultReady, this, &FlattenedDirectoryViewModel::ReceiveModelEntries);
-        return runnable;
-    });
+    m_dispatch = std::make_shared<DirectoryReadDispatcherImpl>(
+        newDirectory.path(), m_defaultFileIcon, [this](const auto& dir, const auto& basePath, const auto& defaultIcon) {
+            auto* runnable = new FileRetrievalRunnable(dir, basePath, defaultIcon, m_dispatch);
+            connect(runnable, &FileRetrievalRunnable::resultReady, this,
+                    &FlattenedDirectoryViewModel::ReceiveModelEntries);
+            return runnable;
+        });
 }
 
 void FlattenedDirectoryViewModel::ReceiveModelEntries(
@@ -166,7 +176,7 @@ void FlattenedDirectoryViewModel::ReceiveModelEntries(
     const auto insertIndex = m_modelEntries.lower_bound(modelEntries.get().front()) - m_modelEntries.get().begin();
 
     beginInsertRows(QModelIndex{}, insertIndex, insertIndex + newEntryAmount - 1);
-    m_modelEntries.insert(modelEntries);
+    m_modelEntries._contiguous_insert(std::move(modelEntries));
     endInsertRows();
 }
 
@@ -183,7 +193,7 @@ void FlattenedDirectoryViewModel::RefreshIcon(QIcon icon, const QString&, QVaria
         // the container is sorted by the display name (which wuold be checked by the static_assert),
         // modifying the icon is safe to do
         static_assert(std::is_same<FileRetrievalRunnableContainer::NameSortedModelSet::key_compare,
-                                   decltype(&FileEntryModel::ModelEntryDisplayNameSortingPredicate)>::value);
+                                   decltype(&FileEntryModel::ModelEntryDepthSortingPredicate)>::value);
         auto& mutableModelEntry = const_cast<FileEntryModel::ModelEntry&>(*actualEntryIt);
 
         mutableModelEntry.icon = icon;

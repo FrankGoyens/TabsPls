@@ -34,6 +34,23 @@ template <typename T, typename Comp> class SortedVector {
         }
     }
 
+    /*! \brief The data will be inserted contiguously, potentially making the underlying data unsorted
+     *
+     * This may be used when the data to be inserted, due to its characteristics, will end up in one uninterrupted
+     * sequence. It highly depends on the situation whether this can be used.
+     *
+     * An assertion is made (so only in debug mode) that the data ends op contiguously in the main container.
+     */
+    void _contiguous_insert(SortedVector other) {
+        if (other.get().empty())
+            return;
+
+        const auto insertionIt = lower_bound(other.get().front());
+        assert(insertionIt == std::upper_bound(m_items.begin(), m_items.end(), other.get().back(), m_comp) ||
+               m_items.empty() || insertionIt == m_items.end());
+        m_items.insert(insertionIt, other.get().begin(), other.get().end());
+    }
+
     static bool items_equal(const T& first, const T& second, const Comp& comp) {
         return !comp(first, second) && !comp(second, first);
     }

@@ -23,7 +23,7 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
 
   public:
     FlattenedDirectoryViewModel(QObject* parent, QStyle& styleProvider, const QString& initialDirectory);
-    ~FlattenedDirectoryViewModel() = default;
+    ~FlattenedDirectoryViewModel();
 
     /*Qt table model implementation*/
 
