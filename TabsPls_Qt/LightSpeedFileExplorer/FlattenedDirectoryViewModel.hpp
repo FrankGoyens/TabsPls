@@ -13,6 +13,7 @@
 #include "FileRetrievalRunnable.hpp"
 
 class QStyle;
+struct FileRetrievalRunnableProvider;
 
 namespace FileRetrievalByDispatch {
 struct DirectoryReadDispatcher;
@@ -50,6 +51,7 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
     QStyle& m_styleProvider;
     QIcon m_defaultFileIcon;
     std::shared_ptr<FileRetrievalByDispatch::DirectoryReadDispatcher> m_dispatch;
+    std::shared_ptr<FileRetrievalRunnableProvider> m_runnableProvider;
 
     void StartFileRetrieval(const FileSystem::Directory&);
     void StartIconRetrieval(const QString& fullPath, const QString& displayName) const;
