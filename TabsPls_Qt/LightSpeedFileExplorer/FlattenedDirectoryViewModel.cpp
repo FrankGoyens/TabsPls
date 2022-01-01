@@ -41,16 +41,16 @@ template <typename CreateFunction> struct FileRetrievalRunnableProviderImpl : Fi
 struct DirectoryReadDispatcherImpl : FileRetrievalByDispatch::DirectoryReadDispatcher {
 
     DirectoryReadDispatcherImpl(FileSystem::RawPath basePath, QIcon defaultIcon,
-                                std::weak_ptr<FileRetrievalRunnableProvider> runnableProvider)
+                                std::weak_ptr<FileRetrievalRunnableProvider> runnableProvider, QThreadPool& threadPool)
         : basePath(std::move(basePath)), defaultIcon(std::move(defaultIcon)),
-          runnableProvider(std::move(runnableProvider)) {}
+          runnableProvider(std::move(runnableProvider)), threadPool(threadPool) {}
 
     void DirectoryReadDispatch(const FileSystem::Directory& dir) const override {
         if (cancelled)
             return;
         if (const auto liveRunnableProvider = runnableProvider.lock()) {
             auto* runnable = liveRunnableProvider->CreateRunnable(dir, basePath, defaultIcon);
-            QThreadPool::globalInstance()->start(runnable);
+            threadPool.start(runnable);
         }
     }
 
@@ -58,6 +58,7 @@ struct DirectoryReadDispatcherImpl : FileRetrievalByDispatch::DirectoryReadDispa
     const FileSystem::RawPath basePath;
     QIcon defaultIcon;
     std::weak_ptr<FileRetrievalRunnableProvider> runnableProvider;
+    QThreadPool& threadPool;
 };
 
 } // namespace
@@ -89,6 +90,8 @@ FlattenedDirectoryViewModel::~FlattenedDirectoryViewModel() {
     if (const auto liveDispatch = std::dynamic_pointer_cast<DirectoryReadDispatcherImpl>(m_dispatch)) {
         liveDispatch->cancelled = true;
     }
+
+    m_threadPool.clear();
 }
 
 int FlattenedDirectoryViewModel::rowCount(const QModelIndex&) const {
@@ -173,15 +176,15 @@ void FlattenedDirectoryViewModel::StartFileRetrieval(const FileSystem::Directory
 void FlattenedDirectoryViewModel::StartIconRetrieval(const QString& fullPath, const QString& displayName) const {
     auto* runnable = new IconRetrievalRunnable(ToRawPath(fullPath), displayName);
     connect(runnable, &IconRetrievalRunnable::resultReady, this, &FlattenedDirectoryViewModel::RefreshIcon);
-    QThreadPool::globalInstance()->start(runnable);
+    m_threadPool.start(runnable);
 }
 
 void FlattenedDirectoryViewModel::ResetDispatcher(const FileSystem::Directory& newDirectory) {
     if (auto* dispatchImpl = dynamic_cast<DirectoryReadDispatcherImpl*>(m_dispatch.get()))
         dispatchImpl->cancelled = true;
 
-    m_dispatch =
-        std::make_shared<DirectoryReadDispatcherImpl>(newDirectory.path(), m_defaultFileIcon, m_runnableProvider);
+    m_dispatch = std::make_shared<DirectoryReadDispatcherImpl>(newDirectory.path(), m_defaultFileIcon,
+                                                               m_runnableProvider, m_threadPool);
 }
 
 void FlattenedDirectoryViewModel::ReceiveModelEntries(

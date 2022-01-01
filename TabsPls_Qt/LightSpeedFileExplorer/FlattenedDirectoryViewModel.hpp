@@ -7,6 +7,7 @@
 
 #include <QAbstractTableModel>
 #include <QIcon>
+#include <QThreadPool>
 
 #include "DirectoryChanger.hpp"
 #include "FileEntryModel.hpp"
@@ -50,6 +51,7 @@ class FlattenedDirectoryViewModel final : public QAbstractTableModel, public Dir
     FileRetrievalRunnableContainer::NameSortedModelSet m_modelEntries;
     QStyle& m_styleProvider;
     QIcon m_defaultFileIcon;
+    mutable QThreadPool m_threadPool;
     std::shared_ptr<FileRetrievalByDispatch::DirectoryReadDispatcher> m_dispatch;
     std::shared_ptr<FileRetrievalRunnableProvider> m_runnableProvider;
 
