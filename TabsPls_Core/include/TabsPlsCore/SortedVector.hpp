@@ -46,8 +46,7 @@ template <typename T, typename Comp> class SortedVector {
             return;
 
         const auto insertionIt = lower_bound(other.get().front());
-        assert(insertionIt == std::upper_bound(m_items.begin(), m_items.end(), other.get().back(), m_comp) ||
-               m_items.empty() || insertionIt == m_items.end());
+        assert(insertionIt == std::upper_bound(m_items.begin(), m_items.end(), other.get().back(), m_comp));
         m_items.insert(insertionIt, other.get().begin(), other.get().end());
     }
 
