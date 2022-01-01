@@ -18,31 +18,46 @@
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
 
+struct FileRetrievalRunnableProvider {
+    virtual ~FileRetrievalRunnableProvider() = default;
+    virtual QRunnable* CreateRunnable(const FileSystem::Directory&, const FileSystem::RawPath&, const QIcon&) = 0;
+};
+
 namespace {
 const std::vector<QString> tableHeaders = {QObject::tr("Name"), QObject::tr("Size"), QObject::tr("Date modified")};
-}
 
-namespace {
+template <typename CreateFunction> struct FileRetrievalRunnableProviderImpl : FileRetrievalRunnableProvider {
+
+    FileRetrievalRunnableProviderImpl(CreateFunction createFunction) : createFunction(std::move(createFunction)) {}
+
+    virtual QRunnable* CreateRunnable(const FileSystem::Directory& dir, const FileSystem::RawPath& basePath,
+                                      const QIcon& defaultIcon) override {
+        return createFunction(dir, basePath, defaultIcon);
+    }
+
+    CreateFunction createFunction;
+};
 
 struct DirectoryReadDispatcherImpl : FileRetrievalByDispatch::DirectoryReadDispatcher {
-    using CreateRunnable =
-        std::function<QRunnable*(const FileSystem::Directory&, const FileSystem::RawPath&, const QIcon&)>;
 
-    DirectoryReadDispatcherImpl(FileSystem::RawPath basePath, QIcon defaultIcon, CreateRunnable createRunnable)
+    DirectoryReadDispatcherImpl(FileSystem::RawPath basePath, QIcon defaultIcon,
+                                std::weak_ptr<FileRetrievalRunnableProvider> runnableProvider)
         : basePath(std::move(basePath)), defaultIcon(std::move(defaultIcon)),
-          createRunnable(std::move(createRunnable)) {}
+          runnableProvider(std::move(runnableProvider)) {}
 
     void DirectoryReadDispatch(const FileSystem::Directory& dir) const override {
         if (cancelled)
             return;
-        auto* runnable = createRunnable(dir, basePath, defaultIcon);
-        QThreadPool::globalInstance()->start(runnable);
+        if (const auto liveRunnableProvider = runnableProvider.lock()) {
+            auto* runnable = liveRunnableProvider->CreateRunnable(dir, basePath, defaultIcon);
+            QThreadPool::globalInstance()->start(runnable);
+        }
     }
 
     bool cancelled = false;
     const FileSystem::RawPath basePath;
     QIcon defaultIcon;
-    CreateRunnable createRunnable;
+    std::weak_ptr<FileRetrievalRunnableProvider> runnableProvider;
 };
 
 } // namespace
@@ -54,6 +69,15 @@ FlattenedDirectoryViewModel::FlattenedDirectoryViewModel(QObject* parent, QStyle
 
     qRegisterMetaType<FileEntryModel::ModelEntry>();
     qRegisterMetaType<FileRetrievalRunnableContainer::NameSortedModelSet>();
+
+    auto createRunnable = [this](const auto& dir, const auto& basePath, const auto& defaultIcon) {
+        auto* runnable = new FileRetrievalRunnable(dir, basePath, defaultIcon, m_dispatch);
+        connect(runnable, &FileRetrievalRunnable::resultReady, this, &FlattenedDirectoryViewModel::ReceiveModelEntries);
+        return runnable;
+    };
+
+    m_runnableProvider =
+        std::make_shared<FileRetrievalRunnableProviderImpl<decltype(createRunnable)>>(std::move(createRunnable));
 
     if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(initialDirectory))) {
         ResetDispatcher(*dir);
@@ -156,13 +180,8 @@ void FlattenedDirectoryViewModel::ResetDispatcher(const FileSystem::Directory& n
     if (auto* dispatchImpl = dynamic_cast<DirectoryReadDispatcherImpl*>(m_dispatch.get()))
         dispatchImpl->cancelled = true;
 
-    m_dispatch = std::make_shared<DirectoryReadDispatcherImpl>(
-        newDirectory.path(), m_defaultFileIcon, [this](const auto& dir, const auto& basePath, const auto& defaultIcon) {
-            auto* runnable = new FileRetrievalRunnable(dir, basePath, defaultIcon, m_dispatch);
-            connect(runnable, &FileRetrievalRunnable::resultReady, this,
-                    &FlattenedDirectoryViewModel::ReceiveModelEntries);
-            return runnable;
-        });
+    m_dispatch =
+        std::make_shared<DirectoryReadDispatcherImpl>(newDirectory.path(), m_defaultFileIcon, m_runnableProvider);
 }
 
 void FlattenedDirectoryViewModel::ReceiveModelEntries(
