@@ -1,5 +1,7 @@
 ﻿#include "FileBrowserWidget.hpp"
 
+#include <filesystem>
+
 #include <QDesktopServices>
 #include <QHBoxLayout>
 #include <QInputDialog>
@@ -292,8 +294,12 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
                 DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedByGoingToParentClosure(); });
             else if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(itemString.toString())))
                 DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedClosure(*dir); });
-            else if (FileSystem::IsRegularFile(ToRawPath(itemString.toString())))
+            else if (const auto file = FileSystem::FilePath::FromPath(ToRawPath(itemString.toString()))) {
+                const auto currentDir = FileSystem::GetWorkingDirectory();
+                std::filesystem::current_path(FileSystem::Directory::FromFilePathParent(*file).path());
                 QDesktopServices::openUrl(QUrl::fromLocalFile(itemString.toString()));
+                std::filesystem::current_path(currentDir);
+            }
         }
     });
 
