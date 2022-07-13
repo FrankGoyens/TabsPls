@@ -2,7 +2,6 @@
 
 #include <filesystem>
 
-#include <QDesktopServices>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QLabel>
@@ -17,13 +16,13 @@
 
 #include "CurrentDirectoryFileOpQtImpl.hpp"
 #include "DirectoryInputField.hpp"
+#include "EscapePod.hpp"
+#include "FileBrowserViewModelProvider.hpp"
 #include "FileListTableView.hpp"
 #include "FileListTableViewWithFilter.hpp"
 #include "FileListViewModel.hpp"
 #include "FileSystemDefsConversion.hpp"
 #include "FlattenedDirectoryViewModel.hpp"
-
-#include "FileBrowserViewModelProvider.hpp"
 
 using FileSystem::StringConversion::FromName;
 using FileSystem::StringConversion::FromRawPath;
@@ -296,9 +295,8 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
                 DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedClosure(*dir); });
             else if (const auto file = FileSystem::FilePath::FromPath(ToRawPath(itemString.toString()))) {
                 const auto currentDir = FileSystem::GetWorkingDirectory();
-                std::filesystem::current_path(FileSystem::Directory::FromFilePathParent(*file).path());
-                QDesktopServices::openUrl(QUrl::fromLocalFile(itemString.toString()));
-                std::filesystem::current_path(currentDir);
+                EscapePod::LaunchUrlInWorkingDirectory(QUrl::fromLocalFile(itemString.toString()),
+                                                       FileSystem::Directory::FromFilePathParent(*file));
             }
         }
     });

@@ -48,6 +48,7 @@ set(LightSpeedFileExplorer_Headers
   FileBrowserViewModelProvider.hpp
   FileRetrievalRunnable.hpp
   FileRetrievalByDispatch.hpp
+  EscapePod.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -75,6 +76,7 @@ set(LightSpeedFileExplorer_Sources
   FileBrowserViewModelSwitcher.cpp
   FileRetrievalRunnable.cpp
   FileRetrievalByDispatch.cpp
+  EscapePod.cpp
 )
 
 add_executable(LightSpeedFileExplorer  
@@ -144,3 +146,11 @@ configure_file(res/resources.qrc.template ${CMAKE_SOURCE_DIR}/res/resources.qrc)
 target_sources(LightSpeedFileExplorer PRIVATE ${CMAKE_SOURCE_DIR}/res/resources.qrc)
 
 qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
+
+#Build EscapePod and put it in the same directory as the LightSpeedFileExplorer executable
+add_subdirectory(EscapePod)
+add_custom_command(TARGET LightSpeedFileExplorer 
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:EscapePod>/$<TARGET_FILE_NAME:EscapePod> $<TARGET_FILE_DIR:LightSpeedFileExplorer>
+    COMMENT "Copying the EscapePod executable to LightSpeedFileExplorer's output directory..."
+)
+add_dependencies(LightSpeedFileExplorer EscapePod)
