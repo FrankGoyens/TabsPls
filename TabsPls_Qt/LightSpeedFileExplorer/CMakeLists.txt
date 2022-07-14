@@ -150,7 +150,7 @@ qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 #Build EscapePod and put it in the same directory as the LightSpeedFileExplorer executable
 add_subdirectory(EscapePod)
 add_custom_command(TARGET LightSpeedFileExplorer 
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:EscapePod>/$<TARGET_FILE_NAME:EscapePod> $<TARGET_FILE_DIR:LightSpeedFileExplorer>
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:EscapePod>/$<TARGET_FILE_NAME:EscapePod> $<TARGET_FILE_DIR:LightSpeedFileExplorer>/$<TARGET_FILE_NAME:EscapePod>
     COMMENT "Copying the EscapePod executable to LightSpeedFileExplorer's output directory..."
 )
 add_dependencies(LightSpeedFileExplorer EscapePod)
