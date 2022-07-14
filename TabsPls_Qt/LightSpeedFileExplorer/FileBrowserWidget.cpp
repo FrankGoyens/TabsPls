@@ -16,7 +16,7 @@
 
 #include "CurrentDirectoryFileOpQtImpl.hpp"
 #include "DirectoryInputField.hpp"
-#include "EscapePod.hpp"
+#include "EscapePodLauncher.hpp"
 #include "FileBrowserViewModelProvider.hpp"
 #include "FileListTableView.hpp"
 #include "FileListTableViewWithFilter.hpp"
@@ -295,8 +295,8 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
                 DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedClosure(*dir); });
             else if (const auto file = FileSystem::FilePath::FromPath(ToRawPath(itemString.toString()))) {
                 const auto currentDir = FileSystem::GetWorkingDirectory();
-                EscapePod::LaunchUrlInWorkingDirectory(QUrl::fromLocalFile(itemString.toString()),
-                                                       FileSystem::Directory::FromFilePathParent(*file));
+                EscapePodLauncher::LaunchUrlInWorkingDirectory(QUrl::fromLocalFile(itemString.toString()),
+                                                               FileSystem::Directory::FromFilePathParent(*file));
             }
         }
     });

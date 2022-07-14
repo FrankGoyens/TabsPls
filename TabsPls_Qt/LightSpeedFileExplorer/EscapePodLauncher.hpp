@@ -6,6 +6,6 @@ class Directory;
 
 class QUrl;
 
-namespace EscapePod {
+namespace EscapePodLauncher {
 void LaunchUrlInWorkingDirectory(const QUrl&, const FileSystem::Directory& workingDir);
 }
