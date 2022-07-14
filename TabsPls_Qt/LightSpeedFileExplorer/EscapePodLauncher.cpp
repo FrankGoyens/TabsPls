@@ -1,4 +1,4 @@
-#include "EscapePod.hpp"
+#include "EscapePodLauncher.hpp"
 
 #include <QDebug>
 #include <QProcess>
@@ -8,7 +8,7 @@
 
 #include "FileSystemDefsConversion.hpp"
 
-namespace EscapePod {
+namespace EscapePodLauncher {
 void LaunchUrlInWorkingDirectory(const QUrl& url, const FileSystem::Directory& workingDir) {
     const auto workingDirQString = FileSystem::StringConversion::FromRawPath(workingDir.path());
     const int status =
@@ -17,4 +17,4 @@ void LaunchUrlInWorkingDirectory(const QUrl& url, const FileSystem::Directory& w
     if (status != 0)
         qDebug() << "Something went wrong launching url " << url.toString() << " in directory " << workingDirQString;
 }
-} // namespace EscapePod
+} // namespace EscapePodLauncher

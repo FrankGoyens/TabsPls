@@ -48,7 +48,7 @@ set(LightSpeedFileExplorer_Headers
   FileBrowserViewModelProvider.hpp
   FileRetrievalRunnable.hpp
   FileRetrievalByDispatch.hpp
-  EscapePod.hpp
+  EscapePodLauncher.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -76,7 +76,7 @@ set(LightSpeedFileExplorer_Sources
   FileBrowserViewModelSwitcher.cpp
   FileRetrievalRunnable.cpp
   FileRetrievalByDispatch.cpp
-  EscapePod.cpp
+  EscapePodLauncher.cpp
 )
 
 add_executable(LightSpeedFileExplorer  
