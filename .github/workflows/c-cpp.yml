@@ -25,5 +25,6 @@ jobs:
           buildWithCMakeArgs: '-- -v'
 
       - name: dir
+        if: always()
         run: find $RUNNER_WORKSPACE
         shell: bash
