@@ -28,3 +28,8 @@ jobs:
         if: always()
         run: find $RUNNER_WORKSPACE
         shell: bash
+
+      - name: temp_dir
+        if: always()
+        run: find /home/runner/work/_temp
+        shell: bash
