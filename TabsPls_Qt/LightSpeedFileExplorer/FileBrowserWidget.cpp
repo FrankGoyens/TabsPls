@@ -294,7 +294,6 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
             else if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(itemString.toString())))
                 DisplayDirectoryChangedErrorIfExceptionHappens([&]() { directoryChangedClosure(*dir); });
             else if (const auto file = FileSystem::FilePath::FromPath(ToRawPath(itemString.toString()))) {
-                const auto currentDir = FileSystem::GetWorkingDirectory();
                 EscapePodLauncher::LaunchUrlInWorkingDirectory(QUrl::fromLocalFile(itemString.toString()),
                                                                FileSystem::Directory::FromFilePathParent(*file));
             }
