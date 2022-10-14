@@ -20,6 +20,7 @@
 #include <TabsPlsCore/FileSystemOp.hpp>
 #include <TabsPlsCore/Send2Trash.hpp>
 
+#include "EscapePodLauncher.hpp"
 #include "ExplicitStub.hpp"
 #include "FileListViewModel.hpp"
 #include "FileSystemDefsConversion.hpp"
@@ -85,23 +86,17 @@ FileListTableView::FileListTableView(std::weak_ptr<CurrentDirectoryFileOp> curre
 
     const auto* cutUrisToClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_X), this);
     connect(cutUrisToClipboardShortcut, &QShortcut::activated,
-            [this]() { return SetUriListOnClipboardForCut(AggregateSelectionDataAsUriList()); });
+            [this]() { PutSelectedItemsIntoClipboardForCutIfAny(); });
 
     const auto* copyUrisToClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
     connect(copyUrisToClipboardShortcut, &QShortcut::activated,
-            [this]() { return SetUriListOnClipboardForCopy(AggregateSelectionDataAsUriList()); });
+            [this]() { PutSelectedItemsIntoClipboardForCopyIfAny(); });
 
     const auto* pasteUrisFromClipboardShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
     connect(pasteUrisFromClipboardShortcut, &QShortcut::activated, [this]() { pasteEvent(); });
 
     const auto* recycleItemShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
-    connect(recycleItemShortcut, &QShortcut::activated, [this]() {
-        const auto liveCurrentDirFileOp = m_currentDirFileOp.lock();
-        if (!liveCurrentDirFileOp)
-            return;
-
-        AskRecycleSelectedFiles(*liveCurrentDirFileOp);
-    });
+    connect(recycleItemShortcut, &QShortcut::activated, [this]() { AskRecycleSelectedFiles(); });
 
     const auto* deleteItemShortcut = new QShortcut(Qt::SHIFT + Qt::Key_Delete, this);
     connect(deleteItemShortcut, &QShortcut::activated, [this]() { AskPermanentlyDeleteSelectedFiles(); });
@@ -123,6 +118,14 @@ void FileListTableView::mousePressEvent(QMouseEvent* event) {
     QTableView::mousePressEvent(event);
 }
 
+static auto StringifyIntoUriList(const QStringList& list) {
+    QStringList dataAsList;
+    for (const auto& localFile : list) {
+        dataAsList << QUrl::fromLocalFile(localFile).toString();
+    }
+    return dataAsList.join('\n');
+}
+
 void FileListTableView::mouseMoveEvent(QMouseEvent* event) {
     if (!(event->buttons() & Qt::LeftButton)) {
         QTableView::mouseMoveEvent(event);
@@ -132,10 +135,14 @@ void FileListTableView::mouseMoveEvent(QMouseEvent* event) {
     if ((event->pos() - m_dragStartPosition).manhattanLength() < QApplication::startDragDistance())
         return;
 
+    const auto selectedItemsAsLocalFiles = AggregateSelectionDataAsLocalFileList();
+    if (selectedItemsAsLocalFiles.empty())
+        return;
+
     QDrag drag(this);
     QMimeData* mimeData = new QMimeData;
 
-    mimeData->setData("text/uri-list", AggregateSelectionDataAsUriList().toUtf8());
+    mimeData->setData("text/uri-list", StringifyIntoUriList(selectedItemsAsLocalFiles).toUtf8());
     drag.setMimeData(mimeData);
 
     drag.exec(Qt::CopyAction | Qt::MoveAction);
@@ -181,25 +188,61 @@ void FileListTableView::commitData(QWidget* editor) {
             QMessageBox::warning(editor, "Rename", error->c_str());
 }
 
+static bool RecyclingIsPossible() { return TabsPlsPython::Send2Trash::ComponentIsAvailable(); }
+
+static void AddAction_Open_IfPossible(QMenu& contextMenu, const std::weak_ptr<CurrentDirectoryFileOp>& currentDirFileOp,
+                                      const QStringList& selectedLocalFiles) {
+    if (const auto liveCurrentDirFileOp = currentDirFileOp.lock()) {
+        if (selectedLocalFiles.size() == 1) {
+            const auto uriToOpen = selectedLocalFiles.front();
+            auto* contextOpen = contextMenu.addAction(QObject::tr("Open"));
+            QObject::connect(contextOpen, &QAction::triggered, [=] {
+                EscapePodLauncher::LaunchUrlInWorkingDirectory(QUrl::fromLocalFile(uriToOpen.toUtf8()),
+                                                               liveCurrentDirFileOp->GetCurrentDir());
+            });
+            contextMenu.addSeparator();
+        }
+    }
+}
+
+template <typename RecycleOp>
+static void AddAction_Recycle_IfPossible(QMenu& contextMenu, QObject& parent, RecycleOp recycleOp) {
+    if (RecyclingIsPossible()) {
+        contextMenu.addSeparator();
+        auto* contextRecycle = contextMenu.addAction(QObject::tr("Recycle"));
+        QObject::connect(contextRecycle, &QAction::triggered, recycleOp);
+    }
+}
+
 void FileListTableView::contextMenuEvent(QContextMenuEvent* contextMenuEvent) {
-    QMenu contextMenu(tr("Context menu"), this);
-    QAction doTheThing("Do a thing", this);
-    connect(&doTheThing, &QAction::triggered, [this]() { QMessageBox::information(this, "The thing", "is done"); });
-    contextMenu.addAction(&doTheThing);
+    QMenu contextMenu("Context menu", this);
+
+    const auto selectedLocalFiles = AggregateSelectionDataAsLocalFileList();
+
+    const bool hasSelection = !selectedLocalFiles.empty();
+    const bool onlyParentDotsAreSelected =
+        hasSelection && selectedLocalFiles.size() == 1 && selectedLocalFiles.front() == "..";
+
+    if (hasSelection && !onlyParentDotsAreSelected) {
+        AddAction_Open_IfPossible(contextMenu, m_currentDirFileOp, AggregateSelectionDataAsLocalFileList());
+
+        auto* contextCopy = contextMenu.addAction(tr("Copy"));
+        connect(contextCopy, &QAction::triggered, [this] { PutSelectedItemsIntoClipboardForCopyIfAny(); });
+        auto* contextCut = contextMenu.addAction(tr("Cut"));
+        connect(contextCut, &QAction::triggered, [this] { PutSelectedItemsIntoClipboardForCutIfAny(); });
+    }
+
+    auto* contextPaste = contextMenu.addAction(tr("Paste"));
+    connect(contextPaste, &QAction::triggered, [this] { pasteEvent(); });
+
+    if (hasSelection && !onlyParentDotsAreSelected)
+        AddAction_Recycle_IfPossible(contextMenu, *this, [this] { AskRecycleSelectedFiles(); });
+
     contextMenu.exec(contextMenuEvent->globalPos());
 }
 
 void FileListTableView::ShowCriticalWorkerError(QString title, QString message) {
     QMessageBox::critical(this, title, message);
-}
-
-QString FileListTableView::AggregateSelectionDataAsUriList() const {
-    const auto selectedLocalFiles = AggregateSelectionDataAsLocalFileList();
-    QStringList dataAsList;
-    for (const auto& localFile : selectedLocalFiles) {
-        dataAsList << QUrl::fromLocalFile(localFile).toString();
-    }
-    return dataAsList.join('\n');
 }
 
 QStringList FileListTableView::AggregateSelectionDataAsLocalFileList() const {
@@ -285,7 +328,7 @@ static ShowIsReadySignaler* InstallReadySignaler(QDialog& watcher) {
     return showIsReadySignaler;
 }
 
-void FileListTableView::AskRecycleSelectedFiles(CurrentDirectoryFileOp& liveCurrentDirFileOp) {
+void FileListTableView::AskRecycleSelectedFiles() {
     if (workerThreadBusy)
         return;
 
@@ -505,6 +548,20 @@ void FileListTableView::MoveFileUrisIntoCurrentDir(const std::vector<QUrl>& urls
     DoFileOpWhileShowingProgress(
         urls, tr("Moving"), tr("Problem moving"),
         [liveCurrentDirFileOp](const auto& from, const auto& to) { liveCurrentDirFileOp->Move(from, to); });
+}
+
+void FileListTableView::PutSelectedItemsIntoClipboardForCopyIfAny() {
+    const auto uriList = AggregateSelectionDataAsLocalFileList();
+    if (uriList.empty())
+        return;
+    SetUriListOnClipboardForCopy(StringifyIntoUriList(uriList));
+}
+
+void FileListTableView::PutSelectedItemsIntoClipboardForCutIfAny() {
+    const auto uriList = AggregateSelectionDataAsLocalFileList();
+    if (uriList.empty())
+        return;
+    SetUriListOnClipboardForCut(StringifyIntoUriList(uriList));
 }
 
 void FileListTableView::CompleteFileOp(const QString& opName, const QStringList& result) {
