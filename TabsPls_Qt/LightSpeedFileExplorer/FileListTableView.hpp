@@ -9,7 +9,7 @@ class QMouseEvent;
 class QDragEnterEvent;
 class QDropEvent;
 class QLabel;
-
+class QContextMenuEvent;
 class CurrentDirectoryFileOp;
 class QObjectRecycleExceptionHandler;
 
@@ -30,6 +30,8 @@ class FileListTableView : public QTableView {
     void dropEvent(QDropEvent*) override;
 
     void commitData(QWidget* editor) override;
+
+    void contextMenuEvent(QContextMenuEvent*) override;
 
   private slots:
     void ShowCriticalWorkerError(QString title, QString message);
