@@ -40,17 +40,19 @@ class FileListTableView : public QTableView {
     QPoint m_dragStartPosition;
     std::weak_ptr<CurrentDirectoryFileOp> m_currentDirFileOp;
 
-    QString AggregateSelectionDataAsUriList() const;
     QStringList AggregateSelectionDataAsLocalFileList() const;
     void NotifyModelOfChange();
     void pasteEvent();
     void PerformMimeDataActionOnIncomingFiles(const QMimeData&, const std::vector<QUrl>&);
-    void AskRecycleSelectedFiles(CurrentDirectoryFileOp&);
+    void AskRecycleSelectedFiles();
     void ConnectRecyclingErrorSignals(const QObjectRecycleExceptionHandler&);
     void AskPermanentlyDeleteSelectedFiles();
 
     void CopyFileUrisIntoCurrentDir(const std::vector<QUrl>&);
     void MoveFileUrisIntoCurrentDir(const std::vector<QUrl>&);
+
+    void PutSelectedItemsIntoClipboardForCopyIfAny();
+    void PutSelectedItemsIntoClipboardForCutIfAny();
 
     template <typename OpFunction>
     void DoFileOpWhileShowingProgress(const std::vector<QUrl>& urls, const QString& duringOpTitle,
