@@ -8,6 +8,7 @@
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QLineEdit>
+#include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
@@ -178,6 +179,14 @@ void FileListTableView::commitData(QWidget* editor) {
     if (auto* fileListViewModel = dynamic_cast<FileListViewModel*>(model()))
         if (const auto error = fileListViewModel->ClaimError())
             QMessageBox::warning(editor, "Rename", error->c_str());
+}
+
+void FileListTableView::contextMenuEvent(QContextMenuEvent* contextMenuEvent) {
+    QMenu contextMenu(tr("Context menu"), this);
+    QAction doTheThing("Do a thing", this);
+    connect(&doTheThing, &QAction::triggered, [this]() { QMessageBox::information(this, "The thing", "is done"); });
+    contextMenu.addAction(&doTheThing);
+    contextMenu.exec(contextMenuEvent->globalPos());
 }
 
 void FileListTableView::ShowCriticalWorkerError(QString title, QString message) {
