@@ -28,6 +28,7 @@
 #include "QObjectProgressReport.hpp"
 #include "QObjectRecycleExceptionHandler.hpp"
 #include "ShowIsReadySignaler.hpp"
+#include "WindowsNativeContextMenu.hpp"
 
 using FileSystem::StringConversion::FromRawPath;
 using FileSystem::StringConversion::ToRawPath;
@@ -215,6 +216,16 @@ static void AddAction_Recycle_IfPossible(QMenu& contextMenu, QObject& parent, Re
 }
 
 void FileListTableView::contextMenuEvent(QContextMenuEvent* contextMenuEvent) {
+    if (WindowsNativeContextMenu::ComponentIsAvailable()) {
+        const auto selectedItems = AggregateSelectionDataAsLocalFileList();
+        if (selectedItems.size() == 1) {
+            const auto& globalPos = contextMenuEvent->globalPos();
+            WindowsNativeContextMenu::ShowContextMenuForItem(selectedItems.front().toStdWString(), globalPos.x(),
+                                                             globalPos.y(), (void*)winId());
+            return;
+        }
+    }
+
     QMenu contextMenu("Context menu", this);
 
     const auto selectedLocalFiles = AggregateSelectionDataAsLocalFileList();
