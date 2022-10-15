@@ -49,6 +49,7 @@ set(LightSpeedFileExplorer_Headers
   FileRetrievalRunnable.hpp
   FileRetrievalByDispatch.hpp
   EscapePodLauncher.hpp
+  TabsPlsLog.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
