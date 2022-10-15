@@ -7,6 +7,7 @@
 #include <TabsPlsCore/Send2Trash.hpp>
 
 #include "ExplicitStub.hpp"
+#include "TabsPlsLog.hpp"
 
 class QObjectRecycleExceptionHandler : public QObject {
     Q_OBJECT
@@ -21,7 +22,9 @@ class QObjectRecycleExceptionHandler : public QObject {
         } catch (const TabsPlsPython::Send2Trash::Exception&) {
             emit GenericError(QObject::tr("Recycle item"), QObject::tr("Unknown eror"));
         } catch (const ExplicitStubException&) {
-            // The component is supposedly available, but we're still somehow calling the stubbed implementation. But
+            // The component is supposedly available, but we're still somehow calling the stubbed implementation.
+            TabsPlsLog_Debug("An explicitly stubbed component was called: Send2Trash");
+
             // let's not bother the user with this information
             emit ExplicitStubError(QObject::tr("Recycle item"), QObject::tr("Unknown error"));
         }

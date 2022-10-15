@@ -111,9 +111,9 @@
     </message>
     <message>
         <location filename="FileListTableView.cpp" line="313"/>
-        <location filename="QObjectRecycleExceptionHandler.hpp" line="19"/>
-        <location filename="QObjectRecycleExceptionHandler.hpp" line="22"/>
-        <location filename="QObjectRecycleExceptionHandler.hpp" line="26"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="20"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="23"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="29"/>
         <source>Recycle item</source>
         <translation type="unfinished"></translation>
     </message>
@@ -136,22 +136,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="QObjectRecycleExceptionHandler.hpp" line="19"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="20"/>
         <source>The send2trash module could not be found, </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="QObjectRecycleExceptionHandler.hpp" line="20"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="21"/>
         <source>please reinstall this program.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="QObjectRecycleExceptionHandler.hpp" line="22"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="23"/>
         <source>Unknown eror</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="QObjectRecycleExceptionHandler.hpp" line="26"/>
+        <location filename="QObjectRecycleExceptionHandler.hpp" line="29"/>
         <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
