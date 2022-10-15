@@ -50,6 +50,7 @@ set(LightSpeedFileExplorer_Headers
   FileRetrievalByDispatch.hpp
   EscapePodLauncher.hpp
   TabsPlsLog.hpp
+  WindowsNativeContextMenu.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -78,6 +79,7 @@ set(LightSpeedFileExplorer_Sources
   FileRetrievalRunnable.cpp
   FileRetrievalByDispatch.cpp
   EscapePodLauncher.cpp
+  WindowsNativeContextMenu.cpp
 )
 
 add_executable(LightSpeedFileExplorer  
