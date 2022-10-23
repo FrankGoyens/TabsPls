@@ -20,16 +20,22 @@ static void ReleaseComInterface(IUnknown* i) {
         i->Release();
 }
 
-bool ShowContextMenuForItem(const std::wstring& path, int xPos, int yPos, void* parentWindow) {
-    if (!parentWindow)
-        return false;
+using ItemIDListUniquePtr = std::unique_ptr<ITEMIDLIST, decltype(&ReleaseIdList)>;
+using IShellFolderUniquePtr = std::unique_ptr<IShellFolder, decltype(&ReleaseComInterface)>;
 
+struct ScopedItemIDList {
+    ItemIDListUniquePtr itemIDList{nullptr, &ReleaseIdList};
+    LPCITEMIDLIST childIDItemList{};
+    IShellFolderUniquePtr ifolder{nullptr, &ReleaseComInterface};
+};
+
+static ScopedItemIDList ToShellFolderWithItemIDLists(const std::wstring& path) {
     ITEMIDLIST* id = 0;
     std::wstring windowsPath = path;
     std::replace(windowsPath.begin(), windowsPath.end(), '/', '\\');
     HRESULT result = SHParseDisplayName(windowsPath.c_str(), 0, &id, 0, 0);
     if (!SUCCEEDED(result) || !id)
-        return false;
+        return ScopedItemIDList{};
     std::unique_ptr<ITEMIDLIST, decltype(&ReleaseIdList)> scopedID(id, &ReleaseIdList);
 
     IShellFolder* ifolder = 0;
@@ -37,13 +43,22 @@ bool ShowContextMenuForItem(const std::wstring& path, int xPos, int yPos, void* 
     LPCITEMIDLIST idChild = 0;
     result = SHBindToParent(id, IID_IShellFolder, (void**)&ifolder, &idChild);
     if (!SUCCEEDED(result) || !ifolder)
+        return ScopedItemIDList{};
+
+    IShellFolderUniquePtr scopedFolder(ifolder, &ReleaseComInterface);
+    return {std::move(scopedID), idChild, std::move(scopedFolder)};
+}
+
+bool ShowContextMenuForItem(const std::wstring& path, int xPos, int yPos, void* parentWindow) {
+    if (!parentWindow)
         return false;
-    std::unique_ptr<IShellFolder, decltype(&ReleaseComInterface)> scopedFolder(ifolder, &ReleaseComInterface);
+
+    const auto [itemIDList, childIDItemList, ifolder] = ToShellFolderWithItemIDLists(path);
 
     IContextMenu* imenu = 0;
-    result = ifolder->GetUIObjectOf((HWND)parentWindow, 1, (const ITEMIDLIST**)&idChild, IID_IContextMenu, 0,
-                                    (void**)&imenu);
-    if (!SUCCEEDED(result) || !ifolder)
+    HRESULT result = result = ifolder->GetUIObjectOf((HWND)parentWindow, 1, (const ITEMIDLIST**)&childIDItemList,
+                                                     IID_IContextMenu, 0, (void**)&imenu);
+    if (!SUCCEEDED(result) || !imenu)
         return false;
     std::unique_ptr<IContextMenu, decltype(&ReleaseComInterface)> scopedMenu(imenu, &ReleaseComInterface);
 
