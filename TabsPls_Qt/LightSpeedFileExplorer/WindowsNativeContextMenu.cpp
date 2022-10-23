@@ -1,6 +1,7 @@
 #include "WindowsNativeContextMenu.hpp"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 
 #include <ShlObj_core.h>
@@ -49,15 +50,37 @@ static ScopedItemIDList ToShellFolderWithItemIDLists(const std::wstring& path) {
     return {std::move(scopedID), idChild, std::move(scopedFolder)};
 }
 
-bool ShowContextMenuForItem(const std::wstring& path, int xPos, int yPos, void* parentWindow) {
+static auto ToShellFoldersWithItemIDLists(const std::vector<std::wstring>& paths) {
+    std::vector<ScopedItemIDList> shellFolders;
+    for (auto& path : paths) {
+        auto shellFolderWithItemIDList = ToShellFolderWithItemIDLists(path);
+        if (shellFolderWithItemIDList.childIDItemList)
+            shellFolders.push_back(std::move(shellFolderWithItemIDList));
+    }
+    return shellFolders;
+}
+
+static auto AggregateChildItemIDLists(const std::vector<ScopedItemIDList>& shellFolders) {
+    std::vector<LPCITEMIDLIST> childItemIDLists;
+    std::transform(shellFolders.begin(), shellFolders.end(), std::back_inserter(childItemIDLists),
+                   [](const auto& shellFolder) { return shellFolder.childIDItemList; });
+    return childItemIDLists;
+}
+
+bool ShowContextMenuForItems(const std::vector<std::wstring>& absolutePaths, int xPos, int yPos, void* parentWindow) {
     if (!parentWindow)
         return false;
 
-    const auto [itemIDList, childIDItemList, ifolder] = ToShellFolderWithItemIDLists(path);
+    if (absolutePaths.empty())
+        return false;
+
+    const auto shellFolders = ToShellFoldersWithItemIDLists(absolutePaths);
+    const auto childIDItemList = AggregateChildItemIDLists(shellFolders);
 
     IContextMenu* imenu = 0;
-    HRESULT result = result = ifolder->GetUIObjectOf((HWND)parentWindow, 1, (const ITEMIDLIST**)&childIDItemList,
-                                                     IID_IContextMenu, 0, (void**)&imenu);
+    HRESULT result = shellFolders.front().ifolder->GetUIObjectOf((HWND)parentWindow, childIDItemList.size(),
+                                                                 (const ITEMIDLIST**)childIDItemList.data(),
+                                                                 IID_IContextMenu, 0, (void**)&imenu);
     if (!SUCCEEDED(result) || !imenu)
         return false;
     std::unique_ptr<IContextMenu, decltype(&ReleaseComInterface)> scopedMenu(imenu, &ReleaseComInterface);
