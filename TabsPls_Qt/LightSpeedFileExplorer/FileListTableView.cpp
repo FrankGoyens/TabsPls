@@ -221,15 +221,18 @@ void FileListTableView::contextMenuEvent(QContextMenuEvent* contextMenuEvent) {
         if (selectedItems.empty()) {
             if (const auto liveCurrentDirOp = m_currentDirFileOp.lock()) {
                 const auto& globalPos = contextMenuEvent->globalPos();
-                WindowsNativeContextMenu::ShowContextMenuForItem(liveCurrentDirOp->GetCurrentDir().path(),
-                                                                 globalPos.x(), globalPos.y(), (void*)winId());
+                WindowsNativeContextMenu::ShowContextMenuForItems({liveCurrentDirOp->GetCurrentDir().path()},
+                                                                  globalPos.x(), globalPos.y(), (void*)winId());
                 return;
             }
 
-        } else if (selectedItems.size() == 1) {
+        } else {
             const auto& globalPos = contextMenuEvent->globalPos();
-            WindowsNativeContextMenu::ShowContextMenuForItem(selectedItems.front().toStdWString(), globalPos.x(),
-                                                             globalPos.y(), (void*)winId());
+            std::vector<std::wstring> paths;
+            std::transform(selectedItems.begin(), selectedItems.end(), std::back_inserter(paths),
+                           [](const auto& selectedItem) { return selectedItem.toStdWString(); });
+            WindowsNativeContextMenu::ShowContextMenuForItems(std::move(paths), globalPos.x(), globalPos.y(),
+                                                              (void*)winId());
             return;
         }
     }

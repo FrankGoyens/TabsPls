@@ -1,9 +1,10 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace WindowsNativeContextMenu {
 inline bool ComponentIsAvailable() { return true; }
 
-bool ShowContextMenuForItem(const std::wstring& absolutePath, int x, int y, void* parentWindow);
+bool ShowContextMenuForItems(const std::vector<std::wstring>& absolutePaths, int x, int y, void* parentWindow);
 } // namespace WindowsNativeContextMenu
