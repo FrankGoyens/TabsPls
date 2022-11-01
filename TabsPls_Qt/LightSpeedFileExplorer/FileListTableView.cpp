@@ -215,31 +215,39 @@ static void AddAction_Recycle_IfPossible(QMenu& contextMenu, QObject& parent, Re
     }
 }
 
-void FileListTableView::contextMenuEvent(QContextMenuEvent* contextMenuEvent) {
-    if (WindowsNativeContextMenu::ComponentIsAvailable()) {
-        const auto selectedItems = AggregateSelectionDataAsLocalFileList();
-        if (selectedItems.empty()) {
-            if (const auto liveCurrentDirOp = m_currentDirFileOp.lock()) {
-                const auto& globalPos = contextMenuEvent->globalPos();
-                WindowsNativeContextMenu::ShowContextMenuForItems({liveCurrentDirOp->GetCurrentDir().path()},
-                                                                  globalPos.x(), globalPos.y(), (void*)winId());
-                return;
-            }
+static bool OpenWindowsShellContextMenuIfAvailable(const QPoint& globalPos, const QStringList& selectedItems,
+                                                   const std::weak_ptr<CurrentDirectoryFileOp>& currentDirFileOp,
+                                                   void* hwnd) {
+    try {
+        if (WindowsNativeContextMenu::ComponentIsAvailable()) {
+            if (selectedItems.empty()) {
+                if (const auto liveCurrentDirOp = currentDirFileOp.lock()) {
+                    return WindowsNativeContextMenu::ShowContextMenuForItems({liveCurrentDirOp->GetCurrentDir().path()},
+                                                                             globalPos.x(), globalPos.y(), hwnd);
+                }
 
-        } else {
-            const auto& globalPos = contextMenuEvent->globalPos();
-            std::vector<std::wstring> paths;
-            std::transform(selectedItems.begin(), selectedItems.end(), std::back_inserter(paths),
-                           [](const auto& selectedItem) { return selectedItem.toStdWString(); });
-            WindowsNativeContextMenu::ShowContextMenuForItems(std::move(paths), globalPos.x(), globalPos.y(),
-                                                              (void*)winId());
-            return;
+            } else {
+                std::vector<std::wstring> paths;
+                std::transform(selectedItems.begin(), selectedItems.end(), std::back_inserter(paths),
+                               [](const auto& selectedItem) { return selectedItem.toStdWString(); });
+                return WindowsNativeContextMenu::ShowContextMenuForItems(std::move(paths), globalPos.x(), globalPos.y(),
+                                                                         hwnd);
+            }
         }
+    } catch (const ExplicitStubException&) {
+        TabsPlsLog_Debug("Tried to call an explicitly stubbed component: WindowsNativeContextMenu");
     }
+    return false;
+}
+
+void FileListTableView::contextMenuEvent(QContextMenuEvent* contextMenuEvent) {
+    const auto selectedLocalFiles = AggregateSelectionDataAsLocalFileList();
+
+    if (OpenWindowsShellContextMenuIfAvailable(contextMenuEvent->globalPos(), selectedLocalFiles, m_currentDirFileOp,
+                                               (void*)winId()))
+        return;
 
     QMenu contextMenu("Context menu", this);
-
-    const auto selectedLocalFiles = AggregateSelectionDataAsLocalFileList();
 
     const bool hasSelection = !selectedLocalFiles.empty();
     const bool onlyParentDotsAreSelected =
