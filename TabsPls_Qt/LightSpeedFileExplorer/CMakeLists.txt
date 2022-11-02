@@ -79,7 +79,6 @@ set(LightSpeedFileExplorer_Sources
   FileRetrievalRunnable.cpp
   FileRetrievalByDispatch.cpp
   EscapePodLauncher.cpp
-  WindowsNativeContextMenu.cpp
 )
 
 add_executable(LightSpeedFileExplorer  
@@ -96,7 +95,7 @@ target_include_directories(LightSpeedFileExplorer
 
 #Conditionally link agains the Python component
 add_subdirectory(../../TabsPls_Python TabsPls_Python)
-set(USE_PYTHON_COMPONENT "Use Python for more platform independant features, and to have user extension endpoints" CACHE BOOL ON)
+set(USE_PYTHON_COMPONENT ON CACHE BOOL "Use Python for more platform independant features, and to have user extension endpoints")
 if(Python3_FOUND AND USE_PYTHON_COMPONENT)
   message(STATUS "TabsPls Python component will be used")
   target_link_libraries(LightSpeedFileExplorer PRIVATE TabsPls_Python)
@@ -108,7 +107,7 @@ else()
 endif()
 
 if(WIN32)
-  set(USE_WINAPI_ICON_PROVIDER "Use the Windows API to be able to retrieve icons associated with files (for display purposes). Requires QtWinExtras." CACHE BOOL ON)
+  set(USE_WINAPI_ICON_PROVIDER ON CACHE BOOL "Use the Windows API to be able to retrieve icons associated with files (for display purposes). Requires QtWinExtras.")
   if(USE_WINAPI_ICON_PROVIDER)
     message(STATUS "TabsPls Windows API icon provider will be used")
     target_sources(LightSpeedFileExplorer PRIVATE TabsPls_WinIconExtract/AssociatedIconProvider.cpp)
@@ -130,11 +129,22 @@ if(WIN32)
   get_filename_component(APP_ICON_RESOURCE_WINDOWS ${APP_ICON_RESOURCE_WINDOWS} ABSOLUTE)
   configure_file(res_win32/resources.rc.template ${CMAKE_CURRENT_SOURCE_DIR}/res_win32/resources.rc)
   target_sources(LightSpeedFileExplorer PRIVATE res_win32/resources.rc)
+
+  set(USE_WINAPI_CONTEXT_MENU ON CACHE BOOL "Use the Windows API to be able to open a context menu (like the context menu in Windows explorer).")
+  if(USE_WINAPI_CONTEXT_MENU) 
+    message(STATUS "TabsPls Windows API context menu will be used")
+    target_sources(LightSpeedFileExplorer PRIVATE WindowsNativeContextMenu.cpp)
+  endif()
 endif()
 
 if(NOT USE_WINAPI_ICON_PROVIDER)
   message(STATUS "TabsPls Windows API icon provider will NOT be used")
   target_sources(LightSpeedFileExplorer PRIVATE AssociatedIconProvider_stub.cpp)
+endif()
+
+if(NOT USE_WINAPI_CONTEXT_MENU) 
+  message(STATUS "TabsPls Windows API context menu will NOT be used")
+  target_sources(LightSpeedFileExplorer PRIVATE WindowsNativeContextMenu_Stub.cpp)
 endif()
 
 
