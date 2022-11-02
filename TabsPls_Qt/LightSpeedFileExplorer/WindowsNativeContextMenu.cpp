@@ -10,6 +10,8 @@
 
 namespace WindowsNativeContextMenu {
 
+bool ComponentIsAvailable() { return true; }
+
 static void ReleaseIdList(ITEMIDLIST* idList) {
 
     if (idList)
