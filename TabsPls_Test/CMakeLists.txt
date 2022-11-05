@@ -51,7 +51,7 @@ endif()
 
 #Optionally include tests that use Python
 find_package(Python3 COMPONENTS Development)
-set(USE_PYTHON_TESTS "Also include tests related to Python components" CACHE BOOL ON)
+set(USE_PYTHON_TESTS CACHE BOOL ON "Also include tests related to Python components")
 if(Python3_FOUND AND USE_PYTHON_TESTS)
     message(STATUS "Python core tests will be included")
     target_link_libraries(TabsPlsTest PRIVATE Python3::Python Python3::Module)

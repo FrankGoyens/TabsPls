@@ -33,60 +33,60 @@
 <context>
     <name>FileListTableView</name>
     <message>
-        <location filename="FileListTableView.cpp" line="259"/>
+        <location filename="FileListTableView.cpp" line="269"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="261"/>
+        <location filename="FileListTableView.cpp" line="271"/>
         <source>Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="265"/>
+        <location filename="FileListTableView.cpp" line="275"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="372"/>
-        <location filename="FileListTableView.cpp" line="378"/>
+        <location filename="FileListTableView.cpp" line="385"/>
+        <location filename="FileListTableView.cpp" line="391"/>
         <source>Recycle item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="372"/>
+        <location filename="FileListTableView.cpp" line="385"/>
         <source>Do you want to recycle these items?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="448"/>
-        <location filename="FileListTableView.cpp" line="450"/>
-        <location filename="FileListTableView.cpp" line="457"/>
+        <location filename="FileListTableView.cpp" line="461"/>
+        <location filename="FileListTableView.cpp" line="463"/>
+        <location filename="FileListTableView.cpp" line="470"/>
         <source>Delete file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="448"/>
+        <location filename="FileListTableView.cpp" line="461"/>
         <source>Do you want to remove these files? (Cannot be undone!)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="566"/>
+        <location filename="FileListTableView.cpp" line="579"/>
         <source>Copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="566"/>
+        <location filename="FileListTableView.cpp" line="579"/>
         <source>Problem copying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="579"/>
+        <location filename="FileListTableView.cpp" line="592"/>
         <source>Moving</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="579"/>
+        <location filename="FileListTableView.cpp" line="592"/>
         <source>Problem moving</source>
         <translation type="unfinished"></translation>
     </message>
@@ -104,13 +104,18 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="338"/>
+        <location filename="FileListTableView.cpp" line="247"/>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="FileListTableView.cpp" line="351"/>
         <source>The following items could not be recycled:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileListTableView.cpp" line="343"/>
+        <location filename="FileListTableView.cpp" line="356"/>
         <location filename="QObjectRecycleExceptionHandler.hpp" line="20"/>
         <location filename="QObjectRecycleExceptionHandler.hpp" line="23"/>
         <location filename="QObjectRecycleExceptionHandler.hpp" line="29"/>
