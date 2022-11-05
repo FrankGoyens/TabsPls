@@ -50,7 +50,7 @@ if(UNIX)
 endif()
 
 #Optionally include tests that use Python
-find_package(Python3 COMPONENTS Development)
+find_package(Python3 3.5.0...<3.11.0 COMPONENTS Development) #Using 3.11 on Windows, when running Python related tests, gives some internal Python errors (on the Github runner at least)
 set(USE_PYTHON_TESTS CACHE BOOL ON "Also include tests related to Python components")
 if(Python3_FOUND AND USE_PYTHON_TESTS)
     message(STATUS "Python core tests will be included")
