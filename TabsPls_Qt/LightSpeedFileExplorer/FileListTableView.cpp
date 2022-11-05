@@ -240,6 +240,16 @@ static bool OpenWindowsShellContextMenuIfAvailable(const QPoint& globalPos, cons
     return false;
 }
 
+template <typename RenameOp>
+static void AddAction_Rename_IfPossible(QMenu& contextMenu, const QModelIndexList& selectedItems, RenameOp renameOp) {
+    if (selectedItems.size() == 1) {
+        contextMenu.addSeparator();
+        auto* contextRename = contextMenu.addAction(QObject::tr("Rename"));
+        auto& index = selectedItems.front();
+        QObject::connect(contextRename, &QAction::triggered, [=] { renameOp(index); });
+    }
+}
+
 void FileListTableView::contextMenuEvent(QContextMenuEvent* contextMenuEvent) {
     const auto selectedLocalFiles = AggregateSelectionDataAsLocalFileList();
 
@@ -265,8 +275,11 @@ void FileListTableView::contextMenuEvent(QContextMenuEvent* contextMenuEvent) {
     auto* contextPaste = contextMenu.addAction(tr("Paste"));
     connect(contextPaste, &QAction::triggered, [this] { pasteEvent(); });
 
-    if (hasSelection && !onlyParentDotsAreSelected)
+    if (hasSelection && !onlyParentDotsAreSelected) {
+        AddAction_Rename_IfPossible(contextMenu, selectionModel()->selectedRows(),
+                                    [this](const auto& index) { edit(index); });
         AddAction_Recycle_IfPossible(contextMenu, *this, [this] { AskRecycleSelectedFiles(); });
+    }
 
     contextMenu.exec(contextMenuEvent->globalPos());
 }
