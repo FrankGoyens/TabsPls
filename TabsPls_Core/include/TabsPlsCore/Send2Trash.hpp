@@ -15,7 +15,7 @@ namespace Send2Trash {
 bool ComponentIsAvailable();
 
 //! \brief Call this from the main thread once
-void Init();
+void Init(const char* programName);
 //! \brief Call this from the main thread before calling a function in this module from a worker thread
 [[nodiscard]] void* BeginThreads();
 /**! \brief Call this from the main thread when the worker thread is done.

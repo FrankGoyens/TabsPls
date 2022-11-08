@@ -6,12 +6,26 @@ extern "C" {
 
 // Don't use this directly, always use InitializeProcessWidePy
 struct AcquiredPyInstance {
-    AcquiredPyInstance() { Py_Initialize(); }
-    ~AcquiredPyInstance() { Py_Finalize(); }
+    AcquiredPyInstance(const char* programName) {
+        program = Py_DecodeLocale(programName, NULL);
+
+        if (program == NULL) {
+            fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
+            exit(1);
+        }
+        Py_SetProgramName(program);
+
+        Py_Initialize();
+    }
+    ~AcquiredPyInstance() {
+        Py_Finalize();
+        PyMem_RawFree(program);
+    }
+    wchar_t* program;
 };
 
 // Initializes Python, subsequent calls are no-op
-void InitializePyInstance() { static AcquiredPyInstance _; }
+inline void InitializePyInstance(const char* programName) { static AcquiredPyInstance _(programName); }
 
 struct AcquiredPyObject {
     AcquiredPyObject(PyObject* obj_ = nullptr) : obj(obj_) {}
