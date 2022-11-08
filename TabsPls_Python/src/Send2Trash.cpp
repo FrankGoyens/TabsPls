@@ -12,7 +12,7 @@ namespace Send2Trash {
 
 bool ComponentIsAvailable() { return true; }
 
-void Init() { InitializePyInstance(); }
+void Init(const char* programName) { InitializePyInstance(programName); }
 
 void* BeginThreads() { return static_cast<void*>(PyEval_SaveThread()); }
 

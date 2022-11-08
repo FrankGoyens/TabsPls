@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(LightSpeedFileExplorer LANGUAGES CXX)
 
-set(TabsPlsCorePrefix ${CMAKE_SOURCE_DIR}/../../TabsPls_Core)
-include(${TabsPlsCorePrefix}/provision_sources.cmake)
-ProvisionCoreSources(${TabsPlsCorePrefix})
+add_subdirectory(../../TabsPls_Core TabsPlsCore)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -20,8 +18,6 @@ find_package(Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
 set(TS_FILES LightSpeedFileExplorer_en_GB.ts)
 
 set(LightSpeedFileExplorer_Headers 
-  ${TabsPls_Core_Headers}
-
   TabsPlsCore_defs/FileSystemDefs.hpp
 
   FileSystemDefsConversion.hpp
@@ -54,7 +50,7 @@ set(LightSpeedFileExplorer_Headers
 )
 
 set(LightSpeedFileExplorer_Sources
-  ${TabsPls_Core_Sources}
+  
   model/FileSystem.cpp
 
   main.cpp
@@ -88,9 +84,12 @@ add_executable(LightSpeedFileExplorer
   ${TS_FILES}
 )
 
+target_link_libraries(LightSpeedFileExplorer PRIVATE TabsPls_Core)
+
+install(TARGETS LightSpeedFileExplorer)
+
 target_include_directories(LightSpeedFileExplorer 
   PRIVATE 
-  ../../TabsPls_Core/include
   TabsPlsCore_defs)
 
 #Conditionally link agains the Python component

@@ -4,21 +4,13 @@ project(TabsPlsTest)
 
 enable_testing()
 
-set(TabsPlsCorePrefix ${CMAKE_SOURCE_DIR}/../TabsPls_Core)
-include(${TabsPlsCorePrefix}/provision_sources.cmake)
-ProvisionCoreSources(${TabsPlsCorePrefix})
-
 set(TabsPlsTest_Headers 
-    ${TabsPls_Core_Headers}
-
     FakeFileSystem.hpp
     
     TabsPlsCore_defs/FileSystemDefs.hpp
 )
 
 set(TabsPlsTest_Sources 
-    ${TabsPls_Core_Sources}
-
     gtest_main.cc
     testDirectoryHistoryStore.cpp
     testRobustDirectoryHistoryStore.cpp
@@ -37,7 +29,9 @@ set(TabsPlsTest_Sources
 
 add_executable(TabsPlsTest ${TabsPlsTest_Headers} ${TabsPlsTest_Sources})
 
-target_include_directories(TabsPlsTest PRIVATE TabsPlsCore_defs ${TabsPlsCorePrefix}/include)
+target_include_directories(TabsPlsTest PRIVATE TabsPlsCore_defs)
+add_subdirectory(../TabsPls_Core TabsPls_Core)
+target_link_libraries(TabsPlsTest PRIVATE TabsPls_Core)
 target_compile_features(TabsPlsTest PUBLIC cxx_std_17)
 
 find_package(GTest)
