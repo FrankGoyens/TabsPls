@@ -1,0 +1,2 @@
+qt5-translations:x64-windows
+qt5-winextras:x64-windows
