@@ -134,9 +134,14 @@ AggregatedResult SendToTrash(const std::vector<std::string>& items,
                              const std::weak_ptr<ProgressReport>& progressReport) {
     const PyGILState_STATE gstate = PyGILState_Ensure();
     StartProgress(items, progressReport);
-    const auto result = SendMultipleToTrashFromInitializedPy(items, progressReport);
-    PyGILState_Release(gstate);
-    return result;
+    try {
+        const auto result = SendMultipleToTrashFromInitializedPy(items, progressReport);
+        PyGILState_Release(gstate);
+        return result;
+    } catch (const Send2Trash::Exception&) {
+        PyGILState_Release(gstate);
+        throw;
+    }
 }
 } // namespace Send2Trash
 } // namespace TabsPlsPython
