@@ -5,7 +5,7 @@
 namespace TabsPlsPython {
 namespace Send2Trash {
 
-void Init() {}
+void Init(const char*) {}
 void* BeginThreads() { return nullptr; }
 void EndThreads(void*) {}
 

@@ -107,7 +107,7 @@ else()
   message(STATUS "TabsPls Python component will NOT be used")
 
   #Stub the components that would otherwise be implemented by the Python components
-  target_sources(LightSpeedFileExplorer PRIVATE Send2Trash_stub.cpp)
+  target_sources(LightSpeedFileExplorer PRIVATE Send2Trash_stub.cpp EmbeddedPython_stub.cpp)
 endif()
 
 if(WIN32)
