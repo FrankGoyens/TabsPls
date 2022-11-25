@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(LightSpeedFileExplorer LANGUAGES CXX)
+include(CPack)
 
 add_subdirectory(../../TabsPls_Core TabsPlsCore)
 
@@ -88,10 +89,16 @@ target_link_libraries(LightSpeedFileExplorer PRIVATE TabsPls_Core)
 
 install(TARGETS LightSpeedFileExplorer)
 if(WIN32)
-  file(GLOB AllDlls ${CMAKE_BINARY_DIR}/$<CONFIG>/*.dll)
-  file(GLOB vcruntimeDlls ${CMAKE_BINARY_DIR}/tabspls_embedded_vcruntime/*.dll)
-  install(FILES ${AllDlls} ${vcruntimeDlls} ${CMAKE_BINARY_DIR}/$<CONFIG>/qt.conf TYPE BIN)
-  install(DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>/plugins ${CMAKE_BINARY_DIR}/tabspls_embedded_python TYPE BIN)
+  #This would be provided by the provision_embdeddable_python.py script
+  install(DIRECTORY ${CMAKE_BINARY_DIR}/tabspls_embedded_python TYPE BIN)
+
+  #These would be provided automatically when using vcpkg
+  install(DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>/plugins TYPE BIN)
+  install(DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>/ DESTINATION bin FILES_MATCHING PATTERN *.dll)
+  install(FILES ${CMAKE_BINARY_DIR}/$<CONFIG>/qt.conf TYPE BIN)
+
+  #This would be provided by the provision_embeddable_vcruntime.sh script
+  install(DIRECTORY ${CMAKE_BINARY_DIR}/tabspls_embedded_vcruntime/ DESTINATION bin FILES_MATCHING PATTERN *)
 endif()
 
 target_include_directories(LightSpeedFileExplorer 
