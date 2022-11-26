@@ -11,6 +11,9 @@ jobs:
 
     runs-on: windows-2019
 
+    env:
+      tabspls_build_dir: '"${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/build"'
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -21,15 +24,17 @@ jobs:
           VCPKGRESPONSEFILE: ${{ github.workspace }}/TabsPls_Qt/cmakeliststxt/vcpkg_x64-windows.txt
           VCINSTALLDIR: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC"
 
-      - name: provision embeddable python
-        run: 'python "${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/provision_embeddable_python.py" --platform x64-Windows --outdir "${{ github.workspace }}/../../_temp"'
+
+      - name: create build folder
         shell: bash
-      - name: dir
-        run: find "$VCINSTALLDIR"
+        run: 'mkdir ${{ env.tabspls_build_dir }}'
+
+      - name: provision embeddable python
+        run: 'python "${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/provision_embeddable_python.py" --platform x64-Windows --outdir ${{ env.tabspls_build_dir }}'
         shell: bash
 
       - name: provision vcruntime libraries 
-        run: '"${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/provision_embeddable_vcruntime.sh" "${{ github.workspace }}/../../_temp/tabspls_embedded_vcruntime"'
+        run: '"${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/provision_embeddable_vcruntime.sh" ${{ env.tabspls_build_dir }}/tabspls_embedded_vcruntime'
         shell: bash
 
       - name: dir
@@ -51,12 +56,19 @@ jobs:
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeListsTxtPath: '${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/CMakeLists.txt'
           cmakeGenerator: VS16Win64
-          cmakeAppendedArgs: -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/../../_temp/deploy"
-          buildWithCMakeArgs: --target install --config Release
+          cmakeAppendedArgs: -DTABSPLS_PYTHON_WILL_BE_PACKAGED=ON -DCPACK_BINARY_ZIP=ON -DCPACK_BINARY_NSIS=OFF
+          buildDirectory: '${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/build'
+          buildWithCMakeArgs: --target package --config Release
           useVcpkgToolchainFile: true
       - name: Prints output of run-vcpkg's task
         run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_TRIPLET_OUT }}' "
 
       - name: dir
-        run: find "${{ github.workspace }}/../../_temp"
+        run: 'find ${{ env.tabspls_build_dir }}'
         shell: bash
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: LightSpeedFileExplorer-portable
+          path: TabsPls_Qt/LightSpeedFileExplorer/build/LightSpeedFileExplorer*.zip
+
