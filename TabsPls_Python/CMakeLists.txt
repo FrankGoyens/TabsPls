@@ -1,7 +1,14 @@
 #This project provisions the Python library which can be used to integrate platform-independant features or to provide users extension endpoints
 project(TabsPls_Python)
 
-find_package(Python3 3.10.0...<3.11.0 COMPONENTS Development)
+set(TABSPLS_PYTHON_WILL_BE_PACKAGED OFF CACHE BOOL "Indicates that Python is to be packaged along with the application.")
+
+if(TABSPLS_PYTHON_WILL_BE_PACKAGED)
+  message(STATUS "Python is to be packaged, so a specific minor version will be searched...")
+  find_package(Python3 3.10.0...<3.11.0 COMPONENTS Development)
+else()
+  find_package(Python3 COMPONENTS Development)
+endif()
 
 set(TabsPls_Python_Headers include/TabsPls_Python/TabsPls_Python.hpp)
 
