@@ -97,8 +97,12 @@ if(WIN32)
   install(DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>/ DESTINATION bin FILES_MATCHING PATTERN *.dll)
   install(FILES ${CMAKE_BINARY_DIR}/$<CONFIG>/qt.conf TYPE BIN)
 
-  #This would be provided by the provision_embeddable_vcruntime.sh script
-  install(DIRECTORY ${CMAKE_BINARY_DIR}/tabspls_embedded_vcruntime/ DESTINATION bin FILES_MATCHING PATTERN *)
+  set(TABSPLS_PORTABLE_WINDOWS OFF CACHE BOOL "Indicates the intention that the program will be deployed as a portable application. To be used from a thumb drive for instance.")
+  if(TABSPLS_PORTABLE_WINDOWS)
+    #This would be provided by the provision_embeddable_vcruntime.sh script
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/tabspls_embedded_vcruntime/ DESTINATION bin FILES_MATCHING PATTERN *)
+    install(FILES ${CMAKE_SOURCE_DIR}/portable_launcher/Launch.bat TYPE BIN)
+  endif()
 endif()
 
 target_include_directories(LightSpeedFileExplorer 
