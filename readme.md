@@ -2,14 +2,30 @@
 Also known by its working title, TabsPls.
 A modern approach to a file system explorer, can we have some tabs please?
 
-## Why use this?
-Because Windows' built in file explorer still does not support tabs to this date. Or maybe you don't prefer graphical file explorers/manager and instead use a terminal emulator. But this does not integrate well with other graphical user interface tooling. You can't drag and drop for example, you also can't select files and folders to copy and paste.
+Light Speed File Explorer is a simple file explorer that offers tab support. There are many file explorers out there, most aim to be feature rich to the point where you don't need any other file management tools. The downside of that approach is that the GUI becomes cluttered, and the program becomes a _Jack of all trades, master of none_.
 
-### Hybrid solution
+Simplicity is the aim, but Light Speed File Explorer is still made with power users in mind.
+
+Maybe you don't prefer graphical file explorers/managers and instead use a terminal emulator. Those do not integrate well with other graphical user interface tooling however. You can't drag and drop for example, you also can't select files and folders to copy and paste.
+
+## Hybrid solution
 Light Speed File Explorer combines fast navigation with the convenience of a graphical user interface, from which you can drag files into emails, collaboration tools and more. Did I mention it also supports tabs? Because it does.
 
-### Keyboard only navigation (should you prefer it)
+## Keyboard only navigation (should you prefer it)
 The navigation is inspired by tab completion that you find in bash for example. This means that the goal is to be able to navigate without your hands leaving the keyboard. 
+
+## Cross platform
+Have the same file explorer on all platforms.
+
+## Feature summary 
+* Tab support
+* Drag 'n Drop: Drag files and/or directories to other programs, or from other programs.
+* Instant filter: no separate searching context. Just type, and only the matching files and directories remain.
+* Directory flattening: recursively show all files under a directory.
+* Address bar tab-completion: press tab while typing a directory address to append the next directory.
+* Recycle: Send files/directories to the Trash (or Recycling bin) where you may still retrieve them.
+* (Windows) Files have their corresponding icons.
+* (Windows) Native context menu: have the windows file explorer's context menu.
 
 ## How to build
 There are two buildable components. The main application and the test application.
