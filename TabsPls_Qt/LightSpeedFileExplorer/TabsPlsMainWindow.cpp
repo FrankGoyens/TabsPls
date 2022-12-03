@@ -6,6 +6,7 @@
 #include <QDesktopServices>
 #include <QMenuBar>
 #include <QShortcut>
+#include <QTabBar>
 #include <QTabWidget>
 #include <QUrl>
 
@@ -100,8 +101,18 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
 
     auto* tabWidget = new QTabWidget();
     tabWidget->setTabBarAutoHide(true);
+    tabWidget->setMovable(true);
 
     m_tabs.push_back(CreateNewFileBrowserTab(*tabWidget, *validInitialDir));
+
+    const auto resetTabLabels = [tabWidget](int index, const auto& label) {
+        tabWidget->setTabText(index, AsQString(label));
+    };
+
+    connect(tabWidget->tabBar(), &QTabBar::tabMoved, [=](int from, int to) {
+        TabModel::SwapTabs(m_tabs, from, to);
+        TabModel::ReassignTabLabels(m_tabs, resetTabLabels);
+    });
 
     const auto* createTabShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_T), this);
     connect(createTabShortcut, &QShortcut::activated, [=]() {
@@ -119,8 +130,7 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
             tabWidget->removeTab(removalIndex);
             m_tabs.erase(m_tabs.begin() + removalIndex);
             TabModel::ReassignTabIndices(m_tabs);
-            TabModel::ReassignTabLabels(
-                m_tabs, [tabWidget](int index, const auto& label) { tabWidget->setTabText(index, AsQString(label)); });
+            TabModel::ReassignTabLabels(m_tabs, resetTabLabels);
         }
     });
 

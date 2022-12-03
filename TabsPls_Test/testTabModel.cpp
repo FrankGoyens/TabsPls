@@ -82,3 +82,18 @@ TEST(testTabModel, ReassignTabLabels) {
     EXPECT_EQ(std::make_pair('1', std::string("first_tab")), givenFirstTabViewer);
     EXPECT_EQ(std::make_pair('2', std::string("second_tab")), givenSecondTabViewer);
 }
+
+TEST(testTabModel, SwapTabs) {
+    const std::vector<std::shared_ptr<TabModel::Tab>> givenTabContainer = {
+        std::make_shared<TabModel::Tab>(TabModel::Tab{0, "first_tab"}),
+        std::make_shared<TabModel::Tab>(TabModel::Tab{1, "second_tab"})};
+
+    TabModel::SwapTabs(givenTabContainer, 0, 1);
+
+    const TabModel::Tab expectedFirst{0, std::string("second_tab")};
+    const TabModel::Tab expectedSecond{1, std::string("first_tab")};
+    EXPECT_EQ(expectedFirst, *givenTabContainer[0]);
+    EXPECT_EQ(expectedSecond, *givenTabContainer[1]);
+
+    EXPECT_NO_THROW(TabModel::SwapTabs(givenTabContainer, 1000, 878));
+}
