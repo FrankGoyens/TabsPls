@@ -1,8 +1,12 @@
 #include <TabsPlsCore/TabModel.hpp>
 
 namespace TabModel {
-
-bool TabLabel::operator==(const TabLabel& other) const { return mnemonic == other.mnemonic && label == other.label; }
+bool operator==(const Tab& first, const Tab& second) {
+    return first.index == second.index && first.name == second.name;
+}
+bool operator==(const TabLabel& first, const TabLabel& second) {
+    return first.mnemonic == second.mnemonic && first.label == second.label;
+}
 
 std::optional<Mnemonic> MnemonicFromIndex(int index) {
     if (index > 9 || index < 0)
