@@ -16,16 +16,25 @@ set(TabsPls_Python_Sources src/TabsPls_Python.cpp
   src/Send2Trash.cpp
   src/PythonRAII.hpp
   src/EmbeddedPython.cpp
+  src/Toolbar.cpp
 )
 
-add_library(TabsPls_Python ${TabsPls_Python_Headers} ${TabsPls_Python_Sources}) 
+add_library(TabsPls_Python ${TabsPls_Python_Headers} ${TabsPls_Python_Sources})
+target_compile_features(TabsPls_Python PRIVATE cxx_std_17)
+
 target_include_directories(TabsPls_Python 
 PUBLIC 
   include
 PRIVATE 
   ../TabsPls_Core/include
 )
-target_link_libraries(TabsPls_Python PRIVATE Python3::Python Python3::Module)
+if(FILESYSTEM_DEFS_INCLUDE_PATH)
+  target_include_directories(TabsPls_Python PRIVATE ${FILESYSTEM_DEFS_INCLUDE_PATH})
+else()
+  message(FATAL_ERROR "Please provide an include path in the FILESYSTEM_DEFS_INCLUDE_PATH variable so that TabsPls_Python may find a FileSystemDefs.hpp header")
+endif()
+
+target_link_libraries(TabsPls_Python PUBLIC Python3::Python Python3::Module)
 
 set(Python3_FOUND ${Python3_FOUND} PARENT_SCOPE) #expose this to the parent so that it can optionally be linked
 
