@@ -110,6 +110,7 @@ target_include_directories(LightSpeedFileExplorer
   TabsPlsCore_defs)
 
 #Conditionally link agains the Python component
+set(FILESYSTEM_DEFS_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/TabsPlsCore_defs)
 add_subdirectory(../../TabsPls_Python TabsPls_Python)
 set(USE_PYTHON_COMPONENT ON CACHE BOOL "Use Python for more platform independant features, and to have user extension endpoints")
 if(Python3_FOUND AND USE_PYTHON_COMPONENT)

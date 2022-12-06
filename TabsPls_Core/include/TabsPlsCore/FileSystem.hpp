@@ -32,4 +32,6 @@ RawPath GetParent(const Directory& dir);
 
 std::uintmax_t GetFileSize(const FilePath&);
 std::time_t GetLastWriteTime(const FilePath&);
+
+RawPath ReplaceExtension(const RawPath&, const RawPath& extension = {});
 } // namespace FileSystem

@@ -1,6 +1,7 @@
 #include <TabsPlsCore/FileSystem.hpp>
 
 #include <filesystem>
+#include <optional>
 
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
@@ -80,5 +81,11 @@ template <typename TimePoint> static std::time_t to_time_t(TimePoint tp) {
 std::time_t GetLastWriteTime(const FilePath& file) {
     const auto fileTime = std::filesystem::last_write_time(file.path());
     return to_time_t(fileTime);
+}
+
+RawPath ReplaceExtension(const RawPath& filePath, const RawPath& extension) {
+    std::filesystem::path stdPath(filePath);
+    stdPath.replace_extension(extension);
+    return stdPath.wstring();
 }
 } // namespace FileSystem
