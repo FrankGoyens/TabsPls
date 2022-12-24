@@ -292,6 +292,9 @@ QStringList FileListTableView::AggregateSelectionDataAsLocalFileList() const {
     const auto selectionIndices = selectionModel()->selectedRows();
     QStringList dataAsList;
     for (const auto& index : selectionIndices) {
+        if (isRowHidden(index.row()))
+            continue;
+
         const QString filePath = model()->data(index, Qt::UserRole).toString();
         if (filePath == "..")
             continue;
