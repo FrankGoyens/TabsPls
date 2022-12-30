@@ -4,6 +4,7 @@ project(LightSpeedFileExplorer LANGUAGES CXX)
 include(CPack)
 
 add_subdirectory(../../TabsPls_Core TabsPlsCore)
+add_subdirectory(../../TabsPls_Core/TabsPls_Core_StdFileSystem TabsPls_Core_StdFileSystem)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -18,9 +19,7 @@ find_package(Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
 
 set(TS_FILES LightSpeedFileExplorer_en_GB.ts)
 
-set(LightSpeedFileExplorer_Headers 
-  TabsPlsCore_defs/FileSystemDefs.hpp
-
+set(LightSpeedFileExplorer_Headers
   FileSystemDefsConversion.hpp
   TabsPlsMainWindow.hpp
   FileListViewModel.hpp
@@ -51,9 +50,6 @@ set(LightSpeedFileExplorer_Headers
 )
 
 set(LightSpeedFileExplorer_Sources
-  
-  model/FileSystem.cpp
-
   main.cpp
   FileSystemDefsConversion.cpp
   TabsPlsMainWindow.cpp
@@ -64,7 +60,6 @@ set(LightSpeedFileExplorer_Sources
   FilterHookedFileListTableView.cpp
   FilterHookedLineEdit.cpp
   CurrentDirectoryFileOpQtImpl.cpp
-  FileSystemOp.cpp
   FileBrowserWidget.cpp
   QObjectProgressReport.cpp
   FutureWatchDialogWithProgressBar.cpp
@@ -85,7 +80,7 @@ add_executable(LightSpeedFileExplorer
   ${TS_FILES}
 )
 
-target_link_libraries(LightSpeedFileExplorer PRIVATE TabsPls_Core)
+target_link_libraries(LightSpeedFileExplorer PRIVATE TabsPls_Core TabsPls_Core_StdFileSystem)
 
 install(TARGETS LightSpeedFileExplorer)
 if(WIN32)
@@ -110,7 +105,7 @@ target_include_directories(LightSpeedFileExplorer
   TabsPlsCore_defs)
 
 #Conditionally link agains the Python component
-set(FILESYSTEM_DEFS_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/TabsPlsCore_defs)
+set(FILESYSTEM_DEFS_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/../../TabsPls_Core/TabsPls_Core_StdFileSystem/include)
 add_subdirectory(../../TabsPls_Python TabsPls_Python)
 set(USE_PYTHON_COMPONENT ON CACHE BOOL "Use Python for more platform independant features, and to have user extension endpoints")
 if(Python3_FOUND AND USE_PYTHON_COMPONENT)
