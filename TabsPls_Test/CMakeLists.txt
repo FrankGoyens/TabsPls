@@ -2,6 +2,19 @@ cmake_minimum_required(VERSION 3.11)
 
 project(TabsPlsTest)
 
+find_package(GTest)
+add_library(GTest_lib INTERFACE)
+add_library(GTest_main INTERFACE)
+if(GTest_FOUND)
+    if(${CMAKE_VERSION} VERSION_LESS 3.20.0)
+        target_link_libraries(GTest_lib INTERFACE GTest::GTest)
+        target_link_libraries(GTest_main INTERFACE GTest::Main)
+    else()
+        target_link_libraries(GTest_lib INTERFACE GTest::gtest)
+        target_link_libraries(GTest_main INTERFACE GTest::gtest_main)
+    endif()
+endif()
+
 enable_testing()
 
 set(TabsPlsTest_Headers 
@@ -30,18 +43,8 @@ add_executable(TabsPlsTest ${TabsPlsTest_Headers} ${TabsPlsTest_Sources})
 
 target_include_directories(TabsPlsTest PRIVATE TabsPlsCore_defs)
 add_subdirectory(../TabsPls_Core TabsPls_Core)
-target_link_libraries(TabsPlsTest PRIVATE TabsPls_Core)
+target_link_libraries(TabsPlsTest PRIVATE TabsPls_Core GTest_lib GTest_main)
 target_compile_features(TabsPlsTest PUBLIC cxx_std_17)
-
-find_package(GTest)
-add_library(GTest INTERFACE)
-if(GTest_FOUND)
-    if(${CMAKE_VERSION} VERSION_LESS "3.20.0")
-    	target_link_libraries(GTest INTERFACE GTest::GTest GTest::Main)
-    else()
-	    target_link_libraries(GTest INTERFACE GTest::gtest Gtest::gtest_main)
-    endif()
-endif()
 
 if(UNIX)
 	target_link_libraries(TabsPlsTest PRIVATE pthread)
@@ -56,9 +59,11 @@ if(USE_PYTHON_TESTS)
     if(Python3_FOUND)
         message(STATUS "Python core tests will be included")
         add_executable(TabsPlsPluginsTest 
+	    gtest_main_tabspls_plugin_test.cc
+
             testCatchPythonException.cpp 
             testToolbar.cpp)
-        target_link_libraries(TabsPlsPluginsTest PRIVATE TabsPls_Python TabsPls_Core_StdFileSystem GTest)
+        target_link_libraries(TabsPlsPluginsTest PRIVATE TabsPls_Python TabsPls_Core_StdFileSystem GTest_lib)
         set(PLUGINS_TEST_INPUT ${CMAKE_SOURCE_DIR}/plugins_test_input)
         configure_file(TestPaths.h.in TestPaths.h @ONLY)
         target_include_directories(TabsPlsPluginsTest PRIVATE ${CMAKE_BINARY_DIR})
@@ -74,10 +79,17 @@ gtest_add_tests(TARGET TabsPlsPluginsTest)
 
 #Copy all Python DLLs to the build output, this is usually necessary on a Windows platform
 if(WIN32 AND USE_PYTHON_TESTS AND Python3_FOUND)
+    message(STATUS "Attempting to copy the Python runtime DLLs from dirs: ${Python3_RUNTIME_LIBRARY_DIRS} ...")
     foreach(RuntimeLibraryDir ${Python3_RUNTIME_LIBRARY_DIRS})
-        file(GLOB PythonDLLs "${RuntimeLibraryDir}/*.dll")
+        file(GLOB PythonDLLs "${RuntimeLibraryDir}/python*.dll")
         if(PythonDLLs)
+	    message(STATUS "Copying ${PythonDLLs} to ${CMAKE_BINARY_DIR}")
             file(COPY ${PythonDLLs} DESTINATION ${CMAKE_BINARY_DIR})
         endif()
     endforeach()
+    message(STATUS "Setting up a virtualenv in the build folder to make sure the Python environment is sane when running tests...")
+    execute_process(COMMAND virtualenv ${CMAKE_BINARY_DIR} --python python${Python3_VERSION} --no-setuptools --no-pip --no-wheel
+	    OUTPUT_VARIABLE virtualenv_out
+	    ERROR_VARIABLE virtualenv_out)
+    message(STATUS ${virtualenv_out})
 endif()

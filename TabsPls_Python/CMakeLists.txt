@@ -37,4 +37,6 @@ endif()
 target_link_libraries(TabsPls_Python PUBLIC Python3::Python Python3::Module)
 
 set(Python3_FOUND ${Python3_FOUND} PARENT_SCOPE) #expose this to the parent so that it can optionally be linked
+set(Python3_RUNTIME_LIBRARY_DIRS ${Python3_RUNTIME_LIBRARY_DIRS} PARENT_SCOPE) #expose this to the parent so that, on Windows, the necessary DLLs can be provisioned
+set(Python3_VERSION ${Python3_VERSION} PARENT_SCOPE) #expose this to the parent so that, on Windows, the necessary Python environment can be provisioned
 
