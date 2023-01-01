@@ -41,6 +41,7 @@ class Toolbar {
 
 bool ComponentIsAvailable();
 
+//! \brief Be sure to call InitializePyInstance first
 void Init();
 
 std::vector<Toolbar> LoadToolbars(const FileSystem::Directory& pluginsDirectory);
