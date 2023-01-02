@@ -1,7 +1,6 @@
 #include <TabsPlsCore/FileSystem.hpp>
 
 #include <filesystem>
-#include <optional>
 
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
