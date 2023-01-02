@@ -87,9 +87,9 @@ if(WIN32 AND USE_PYTHON_TESTS AND Python3_FOUND)
             file(COPY ${PythonDLLs} DESTINATION ${CMAKE_BINARY_DIR})
         endif()
     endforeach()
-    message(STATUS "Setting up a virtualenv in the build folder to make sure the Python environment is sane when running tests...")
-    execute_process(COMMAND virtualenv ${CMAKE_BINARY_DIR} --python python${Python3_VERSION} --no-setuptools --no-pip --no-wheel
-	    OUTPUT_VARIABLE virtualenv_out
-	    ERROR_VARIABLE virtualenv_out)
-    message(STATUS ${virtualenv_out})
+    message(STATUS "Copying the Python 'Lib' folder to build directory to make sure the Python environment is sane when running tests...")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${Python3_STDLIB} ${CMAKE_BINARY_DIR}/Lib 
+	    OUTPUT_VARIABLE copy_python_lib_out
+	    ERROR_VARIABLE copy_python_lib_out)
+    message(STATUS ${copy_python_lib_out})
 endif()
