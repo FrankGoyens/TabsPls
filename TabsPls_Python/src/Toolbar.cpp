@@ -1,3 +1,5 @@
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+
 #include <TabsPlsCore/Toolbar.hpp>
 
 #include <algorithm>
@@ -170,13 +172,23 @@ struct ActivatorImpl : Activator {
                        [](const auto& pair) { return pair.first; });
         return names;
     }
-    ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item) const override {
+    ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item,
+                              ActivationMethod activationMethod) const override {
         const auto& pluginModules = GetPluginModules().modules;
         const auto it = pluginModules.find(toolbar.GetId());
         if (it == pluginModules.end())
             return {};
         AcquiredPyObject itemString = PyUnicode_FromString(item.id.c_str());
-        AcquiredPyObject activationMethodString = PyUnicode_FromString("regular");
+        PyObject* activationMethodStringPtr;
+        switch (activationMethod) {
+        case ActivationMethod::Regular:
+            activationMethodStringPtr = PyUnicode_FromString("regular");
+            break;
+        case ActivationMethod::Alternative:
+            activationMethodStringPtr = PyUnicode_FromString("alternative");
+            break;
+        }
+        AcquiredPyObject activationMethodString(activationMethodStringPtr);
         AcquiredPyObject args = PyTuple_Pack(2, itemString.obj, activationMethodString.obj);
         AcquiredPyObject result = PyObject_CallObject(it->second.pyActivationFunc, args.obj);
         if (result.obj == Py_None || result.obj == nullptr)
@@ -186,7 +198,8 @@ struct ActivatorImpl : Activator {
 };
 } // namespace
 
-ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item, const Activator* customActivator) {
+ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item, ActivationMethod activationMethod,
+                          const Activator* customActivator) {
     ActivatorImpl activatorImpl;
     if (!customActivator)
         customActivator = &activatorImpl;
@@ -202,7 +215,7 @@ ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item, const
     if (itemIt == items.end())
         return {};
 
-    return customActivator->Activate(toolbar, item);
+    return customActivator->Activate(toolbar, item, activationMethod);
 }
 
 } // namespace TabsPlsPython::Toolbar

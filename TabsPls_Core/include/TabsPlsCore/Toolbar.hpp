@@ -50,13 +50,18 @@ struct ActivationResult {
     std::string desiredReaction, parameter;
 };
 
+enum class ActivationMethod { Regular, Alternative };
+
 struct Activator {
     virtual ~Activator() = default;
     virtual std::set<std::string> GetToolbarNames() const = 0;
-    virtual ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item) const = 0;
+    virtual ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item,
+                                      ActivationMethod activationMethod) const = 0;
 };
 
-ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item, const Activator* customActivator = nullptr);
+ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item,
+                          ActivationMethod activationMethod = ActivationMethod::Regular,
+                          const Activator* customActivator = nullptr);
 
 } // namespace Toolbar
 } // namespace TabsPlsPython
