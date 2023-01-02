@@ -5,9 +5,9 @@ set(TABSPLS_PYTHON_WILL_BE_PACKAGED OFF CACHE BOOL "Indicates that Python is to 
 
 if(TABSPLS_PYTHON_WILL_BE_PACKAGED)
   message(STATUS "Python is to be packaged, so a specific minor version will be searched...")
-  find_package(Python3 3.10.0...<3.11.0 COMPONENTS Development)
+  find_package(Python3 3.10.0...<3.11.0 COMPONENTS Interpreter Development)
 else()
-  find_package(Python3 COMPONENTS Development)
+	find_package(Python3 COMPONENTS Interpreter Development)
 endif()
 
 set(TabsPls_Python_Headers include/TabsPls_Python/TabsPls_Python.hpp)
@@ -18,7 +18,6 @@ set(TabsPls_Python_Sources src/TabsPls_Python.cpp
   src/EmbeddedPython.cpp
   src/Toolbar.cpp
 )
-
 add_library(TabsPls_Python ${TabsPls_Python_Headers} ${TabsPls_Python_Sources})
 target_compile_features(TabsPls_Python PRIVATE cxx_std_17)
 
@@ -38,5 +37,5 @@ target_link_libraries(TabsPls_Python PUBLIC Python3::Python Python3::Module)
 
 set(Python3_FOUND ${Python3_FOUND} PARENT_SCOPE) #expose this to the parent so that it can optionally be linked
 set(Python3_RUNTIME_LIBRARY_DIRS ${Python3_RUNTIME_LIBRARY_DIRS} PARENT_SCOPE) #expose this to the parent so that, on Windows, the necessary DLLs can be provisioned
-set(Python3_VERSION ${Python3_VERSION} PARENT_SCOPE) #expose this to the parent so that, on Windows, the necessary Python environment can be provisioned
+set(Python3_STDLIB ${Python3_STDLIB} PARENT_SCOPE) #expose this to the parent so that, on Windows, the necessary Python environment can be provisioned
 
