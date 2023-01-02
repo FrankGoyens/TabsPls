@@ -56,8 +56,8 @@ struct AcquiredModules {
             auto* module = PyImport_Import(toolbarModuleName.obj);
 
             if (module) {
-                auto* activationFunc = PyObject_GetAttrString(module, "activate");
-                modules.emplace(ToUTF8(moduleName.c_str()), PyPluginModule{module, activationFunc});
+                if (auto* activationFunc = PyObject_GetAttrString(module, "activate"))
+                    modules.emplace(ToUTF8(moduleName.c_str()), PyPluginModule{module, activationFunc});
             }
         }
     }
@@ -132,9 +132,11 @@ std::vector<Toolbar> LoadToolbars(const FileSystem::Directory& pluginsDirectory)
     std::vector<Toolbar> toolbars;
 
     for (const auto& [moduleName, pyModule] : pluginModules.modules) {
-        auto toolbarItems = GetItemsFromPlugin(*pyModule.pyModule);
-        if (!toolbarItems.empty()) {
-            toolbars.emplace_back(moduleName, std::move(toolbarItems));
+        if (pyModule.pyModule) {
+            auto toolbarItems = GetItemsFromPlugin(*pyModule.pyModule);
+            if (!toolbarItems.empty()) {
+                toolbars.emplace_back(moduleName, std::move(toolbarItems));
+            }
         }
     }
 
