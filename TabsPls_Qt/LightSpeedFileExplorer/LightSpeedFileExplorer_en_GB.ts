@@ -4,28 +4,28 @@
 <context>
     <name>FileBrowserWidget</name>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="316"/>
-        <location filename="FileBrowserWidget.cpp" line="317"/>
+        <location filename="FileBrowserWidget.cpp" line="370"/>
+        <location filename="FileBrowserWidget.cpp" line="371"/>
         <source>New Folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="316"/>
+        <location filename="FileBrowserWidget.cpp" line="370"/>
         <source>New folder name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="325"/>
+        <location filename="FileBrowserWidget.cpp" line="379"/>
         <source>Create new folder failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="371"/>
+        <location filename="FileBrowserWidget.cpp" line="425"/>
         <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FileBrowserWidget.cpp" line="376"/>
+        <location filename="FileBrowserWidget.cpp" line="430"/>
         <source>Unable to change directory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -160,11 +160,16 @@
         <source>Unknown error</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="toolbars_plugin/PluginProvisionedToolbar.cpp" line="9"/>
+        <source>Message from %1 toolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TabsPlsMainWindow</name>
     <message>
-        <location filename="TabsPlsMainWindow.cpp" line="94"/>
+        <location filename="TabsPlsMainWindow.cpp" line="111"/>
         <source>Light Speed File Explorer</source>
         <translation type="unfinished"></translation>
     </message>

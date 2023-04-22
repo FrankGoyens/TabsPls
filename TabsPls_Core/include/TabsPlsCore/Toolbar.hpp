@@ -59,9 +59,9 @@ struct Activator {
                                       ActivationMethod activationMethod) const = 0;
 };
 
-ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item,
-                          ActivationMethod activationMethod = ActivationMethod::Regular,
-                          const Activator* customActivator = nullptr);
+[[nodiscard]] ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item,
+                                        ActivationMethod activationMethod = ActivationMethod::Regular,
+                                        const Activator* customActivator = nullptr);
 
 } // namespace Toolbar
 } // namespace TabsPlsPython

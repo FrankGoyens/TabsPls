@@ -23,8 +23,8 @@ static QString AsQString(const TabModel::TabLabel& label) {
                           : QString(label.label.c_str());
 }
 
-void ConnectDirectoryChangedSignalToTab(const std::weak_ptr<TabModel::Tab>& tab,
-                                        const FileBrowserWidget& widgetWithinTab, QTabWidget& tabWidget) {
+static void ConnectDirectoryChangedSignalToTab(const std::weak_ptr<TabModel::Tab>& tab,
+                                               const FileBrowserWidget& widgetWithinTab, QTabWidget& tabWidget) {
     QWidget::connect(&widgetWithinTab, &FileBrowserWidget::currentDirectoryNameChanged, [&, tab](const auto& newName) {
         if (const auto liveTab = tab.lock()) {
             liveTab->name = newName.toStdString();
@@ -33,9 +33,11 @@ void ConnectDirectoryChangedSignalToTab(const std::weak_ptr<TabModel::Tab>& tab,
     });
 }
 
-std::shared_ptr<TabModel::Tab> CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir) {
+static std::pair<std::shared_ptr<TabModel::Tab>, FileBrowserWidget&>
+CreateNewFileBrowserTab(QTabWidget& tabWidget, FileSystem::Directory dir,
+                        const std::vector<TabsPlsPython::Toolbar::Toolbar>& toolbarModels) {
 
-    auto* widgetWithinTab = new FileBrowserWidget(std::move(dir));
+    auto* widgetWithinTab = new FileBrowserWidget(std::move(dir), toolbarModels);
     const auto tabName = widgetWithinTab->GetCurrentDirectoryName();
     const int tabIndex = tabWidget.addTab(widgetWithinTab, tabName);
 
@@ -44,7 +46,7 @@ std::shared_ptr<TabModel::Tab> CreateNewFileBrowserTab(QTabWidget& tabWidget, Fi
     tabWidget.setTabText(tabIndex, AsQString(LabelFromTabModel(*tabModel)));
 
     ConnectDirectoryChangedSignalToTab(tabModel, *widgetWithinTab, tabWidget);
-    return tabModel;
+    return {tabModel, *widgetWithinTab};
 }
 
 static void SetupMenubar_View(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget& tabWidget) {
@@ -90,7 +92,22 @@ static void SetupMenubar(QMenuBar& menubar, QMainWindow& mainWindow, QTabWidget&
     SetupMenubar_View(menubar, mainWindow, tabWidget);
 }
 
+static void LoadToolbarModels(std::vector<TabsPlsPython::Toolbar::Toolbar>& toolbars) {
+    if (!TabsPlsPython::Toolbar::ComponentIsAvailable())
+        return;
+
+    const auto pluginsDirectory = FileSystem::Directory::FromPath(
+        FileSystem::Directory::FromCurrentWorkingDirectory().path() + FileSystem::Separator() + L"toolbars");
+    if (!pluginsDirectory)
+        return;
+
+    auto loadedToolbars = TabsPlsPython::Toolbar::LoadToolbars(*pluginsDirectory);
+    std::move(loadedToolbars.begin(), loadedToolbars.end(), std::back_inserter(toolbars));
+}
+
 TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
+    LoadToolbarModels(m_toolbarModels);
+
     setWindowTitle(tr("Light Speed File Explorer"));
     setWindowIcon(QIcon(":boot_icon_32.png"));
 
@@ -99,42 +116,52 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
     if (!validInitialDir)
         throw std::invalid_argument("The given directory does not exist");
 
-    auto* tabWidget = new QTabWidget();
-    tabWidget->setTabBarAutoHide(true);
-    tabWidget->setMovable(true);
+    m_tabWidget = new QTabWidget();
+    m_tabWidget->setTabBarAutoHide(true);
+    m_tabWidget->setMovable(true);
 
-    m_tabs.push_back(CreateNewFileBrowserTab(*tabWidget, *validInitialDir));
+    (void)OpenNewTab(*validInitialDir);
 
-    const auto resetTabLabels = [tabWidget](int index, const auto& label) {
+    const auto resetTabLabels = [tabWidget = m_tabWidget](int index, const auto& label) {
         tabWidget->setTabText(index, AsQString(label));
     };
 
-    connect(tabWidget->tabBar(), &QTabBar::tabMoved, [=](int from, int to) {
+    connect(m_tabWidget->tabBar(), &QTabBar::tabMoved, [=](int from, int to) {
         TabModel::SwapTabs(m_tabs, from, to);
         TabModel::ReassignTabLabels(m_tabs, resetTabLabels);
     });
 
     const auto* createTabShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_T), this);
     connect(createTabShortcut, &QShortcut::activated, [=]() {
-        if (const auto* fileBrowserTab = dynamic_cast<FileBrowserWidget*>(tabWidget->currentWidget())) {
-            const auto tabModel = CreateNewFileBrowserTab(*tabWidget, fileBrowserTab->GetCurrentDirectory());
-            m_tabs.push_back(tabModel);
-            tabWidget->setCurrentIndex(tabModel->index);
+        if (const auto* fileBrowserTab = dynamic_cast<FileBrowserWidget*>(m_tabWidget->currentWidget())) {
+            const auto tabModel = OpenNewTab(fileBrowserTab->GetCurrentDirectory());
+            m_tabWidget->setCurrentIndex(tabModel->index);
         }
     });
 
     const auto* closeTabShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this);
     connect(closeTabShortcut, &QShortcut::activated, [=]() {
-        if (tabWidget->count() > 1) {
-            const auto removalIndex = tabWidget->currentIndex();
-            tabWidget->removeTab(removalIndex);
+        if (m_tabWidget->count() > 1) {
+            const auto removalIndex = m_tabWidget->currentIndex();
+            m_tabWidget->removeTab(removalIndex);
             m_tabs.erase(m_tabs.begin() + removalIndex);
             TabModel::ReassignTabIndices(m_tabs);
             TabModel::ReassignTabLabels(m_tabs, resetTabLabels);
         }
     });
 
-    setCentralWidget(tabWidget);
+    setCentralWidget(m_tabWidget);
 
-    SetupMenubar(*menuBar(), *this, *tabWidget);
+    SetupMenubar(*menuBar(), *this, *m_tabWidget);
+}
+
+std::shared_ptr<TabModel::Tab> TabsPlsMainWindow::OpenNewTab(const FileSystem::Directory& directory) {
+    auto& [tabModel, filebrowserWidget] = CreateNewFileBrowserTab(*m_tabWidget, directory, m_toolbarModels);
+    m_tabs.push_back(tabModel);
+    connect(&filebrowserWidget, &FileBrowserWidget::RequestOpenDirectoryInTab,
+            [this](const FileSystem::Directory& newDirectory) {
+                const auto tabModel = OpenNewTab(newDirectory);
+                m_tabWidget->setCurrentIndex(tabModel->index);
+            });
+    return tabModel;
 }
