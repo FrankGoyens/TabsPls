@@ -47,6 +47,9 @@ set(LightSpeedFileExplorer_Headers
   EscapePodLauncher.hpp
   TabsPlsLog.hpp
   WindowsNativeContextMenu.hpp
+
+  toolbars_plugin/PluginProvisionedToolbar.hpp
+  toolbars_plugin/MouseWheelClickEventFilter.hpp
 )
 
 set(LightSpeedFileExplorer_Sources
@@ -71,6 +74,9 @@ set(LightSpeedFileExplorer_Sources
   FileRetrievalRunnable.cpp
   FileRetrievalByDispatch.cpp
   EscapePodLauncher.cpp
+
+  toolbars_plugin/PluginProvisionedToolbar.cpp
+  toolbars_plugin/MouseWheelClickEventFilter.cpp
 )
 
 add_executable(LightSpeedFileExplorer  

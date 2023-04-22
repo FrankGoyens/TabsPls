@@ -1,6 +1,7 @@
 ﻿#include "FileBrowserWidget.hpp"
 
 #include <filesystem>
+#include <sstream>
 
 #include <QHBoxLayout>
 #include <QInputDialog>
@@ -23,6 +24,9 @@
 #include "FileListViewModel.hpp"
 #include "FileSystemDefsConversion.hpp"
 #include "FlattenedDirectoryViewModel.hpp"
+#include "TabsPlsLog.hpp"
+
+#include "toolbars_plugin/PluginProvisionedToolbar.hpp"
 
 using FileSystem::StringConversion::FromName;
 using FileSystem::StringConversion::FromRawPath;
@@ -174,6 +178,22 @@ static auto CreateHistoryActionClosure(RobustDirectoryHistoryStore& history,
     };
 }
 
+static auto CreatePluginProvisionedToolbars(const std::vector<TabsPlsPython::Toolbar::Toolbar>& toolbarModels) {
+    std::vector<std::unique_ptr<PluginProvisionedToolbar>> toolbars;
+
+    try {
+        for (const auto& pluginToolbar : toolbarModels) {
+            toolbars.push_back(std::make_unique<PluginProvisionedToolbar>(pluginToolbar));
+        }
+    } catch (const TabsPlsPython::Toolbar::ToolbarException& e) {
+        std::ostringstream oss;
+        oss << "Error loading toolbar plugin: " << e.what();
+        TabsPlsLog_Debug(oss.str().c_str());
+    }
+
+    return toolbars;
+}
+
 static auto* CreateNewDirectoryButton(const QStyle& styleProvider) {
     auto* newDirectoryButton = new QPushButton("+");
     newDirectoryButton->setIcon(styleProvider.standardIcon(QStyle::SP_DirIcon));
@@ -203,7 +223,8 @@ static auto SetupTopBar(QWidget& widget, const QString& initialDirectory) {
 }
 
 static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::shared_ptr<CurrentDirectoryFileOp> currentDirFileOp,
-                               std::unique_ptr<QAbstractTableModel> viewModel, const QString& initialDirectory) {
+                               std::unique_ptr<QAbstractTableModel> viewModel, const QString& initialDirectory,
+                               const std::vector<TabsPlsPython::Toolbar::Toolbar>& toolbarModels) {
     auto* topBarWidget = new QWidget();
     auto [backButton, forwardButton, topBarDirectoryInputField, newDirectoryButton] =
         SetupTopBar(*topBarWidget, initialDirectory);
@@ -225,25 +246,54 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::shared_ptr<Curre
 
     auto* rootLayout = new QVBoxLayout(&fileBrowserWidget);
     rootLayout->addWidget(topBarWidget);
+    std::vector<std::reference_wrapper<PluginProvisionedToolbar>> pluginToolbars;
+    for (auto& pluginToolbar : CreatePluginProvisionedToolbars(toolbarModels)) {
+        pluginToolbars.push_back(std::ref(*pluginToolbar));
+        rootLayout->addWidget(pluginToolbar.release());
+    }
     rootLayout->addWidget(fileListViewWidget);
     rootLayout->addWidget(fileListViewActiveFilterLabel);
 
     fileBrowserWidget.setLayout(rootLayout);
 
     return std::make_tuple(fileListViewWidget, fileListViewWidget->GetModelProvider(), topBarDirectoryInputField,
-                           backButton, forwardButton, newDirectoryButton);
+                           backButton, forwardButton, newDirectoryButton, pluginToolbars);
 }
 
-FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_currentDirectory(std::move(initialDir)) {
+static void
+ConnectPluginToolbarsSignals(const std::vector<std::reference_wrapper<PluginProvisionedToolbar>> toolbar,
+                             const std::function<void(const FileSystem::Directory&)>& directoryChangeClosure,
+                             const std::function<void(const FileSystem::Directory&)>& requestOpenInNewTabClosure) {
+    for (PluginProvisionedToolbar& toolbar : toolbar) {
+        QObject::connect(&toolbar, &PluginProvisionedToolbar::RequestChangeDirectory,
+                         [directoryChangeClosure](const QString& newDirectory) {
+                             if (const auto newValidDir =
+                                     FileSystem::Directory::FromPath(newDirectory.toStdWString())) {
+                                 directoryChangeClosure(*newValidDir);
+                             }
+                         });
+        QObject::connect(&toolbar, &PluginProvisionedToolbar::RequestOpenDirectoryInNewTab,
+                         [requestOpenInNewTabClosure](const QString& newDirectory) {
+                             if (const auto newValidDir =
+                                     FileSystem::Directory::FromPath(newDirectory.toStdWString())) {
+                                 requestOpenInNewTabClosure(*newValidDir);
+                             }
+                         });
+    }
+}
+
+FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir,
+                                     const std::vector<TabsPlsPython::Toolbar::Toolbar>& toolbarModels)
+    : m_currentDirectory(std::move(initialDir)) {
     m_historyStore.OnNewDirectory(m_currentDirectory);
 
     m_currentDirFileOpImpl = std::make_shared<CurrentDirectoryFileOpQtImpl>(m_currentDirectory);
 
     const auto [fileListViewWidget_from_binding, fileListViewModelProvider_from_binding,
-                topBarDirectoryInputField_from_binding, backButton, forwardButton, newDirectoryButton] =
+                topBarDirectoryInputField_from_binding, backButton, forwardButton, newDirectoryButton, pluginToolbars] =
         SetupCentralWidget(*this, m_currentDirFileOpImpl,
                            std::make_unique<FileListViewModel>(this, *style(), FromRawPath(m_currentDirectory.path())),
-                           FromRawPath(m_currentDirectory.path()));
+                           FromRawPath(m_currentDirectory.path()), toolbarModels);
 
     m_fileListTableView = fileListViewWidget_from_binding;
     auto fileListViewModelProvider = fileListViewModelProvider_from_binding; // This is done to be able to capture
@@ -256,6 +306,10 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir) : m_curre
 
     const auto directoryChangedClosure = CreateDirectoryChangedClosure(
         m_historyStore, *m_fileListTableView, *topBarDirectoryInputField, setCurrentDirectoryMemberCall);
+
+    ConnectPluginToolbarsSignals(
+        pluginToolbars, directoryChangedClosure,
+        [this](const FileSystem::Directory& newDirectory) { emit RequestOpenDirectoryInTab(newDirectory); });
 
     connect(topBarDirectoryInputField, &DirectoryInputField::directoryChanged, [=](const auto& dirString) {
         if (const auto dir = FileSystem::Directory::FromPath(ToRawPath(dirString)))

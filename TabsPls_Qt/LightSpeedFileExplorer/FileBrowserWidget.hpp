@@ -6,6 +6,7 @@
 #include <QWidget>
 
 #include <TabsPlsCore/RobustDirectoryHistoryStore.hpp>
+#include <TabsPlsCore/Toolbar.hpp>
 
 namespace FileSystem {
 class Directory;
@@ -17,7 +18,8 @@ class FileListTableViewWithFilter;
 class FileBrowserWidget : public QWidget {
     Q_OBJECT
   public:
-    FileBrowserWidget(FileSystem::Directory initialDir);
+    FileBrowserWidget(FileSystem::Directory initialDir,
+                      const std::vector<TabsPlsPython::Toolbar::Toolbar>& pluginToolbars);
 
     const QString GetCurrentDirectoryName() const;
     const FileSystem::Directory& GetCurrentDirectory() const { return m_currentDirectory; }
@@ -27,6 +29,7 @@ class FileBrowserWidget : public QWidget {
 
   signals:
     void currentDirectoryNameChanged(const QString&);
+    void RequestOpenDirectoryInTab(const FileSystem::Directory&);
 
   private:
     FileSystem::Directory m_currentDirectory;
