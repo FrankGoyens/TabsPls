@@ -13,6 +13,9 @@ jobs:
 
     env:
       tabspls_build_dir: '"${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/build"'
+      VCPKG_DEFAULT_TRIPLET: x64-windows
+      VCPKG_INSTALLED_DIR: "${{ github.workspace }}/TabsPls_Qt/vcpkg/installed"
+      VCINSTALLDIR: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC"
 
     steps:
       - uses: actions/checkout@v2
@@ -40,20 +43,18 @@ jobs:
         with:
           vcpkgDirectory: '${{ github.workspace }}/TabsPls_Qt/vcpkg'
           runVcpkgInstall: true
+      - name: Prints output of run-vcpkg's action.
+        run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_DEFAULT_TRIPLET_OUT }}' "
 
       - name: Run CMake with MSBuild
-        uses: lukka/run-cmake@v2
+        uses: lukka/run-cmake@v10
         id: runcmake
         with:
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          configurePreset: 'ninja-multi-vcpkg'
+          buildPreset: 'ninja-multi-vcpkg'
+          configurePresetAdditionalArgs: "['-DTABSPLS_PYTHON_WILL_BE_PACKAGED=ON', '-DCPACK_BINARY_ZIP=ON', '-DCPACK_BINARY_NSIS=OFF', '-DTABSPLS_PORTABLE_WINDOWS=ON']"
+          buildPresetAdditionalArgs: "['--config Release']"
           cmakeListsTxtPath: '${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/CMakeLists.txt'
-          cmakeGenerator: VS16Win64
-          cmakeAppendedArgs: -DTABSPLS_PYTHON_WILL_BE_PACKAGED=ON -DCPACK_BINARY_ZIP=ON -DCPACK_BINARY_NSIS=OFF -DTABSPLS_PORTABLE_WINDOWS=ON
-          buildDirectory: '${{ github.workspace }}/TabsPls_Qt/LightSpeedFileExplorer/build'
-          buildWithCMakeArgs: --target package --config Release
-          useVcpkgToolchainFile: true
-      - name: Prints output of run-vcpkg's task
-        run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_TRIPLET_OUT }}' "
 
       - name: dir
         run: 'find ${{ env.tabspls_build_dir }}'
