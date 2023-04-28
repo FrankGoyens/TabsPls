@@ -1,1 +1,0 @@
-qt5-translations:x64-linux
