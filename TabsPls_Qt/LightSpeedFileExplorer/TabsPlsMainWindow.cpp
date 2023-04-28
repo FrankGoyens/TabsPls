@@ -156,7 +156,7 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
 }
 
 std::shared_ptr<TabModel::Tab> TabsPlsMainWindow::OpenNewTab(const FileSystem::Directory& directory) {
-    auto& [tabModel, filebrowserWidget] = CreateNewFileBrowserTab(*m_tabWidget, directory, m_toolbarModels);
+    auto [tabModel, filebrowserWidget] = CreateNewFileBrowserTab(*m_tabWidget, directory, m_toolbarModels);
     m_tabs.push_back(tabModel);
     connect(&filebrowserWidget, &FileBrowserWidget::RequestOpenDirectoryInTab,
             [this](const FileSystem::Directory& newDirectory) {
