@@ -257,18 +257,25 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::shared_ptr<Curre
                            backButton, forwardButton, newDirectoryButton, pluginToolbars);
 }
 
+static bool IsDifferentFromCurrent(const CurrentDirectoryFileOp& currentDirectoryProvider,
+                                   const FileSystem::Directory& dir) {
+    return currentDirectoryProvider.GetCurrentDir().path() != dir.path();
+}
+
 static void
 ConnectPluginToolbarsSignals(const std::vector<std::reference_wrapper<PluginProvisionedToolbar>> toolbar,
+                             const std::weak_ptr<CurrentDirectoryFileOp>& currentDirectoryProvider,
                              const std::function<void(const FileSystem::Directory&)>& directoryChangeClosure,
                              const std::function<void(const FileSystem::Directory&)>& requestOpenInNewTabClosure) {
     for (PluginProvisionedToolbar& toolbar : toolbar) {
-        QObject::connect(&toolbar, &PluginProvisionedToolbar::RequestChangeDirectory,
-                         [directoryChangeClosure](const QString& newDirectory) {
-                             if (const auto newValidDir =
-                                     FileSystem::Directory::FromPath(newDirectory.toStdWString())) {
-                                 directoryChangeClosure(*newValidDir);
-                             }
-                         });
+        QObject::connect(&toolbar, &PluginProvisionedToolbar::RequestChangeDirectory, [=](const QString& newDirectory) {
+            if (const auto liveProvider = currentDirectoryProvider.lock()) {
+                if (const auto newValidDir = FileSystem::Directory::FromPath(newDirectory.toStdWString())) {
+                    if (IsDifferentFromCurrent(*liveProvider, *newValidDir))
+                        directoryChangeClosure(*newValidDir);
+                }
+            }
+        });
         QObject::connect(&toolbar, &PluginProvisionedToolbar::RequestOpenDirectoryInNewTab,
                          [requestOpenInNewTabClosure](const QString& newDirectory) {
                              if (const auto newValidDir =
@@ -305,7 +312,7 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir,
         m_historyStore, *m_fileListTableView, *topBarDirectoryInputField, setCurrentDirectoryMemberCall);
 
     ConnectPluginToolbarsSignals(
-        pluginToolbars, directoryChangedClosure,
+        pluginToolbars, m_currentDirFileOpImpl, directoryChangedClosure,
         [this](const FileSystem::Directory& newDirectory) { emit RequestOpenDirectoryInTab(newDirectory); });
 
     connect(topBarDirectoryInputField, &DirectoryInputField::directoryChanged, [=](const auto& dirString) {
