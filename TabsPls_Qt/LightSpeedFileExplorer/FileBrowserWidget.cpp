@@ -242,8 +242,6 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::shared_ptr<Curre
                              fileListViewWidget->GetFileListTableView().resizeColumnsToContents();
                      });
 
-    auto* fileListViewActiveFilterLabel = new QLabel();
-
     auto* rootLayout = new QVBoxLayout(&fileBrowserWidget);
     rootLayout->addWidget(topBarWidget);
     std::vector<std::reference_wrapper<PluginProvisionedToolbar>> pluginToolbars;
@@ -252,7 +250,6 @@ static auto SetupCentralWidget(QWidget& fileBrowserWidget, std::shared_ptr<Curre
         rootLayout->addWidget(pluginToolbar.release());
     }
     rootLayout->addWidget(fileListViewWidget);
-    rootLayout->addWidget(fileListViewActiveFilterLabel);
 
     fileBrowserWidget.setLayout(rootLayout);
 
