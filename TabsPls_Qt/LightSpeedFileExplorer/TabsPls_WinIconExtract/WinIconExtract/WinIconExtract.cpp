@@ -16,8 +16,10 @@ void InitThread() {
 }
 
 std::optional<QPixmap> IconInfoAsPixmap(const std::wstring& path) {
+    QString sanitizedPath = QString::fromStdWString(path);
+    sanitizedPath.replace("/", "\\");
     WORD index = 0;
-    auto hIcon = ExtractAssociatedIconW(0, (LPWSTR)path.c_str(), &index);
+    auto hIcon = ExtractAssociatedIconW(0, (LPWSTR)sanitizedPath.toStdWString().c_str(), &index);
     if (hIcon != 0) {
         auto pixmap = QtWin::fromHICON(hIcon);
         DestroyIcon(hIcon);
