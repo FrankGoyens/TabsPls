@@ -115,7 +115,11 @@ int FileListTableView::GetModelRoleForNames() { return Qt::DisplayRole; }
 void FileListTableView::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton)
         m_dragStartPosition = event->pos();
-
+    else if (event->button() == Qt::BackButton || event->button() == Qt::ForwardButton) {
+        // We don't want to handle this event, let the (grand)parent handle going back and forth in directory history
+        event->ignore();
+        return;
+    }
     QTableView::mousePressEvent(event);
 }
 

@@ -27,6 +27,10 @@ class FileBrowserWidget : public QWidget {
     void RequestChangeToFlatDirectoryStructure();
     void RequestChangeToHierarchyDirectoryStructure();
 
+  public slots:
+    void RequestSetCurrentDirectoryToPrevious();
+    void RequestSetCurrentDirectoryToNext();
+
   signals:
     void currentDirectoryNameChanged(const QString&);
     void RequestOpenDirectoryInTab(const FileSystem::Directory&);
@@ -37,6 +41,9 @@ class FileBrowserWidget : public QWidget {
     std::shared_ptr<CurrentDirectoryFileOpQtImpl> m_currentDirFileOpImpl;
     QFileSystemWatcher m_fs_watcher;
     FileListTableViewWithFilter* m_fileListTableView;
+
+    std::function<void()> m_backAction;
+    std::function<void()> m_forwardAction;
 
     void SetCurrentDirectory(FileSystem::Directory);
 

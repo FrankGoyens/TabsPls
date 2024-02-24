@@ -19,6 +19,9 @@ class TabsPlsMainWindow : public QMainWindow {
   public:
     TabsPlsMainWindow(const QString& initialDirectory);
 
+  protected:
+    void mousePressEvent(QMouseEvent*) override;
+
   private:
     QTabWidget* m_tabWidget = nullptr;
     std::vector<std::shared_ptr<TabModel::Tab>> m_tabs;
