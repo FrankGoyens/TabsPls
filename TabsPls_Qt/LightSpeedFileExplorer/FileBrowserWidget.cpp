@@ -323,21 +323,17 @@ FileBrowserWidget::FileBrowserWidget(FileSystem::Directory initialDir,
     connect(topBarDirectoryInputField, &DirectoryInputField::directoryChanged,
             &m_fileListTableView->GetFileListTableView(), qOverload<>(&QWidget::setFocus));
 
-    const auto backActionClosure =
-        CreateHistoryActionClosure(m_historyStore, *m_fileListTableView, *topBarDirectoryInputField,
-                                   setCurrentDirectoryMemberCall, HistoryBackVariant());
+    m_backAction = CreateHistoryActionClosure(m_historyStore, *m_fileListTableView, *topBarDirectoryInputField,
+                                              setCurrentDirectoryMemberCall, HistoryBackVariant());
 
-    const auto forwardActionClosure =
-        CreateHistoryActionClosure(m_historyStore, *m_fileListTableView, *topBarDirectoryInputField,
-                                   setCurrentDirectoryMemberCall, HistoryForwardVariant());
+    m_forwardAction = CreateHistoryActionClosure(m_historyStore, *m_fileListTableView, *topBarDirectoryInputField,
+                                                 setCurrentDirectoryMemberCall, HistoryForwardVariant());
 
     backButton->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Left));
     forwardButton->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Right));
 
-    connect(backButton, &QPushButton::pressed,
-            [this, backActionClosure]() { DisplayDirectoryChangedErrorIfExceptionHappens(backActionClosure); });
-    connect(forwardButton, &QPushButton::pressed,
-            [this, forwardActionClosure]() { DisplayDirectoryChangedErrorIfExceptionHappens(forwardActionClosure); });
+    connect(backButton, &QPushButton::pressed, this, &FileBrowserWidget::RequestSetCurrentDirectoryToPrevious);
+    connect(forwardButton, &QPushButton::pressed, this, &FileBrowserWidget::RequestSetCurrentDirectoryToNext);
 
     const auto directoryChangedByGoingToParentClosure = CreateDirectoryChangedByGoingToParent(
         m_historyStore, *m_fileListTableView, *topBarDirectoryInputField, setCurrentDirectoryMemberCall);
@@ -401,6 +397,14 @@ const QString FileBrowserWidget::GetCurrentDirectoryName() const {
 void FileBrowserWidget::RequestChangeToFlatDirectoryStructure() { m_fileListTableView->RequestFlatModel(); }
 
 void FileBrowserWidget::RequestChangeToHierarchyDirectoryStructure() { m_fileListTableView->RequestHierarchyModel(); }
+
+void FileBrowserWidget::RequestSetCurrentDirectoryToPrevious() {
+    DisplayDirectoryChangedErrorIfExceptionHappens(m_backAction);
+}
+
+void FileBrowserWidget::RequestSetCurrentDirectoryToNext() {
+    DisplayDirectoryChangedErrorIfExceptionHappens(m_forwardAction);
+}
 
 void FileBrowserWidget::SetCurrentDirectory(FileSystem::Directory newDir) {
     StopWatchingCurrentDirectory();

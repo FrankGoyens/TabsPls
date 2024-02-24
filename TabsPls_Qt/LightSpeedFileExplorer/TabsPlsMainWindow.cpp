@@ -5,6 +5,7 @@
 #include <QAction>
 #include <QDesktopServices>
 #include <QMenuBar>
+#include <QMouseEvent>
 #include <QShortcut>
 #include <QTabBar>
 #include <QTabWidget>
@@ -153,6 +154,19 @@ TabsPlsMainWindow::TabsPlsMainWindow(const QString& initialDirectory) {
     setCentralWidget(m_tabWidget);
 
     SetupMenubar(*menuBar(), *this, *m_tabWidget);
+}
+
+void TabsPlsMainWindow::mousePressEvent(QMouseEvent* mouseEvent) {
+    if (mouseEvent->button() == Qt::BackButton || mouseEvent->button() == Qt::ForwardButton) {
+        if (auto* fileBrowserTab = dynamic_cast<FileBrowserWidget*>(m_tabWidget->currentWidget())) {
+            if (mouseEvent->button() == Qt::BackButton)
+                fileBrowserTab->RequestSetCurrentDirectoryToPrevious();
+            else
+                fileBrowserTab->RequestSetCurrentDirectoryToNext();
+        }
+        mouseEvent->accept();
+    }
+    QMainWindow::mousePressEvent(mouseEvent);
 }
 
 std::shared_ptr<TabModel::Tab> TabsPlsMainWindow::OpenNewTab(const FileSystem::Directory& directory) {
