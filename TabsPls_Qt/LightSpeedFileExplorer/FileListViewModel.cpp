@@ -103,8 +103,28 @@ FileListViewModel::GetDisplayDataForColumn(int column) const {
     return {};
 }
 
+bool FileListViewModel::ShouldProceedWithRename(int row, int col, const QString& value) {
+    if (const auto displayDataRef = GetDisplayDataForColumn(col)) {
+        if (row < displayDataRef->get().size()) {
+            if (displayDataRef->get()[row] != value) {
+                return true;
+            }
+            // Current value is the same as new value, don't proceed with rename as this will give an error
+        } else {
+            assert(!"Row index is out of range");
+        }
+    } else {
+        assert(!"There should be a corresponding display column");
+    }
+    return false;
+}
+
 bool FileListViewModel::setData(const QModelIndex& index, const QVariant& value, int role) {
     if (value.type() == QVariant::Type::String) {
+
+        if (!ShouldProceedWithRename(index.row(), index.column(), value.toString())) {
+            return false;
+        }
 
         const auto fullPathAtIndex = ToRawPath(data(index, Qt::UserRole).toString());
 
