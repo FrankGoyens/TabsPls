@@ -64,4 +64,5 @@ class FileListViewModel final : public QAbstractTableModel, public DirectoryChan
     QRunnable* MakeIconRetrievalThread(const std::wstring& fullPathStdString, int index);
 
     std::optional<std::reference_wrapper<const std::vector<QString>>> GetDisplayDataForColumn(int column) const;
+    [[nodiscard]] bool ShouldProceedWithRename(int row, int col, const QString& value);
 };
