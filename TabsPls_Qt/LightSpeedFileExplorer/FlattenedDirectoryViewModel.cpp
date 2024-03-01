@@ -141,7 +141,8 @@ QVariant FlattenedDirectoryViewModel::data(const QModelIndex& index, int role) c
         return entry.fullPath;
     case Qt::DecorationRole:
         if (index.column() == 0) {
-            if (AssociatedIconProvider::ComponentIsAvailable() && entry.icon.name() == m_defaultFileIcon.name()) {
+            if (AssociatedIconProvider::ComponentIsAvailable() &&
+                entry.icon.cacheKey() == m_defaultFileIcon.cacheKey()) {
                 StartIconRetrieval(entry.fullPath, entry.displayName);
             }
 
