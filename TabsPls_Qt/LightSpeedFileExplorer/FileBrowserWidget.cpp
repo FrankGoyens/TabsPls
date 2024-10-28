@@ -24,7 +24,7 @@
 #include "FileListViewModel.hpp"
 #include "FileSystemDefsConversion.hpp"
 #include "FlattenedDirectoryViewModel.hpp"
-#include "TabsPlsLog.hpp"
+#include "TabsPlsLogQt.hpp"
 
 #include "toolbars_plugin/PluginProvisionedToolbar.hpp"
 
@@ -186,9 +186,7 @@ static auto CreatePluginProvisionedToolbars(const std::vector<TabsPlsPython::Too
             toolbars.push_back(std::make_unique<PluginProvisionedToolbar>(pluginToolbar));
         }
     } catch (const TabsPlsPython::Toolbar::ToolbarException& e) {
-        std::ostringstream oss;
-        oss << "Error loading toolbar plugin: " << e.what();
-        TabsPlsLog_Debug(oss.str().c_str());
+        TabsPlsLog_Debug("Error loading toolbar plugin: %s", e.what());
     }
 
     return toolbars;

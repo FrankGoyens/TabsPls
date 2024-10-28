@@ -11,6 +11,9 @@
 #include <TabsPlsCore/FileSystemDirectory.hpp>
 #include <TabsPlsCore/FileSystemFilePath.hpp>
 
+#define TABSPLSLOG_FUNC_INFO "<unknown function>"
+#include <TabsPlsCore/TabsPlsLog.hpp>
+
 #include "PythonRAII.hpp"
 
 namespace TabsPlsPython::Toolbar {
@@ -58,6 +61,8 @@ struct AcquiredModules {
             if (module) {
                 if (auto* activationFunc = PyObject_GetAttrString(module, "activate"))
                     modules.emplace(ToUTF8(moduleName.c_str()), PyPluginModule{module, activationFunc});
+            } else {
+                TabsPlsLog_WarningCategory("Pyton toolbar", "Unable to load toolbar module: %s", moduleName.c_str());
             }
         }
     }

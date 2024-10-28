@@ -28,6 +28,7 @@
 #include "QObjectProgressReport.hpp"
 #include "QObjectRecycleExceptionHandler.hpp"
 #include "ShowIsReadySignaler.hpp"
+#include "TabsPlsLogQt.hpp"
 #include "WindowsNativeContextMenu.hpp"
 
 using FileSystem::StringConversion::FromRawPath;

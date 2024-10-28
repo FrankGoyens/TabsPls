@@ -7,7 +7,7 @@
 #include <TabsPlsCore/Send2Trash.hpp>
 
 #include "ExplicitStub.hpp"
-#include "TabsPlsLog.hpp"
+#include "TabsPlsLogQt.hpp"
 
 class QObjectRecycleExceptionHandler : public QObject {
     Q_OBJECT

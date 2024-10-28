@@ -16,6 +16,7 @@ set(TabsPls_Core_Headers
 	${CMAKE_CURRENT_SOURCE_DIR}/include/TabsPlsCore/TabModel.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/TabsPlsCore/EmbeddedPython.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/TabsPlsCore/Toolbar.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/include/TabsPlsCore/TabsPlsLog.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/include/TabsPlsCore/exception/TabsPlsException.hpp
 )
