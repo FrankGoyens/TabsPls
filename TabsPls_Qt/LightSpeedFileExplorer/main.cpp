@@ -10,10 +10,14 @@
 #include "FileSystemDefsConversion.hpp"
 #include "TabsPlsMainWindow.hpp"
 
+#include "TabsPlsLogQt.hpp"
+
 int main(int argc, char* argv[]) {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QApplication app(argc, argv);
+
+    TabsPlsLog::Init();
 
     if (TabsPlsPython::EmbeddedPython::ComponentIsAvailable())
         TabsPlsPython::EmbeddedPython::Init(argv[0]);

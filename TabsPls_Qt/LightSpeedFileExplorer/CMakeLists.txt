@@ -45,8 +45,8 @@ set(LightSpeedFileExplorer_Headers
   FileRetrievalRunnable.hpp
   FileRetrievalByDispatch.hpp
   EscapePodLauncher.hpp
-  TabsPlsLog.hpp
   WindowsNativeContextMenu.hpp
+  TabsPlsLogQt.hpp
 
   toolbars_plugin/PluginProvisionedToolbar.hpp
   toolbars_plugin/MouseWheelClickEventFilter.hpp
@@ -74,6 +74,7 @@ set(LightSpeedFileExplorer_Sources
   FileRetrievalRunnable.cpp
   FileRetrievalByDispatch.cpp
   EscapePodLauncher.cpp
+  TabsPlsLogQt.cpp
 
   toolbars_plugin/PluginProvisionedToolbar.cpp
   toolbars_plugin/MouseWheelClickEventFilter.cpp
@@ -105,10 +106,6 @@ if(WIN32)
     install(FILES ${CMAKE_SOURCE_DIR}/portable_launcher/Launch.bat TYPE BIN)
   endif()
 endif()
-
-target_include_directories(LightSpeedFileExplorer 
-  PRIVATE 
-  TabsPlsCore_defs)
 
 #Conditionally link agains the Python component
 set(FILESYSTEM_DEFS_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/../../TabsPls_Core/TabsPls_Core_StdFileSystem/include)
