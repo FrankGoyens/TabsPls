@@ -10,13 +10,16 @@ else()
 	find_package(Python3 COMPONENTS Interpreter Development)
 endif()
 
-set(TabsPls_Python_Headers include/TabsPls_Python/TabsPls_Python.hpp)
+set(TabsPls_Python_Headers include/TabsPls_Python/TabsPls_Python.hpp
+  src/PythonErrorDump.hpp
+)
 
 set(TabsPls_Python_Sources src/TabsPls_Python.cpp 
   src/Send2Trash.cpp
   src/PythonRAII.hpp
   src/EmbeddedPython.cpp
   src/Toolbar.cpp
+  src/PythonErrorDump.cpp
 )
 add_library(TabsPls_Python ${TabsPls_Python_Headers} ${TabsPls_Python_Sources})
 target_compile_features(TabsPls_Python PRIVATE cxx_std_17)

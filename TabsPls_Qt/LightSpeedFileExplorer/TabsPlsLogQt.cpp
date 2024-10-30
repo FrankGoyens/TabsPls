@@ -100,4 +100,11 @@ void Warning(const char* fileName, int lineno, const char* function, const char*
     WriteLogStatement("Warning", fileName, lineno, function, fmt, args);
     va_end(args);
 }
+
+void Error(const char* fileName, int lineno, const char* function, const char* category, const char* fmt, ...) {
+    va_list args{};
+    va_start(args, fmt);
+    WriteLogStatement("Error", fileName, lineno, function, fmt, args);
+    va_end(args);
+}
 } // namespace TabsPlsLog
