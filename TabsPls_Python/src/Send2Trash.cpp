@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <sstream>
 
+#include "PythonErrorDump.hpp"
 #include "PythonRAII.hpp"
 
 namespace TabsPlsPython {
@@ -56,29 +57,12 @@ static PyObject* GetSend2TrashFunction() {
     return acquiredFunction.function;
 }
 
-std::string FormatPythonException(PyObject* exceptionType, PyObject* exceptionValue) {
-    if (exceptionType && exceptionValue) {
-        AcquiredPyObject typeString, valueString;
-        typeString.obj = PyObject_Str(exceptionType);
-        valueString.obj = PyObject_Str(exceptionValue);
-        std::ostringstream message;
-        message << PyUnicode_AsUTF8(typeString.obj) << ": " << PyUnicode_AsUTF8(valueString.obj);
-        return message.str();
-    }
-    return "";
-}
-
-static std::string RetreiveMessageFromPyObjects(const AcquiredPyObject& exceptionType,
-                                                const AcquiredPyObject& exceptionMessage) {
-    return FormatPythonException(exceptionType.obj, exceptionMessage.obj);
-}
-
 static std::optional<std::string> RetrieveMessageIfExceptionOcurred() {
     if (AcquiredPyObject send2trashException = PyErr_Occurred()) {
         AcquiredPyObject exceptionType, exceptionValue, exceptionTraceback;
         PyErr_Fetch(&exceptionType.obj, &exceptionValue.obj, &exceptionTraceback.obj);
         PyErr_NormalizeException(&exceptionType.obj, &exceptionValue.obj, &exceptionTraceback.obj);
-        const auto message = RetreiveMessageFromPyObjects(exceptionType, exceptionValue);
+        const auto message = PythonErrorDump::FormatPythonException(exceptionType.obj, exceptionValue.obj);
         PyErr_Clear();
         return message;
     }

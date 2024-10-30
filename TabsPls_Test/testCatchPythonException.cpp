@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
+#include "../TabsPls_Python/src/PythonErrorDump.hpp"
 
-namespace TabsPlsPython::Send2Trash {
-std::string FormatPythonException(PyObject* exceptionType, PyObject* exceptionValue);
-} // namespace TabsPlsPython::Send2Trash
+namespace ToolbarInternal {
+std::vector<std::string> FormatPythonExceptionWithBacktrace();
+} // namespace ToolbarInternal
+
 namespace CatchPythonExceptionTests {
 struct PythonInstance {
     PythonInstance() { Py_Initialize(); }
@@ -62,11 +62,47 @@ TEST(CatchPythonExceptionTest, Send2Trash_FormatPythonException) {
     PyErr_NormalizeException(&type, &value, &traceback);
 
     EXPECT_EQ(std::string("<class 'Exception'>: something went wrong"),
-              TabsPlsPython::Send2Trash::FormatPythonException(type, value));
+              PythonErrorDump::FormatPythonException(type, value));
 
     Py_XDECREF(type);
     Py_XDECREF(value);
     Py_XDECREF(traceback);
+
+    PyErr_Clear();
+}
+
+TEST(CatchPythonExceptionTest, ToolbarInternal_FormatPythonExceptionWithBacktrace) {
+    RaisePythonException();
+
+    auto lines = ToolbarInternal::FormatPythonExceptionWithBacktrace();
+
+    ASSERT_EQ(3u, lines.size());
+
+    EXPECT_EQ("Traceback (most recent call last):\n", lines[0]);
+    EXPECT_EQ("  File \"<string>\", line 1, in <module>\n", lines[1]);
+    EXPECT_EQ("Exception: something went wrong\n", lines[2]);
+
+    PyErr_Clear();
+}
+
+TEST(CatchPythonExceptionTest, ToolbarInternal_FormatPythonExceptionWithBacktrace_NoError) {
+    auto lines = ToolbarInternal::FormatPythonExceptionWithBacktrace();
+
+    EXPECT_TRUE(lines.empty());
+
+    PyErr_Clear();
+}
+
+TEST(CatchPythonExceptionTest, ToolbarInternal_FormatPythonExceptionWithBacktrace_ErrorPersists) {
+    RaisePythonException();
+
+    auto lines = ToolbarInternal::FormatPythonExceptionWithBacktrace();
+
+    ASSERT_EQ(3u, lines.size());
+
+    PyObject *type, *value, *traceback;
+    PyErr_Fetch(&type, &value, &traceback);
+    ASSERT_TRUE(type && value && traceback);
 
     PyErr_Clear();
 }

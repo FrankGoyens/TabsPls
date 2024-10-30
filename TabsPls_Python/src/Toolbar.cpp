@@ -14,7 +14,72 @@
 #define TABSPLSLOG_FUNC_INFO "<unknown function>"
 #include <TabsPlsCore/TabsPlsLog.hpp>
 
+#include "PythonErrorDump.hpp"
 #include "PythonRAII.hpp"
+
+constexpr char* loggingCategory = "Toolbar plugin";
+
+namespace ToolbarInternal {
+
+// Formats the current Python exception (if any) into lines
+// After this function is done, the exception is still active, it will not be cleared
+std::vector<std::string> FormatPythonExceptionWithBacktrace() {
+    PyObject *extype, *value, *traceback;
+    PyErr_Fetch(&extype, &value, &traceback);
+    if (!extype)
+        return {};
+
+    if (!traceback) {
+        // There was an error, but no traceback is available
+        // Could happen if something is wrong in module scope
+        const auto formattedError = PythonErrorDump::FormatPythonException(extype, value);
+        PyErr_Restore(extype, value, traceback);
+        return {formattedError};
+    }
+
+    AcquiredPyObject acquiredTracebackModule(PyImport_ImportModule("traceback"));
+
+    if (!acquiredTracebackModule.obj) {
+        TabsPlsLog_ErrorCategory(loggingCategory, "Unable to import 'traceback' module, faulty Python installation?");
+        PyErr_Print();
+        PyErr_Restore(extype, value, traceback);
+        return {};
+    }
+
+    AcquiredPyObject acquiredFormatExceptionAttr(
+        PyObject_GetAttrString(acquiredTracebackModule.obj, "format_exception"));
+
+    AcquiredPyObject args = PyTuple_Pack(3, extype, value, traceback);
+
+    AcquiredPyObject acquiredLinesList = PyObject_CallObject(acquiredFormatExceptionAttr.obj, args.obj);
+    if (!acquiredLinesList) {
+        TabsPlsLog_DebugCategory(loggingCategory,
+                                 "Calling traceback.format_exception using PyObject_CallObject returned 'nullptr'.");
+        PyErr_Print();
+        PyErr_Restore(extype, value, traceback);
+        return {};
+    }
+
+    std::vector<std::string> linesResult;
+    auto linesAmount = PyList_Size(acquiredLinesList.obj);
+    for (int i = 0; i < linesAmount; ++i) {
+        auto* line = PyList_GetItem(acquiredLinesList.obj, i);
+        linesResult.emplace_back(PyUnicode_AsUTF8(line));
+    }
+
+    PyErr_Restore(extype, value, traceback);
+    return linesResult;
+}
+
+std::string ConcatLines(const std::vector<std::string>& lines) {
+    std::ostringstream oss;
+    for (auto& line : lines) {
+        oss << line;
+    }
+    return oss.str();
+}
+
+} // namespace ToolbarInternal
 
 namespace TabsPlsPython::Toolbar {
 bool operator==(const ToolbarItem& first, const ToolbarItem& second) {
@@ -62,7 +127,10 @@ struct AcquiredModules {
                 if (auto* activationFunc = PyObject_GetAttrString(module, "activate"))
                     modules.emplace(ToUTF8(moduleName.c_str()), PyPluginModule{module, activationFunc});
             } else {
-                TabsPlsLog_WarningCategory("Pyton toolbar", "Unable to load toolbar module: %s", moduleName.c_str());
+                TabsPlsLog_ErrorCategory(
+                    loggingCategory, "Unable to load toolbar module: %ls\n%s", moduleName.c_str(),
+                    ToolbarInternal::ConcatLines(ToolbarInternal::FormatPythonExceptionWithBacktrace()).c_str());
+                PyErr_Clear();
             }
         }
     }
@@ -154,12 +222,21 @@ static std::string StringFromPyObject(PyObject& result) {
 }
 
 namespace {
-static ActivationResult GetResultFromPy(PyObject& result) {
-    if (!PyTuple_Check(&result))
+static ActivationResult GetResultFromPy(PyObject& result, const Toolbar& toolbar, const ToolbarItem& item) {
+    if (!PyTuple_Check(&result)) {
+        TabsPlsLog_ErrorCategory(loggingCategory,
+                                 "Result for activating item (display name) %s for toolbar %s is not a tuple",
+                                 item.displayName.c_str(), toolbar.GetId().c_str());
         return {};
+    }
 
-    if (PyTuple_Size(&result) == 0)
+    if (PyTuple_Size(&result) == 0) {
+        TabsPlsLog_ErrorCategory(loggingCategory,
+                                 "Result for activating item (display name) %s for toolbar %s is a tuple of size 0 "
+                                 "(should have size 1 or 2)",
+                                 item.displayName.c_str(), toolbar.GetId().c_str());
         return {};
+    }
 
     ActivationResult activationResult;
     activationResult.desiredReaction = StringFromPyObject(*PyTuple_GetItem(&result, 0));
@@ -169,6 +246,35 @@ static ActivationResult GetResultFromPy(PyObject& result) {
 
     activationResult.parameter = StringFromPyObject(*PyTuple_GetItem(&result, 1));
     return activationResult;
+}
+
+bool DumpPythonErrorThatOccurredAfterActivation(const Toolbar& toolbar, const ToolbarItem& item) {
+    if (!PyErr_Occurred())
+        return false;
+    TabsPlsLog_ErrorCategory(
+        loggingCategory, "Python error occurred when activating item (display name) '%s' for toolbar '%s' \n%s",
+        item.displayName.c_str(), toolbar.GetId().c_str(),
+        ToolbarInternal::ConcatLines(ToolbarInternal::FormatPythonExceptionWithBacktrace()).c_str());
+    return true;
+}
+
+bool ReportActivationErrorIfAny(const PyObject* result, const Toolbar& toolbar, const ToolbarItem& item) {
+    bool errorOccurred = false;
+    if (result == Py_None) {
+        TabsPlsLog_WarningCategory(loggingCategory,
+                                   "Activation result for item (display name) '%s' for toolbar '%s' returned 'None', "
+                                   "this is probably not intentional.",
+                                   item.displayName.c_str(), toolbar.GetId().c_str());
+        errorOccurred = true;
+    } else if (result == nullptr) {
+        TabsPlsLog_DebugCategory(loggingCategory,
+                                 "Calling PyObject_CallObject to call activation function for item (display name) '%s' "
+                                 "for toolbar '%s' returned 'nullptr'",
+                                 item.displayName.c_str(), toolbar.GetId().c_str());
+        errorOccurred = true;
+    }
+    const bool pythonErrorOccurred = DumpPythonErrorThatOccurredAfterActivation(toolbar, item);
+    return errorOccurred || pythonErrorOccurred;
 }
 
 struct ActivatorImpl : Activator {
@@ -198,9 +304,11 @@ struct ActivatorImpl : Activator {
         AcquiredPyObject activationMethodString(activationMethodStringPtr);
         AcquiredPyObject args = PyTuple_Pack(2, itemString.obj, activationMethodString.obj);
         AcquiredPyObject result = PyObject_CallObject(it->second.pyActivationFunc, args.obj);
-        if (result.obj == Py_None || result.obj == nullptr)
+        if (ReportActivationErrorIfAny(result.obj, toolbar, item)) {
+            PyErr_Clear();
             return {};
-        return GetResultFromPy(*result.obj);
+        }
+        return GetResultFromPy(*result.obj, toolbar, item);
     }
 };
 } // namespace
@@ -213,14 +321,19 @@ ActivationResult Activate(const Toolbar& toolbar, const ToolbarItem& item, Activ
 
     const auto names = customActivator->GetToolbarNames();
     const auto it = names.find(toolbar.GetId());
-    if (it == names.end())
+    if (it == names.end()) {
+        TabsPlsLog_DebugCategory(loggingCategory, "Activate: toolbar with id '%s' not found", toolbar.GetId().c_str());
         return {};
+    }
 
     const auto items = toolbar.GetItems();
     const auto itemIt = std::find(items.begin(), items.end(), item);
 
-    if (itemIt == items.end())
+    if (itemIt == items.end()) {
+        TabsPlsLog_DebugCategory(loggingCategory, "Activate: toolbar item with name '%s' (display name: %s) not found",
+                                 item.id.c_str(), item.displayName.c_str());
         return {};
+    }
 
     return customActivator->Activate(toolbar, item, activationMethod);
 }

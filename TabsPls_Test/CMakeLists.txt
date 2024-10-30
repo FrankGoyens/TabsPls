@@ -37,6 +37,8 @@ set(TabsPlsTest_Sources
     meta/testFakeFileSystemOp.cpp
 
     FakeFileSystem.cpp
+
+    TabsPlsLogTest.cpp
 )
 
 add_executable(TabsPlsTest ${TabsPlsTest_Headers} ${TabsPlsTest_Sources})
@@ -59,10 +61,13 @@ if(USE_PYTHON_TESTS)
     if(Python3_FOUND)
         message(STATUS "Python core tests will be included")
         add_executable(TabsPlsPluginsTest 
-	    gtest_main_tabspls_plugin_test.cc
+            gtest_main_tabspls_plugin_test.cc
 
             testCatchPythonException.cpp 
-            testToolbar.cpp)
+            testToolbar.cpp
+
+            TabsPlsLogTest.cpp
+            )
         target_link_libraries(TabsPlsPluginsTest PRIVATE TabsPls_Python TabsPls_Core_StdFileSystem GTest_lib)
         set(PLUGINS_TEST_INPUT ${CMAKE_SOURCE_DIR}/plugins_test_input)
         configure_file(TestPaths.h.in TestPaths.h @ONLY)
@@ -87,8 +92,8 @@ if(WIN32 AND USE_PYTHON_TESTS AND Python3_FOUND)
             file(COPY ${PythonDLLs} DESTINATION ${CMAKE_BINARY_DIR})
         endif()
     endforeach()
-    message(STATUS "Copying the Python 'Lib' folder to build directory to make sure the Python environment is sane when running tests...")
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${Python3_STDLIB} ${CMAKE_BINARY_DIR}/Lib 
+    message(STATUS "Creating a symlink of the Python 'Lib' folder in the build directory to make sure the Python environment is sane when running tests...")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${Python3_STDLIB} ${CMAKE_BINARY_DIR}/Lib
 	    OUTPUT_VARIABLE copy_python_lib_out
 	    ERROR_VARIABLE copy_python_lib_out)
     message(STATUS ${copy_python_lib_out})
