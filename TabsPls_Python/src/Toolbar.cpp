@@ -17,7 +17,7 @@
 #include "PythonErrorDump.hpp"
 #include "PythonRAII.hpp"
 
-constexpr char* loggingCategory = "Toolbar plugin";
+constexpr const char* loggingCategory = "Toolbar plugin";
 
 namespace ToolbarInternal {
 
