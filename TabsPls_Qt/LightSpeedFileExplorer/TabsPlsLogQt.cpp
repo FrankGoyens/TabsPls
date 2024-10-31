@@ -11,7 +11,7 @@
 #include <QDebug>
 #include <QMessageLogger>
 
-constexpr char* logFile = "log.txt";
+constexpr const char* logFile = "log.txt";
 static bool logFileWritable = true;
 
 namespace TabsPlsLog {
