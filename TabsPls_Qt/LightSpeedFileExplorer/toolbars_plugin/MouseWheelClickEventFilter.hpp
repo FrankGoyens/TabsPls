@@ -13,4 +13,7 @@ class MouseWheelClickEventFilter : public QObject {
 
   protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
+
+  private:
+    bool m_middleMouseDown = false;
 };
